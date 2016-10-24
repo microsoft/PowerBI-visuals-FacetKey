@@ -19,21 +19,21 @@ const Facets = require('../lib/uncharted-facets/public/javascripts/main');
 
 const MAX_DATA_LOADS = 5;
 
-export default class FacetsVisual implements IVisual {
+/**
+ * Default objects settings
+ */
+const DEFAULT_SETTINGS = {
+    facetCount: {
+        initial: 4,
+        increment: 50,
+    },
+    facetState: {
+        rangeFacet: '{}',
+        normalFacet: '{}',
+    },
+};
 
-    /**
-     * Default  settings
-     */
-    private static DEFAULT_SETTINGS = {
-        facetCount: {
-            initial: 4,
-            increment: 50,
-        },
-        facetState: {
-            rangeFacet: '{}',
-            normalFacet: '{}',
-        },
-    };
+export default class FacetsVisual implements IVisual {
 
     private element: JQuery;
     private suppressNextUpdate: boolean;
@@ -71,23 +71,6 @@ export default class FacetsVisual implements IVisual {
         }
     }, 500);
 
-    /**
-     * Converts the dataview into our own model
-     */
-    public static converter(dataView: DataView, colors: IColorInfo[], settings: any) {
-        const values = dataView.categorical.values || <powerbi.DataViewValueColumn[]>[];
-        const highlights = values[0] && values[0].highlights;
-
-        const dataPointsMap = convertDataview(dataView);
-        const aggregatedData = aggregateDataPointMap(dataPointsMap)
-        const facetsData = convertDataPointMap(aggregatedData, {
-            settings: settings,
-            colors: colors,
-            hasHighlight: !!highlights,
-        });
-        return _.extend({ dataPointsMap: dataPointsMap }, facetsData);
-    }
-
 
     /**
      * Initializes an instance of the IVisual.
@@ -97,6 +80,7 @@ export default class FacetsVisual implements IVisual {
     constructor(options: VisualConstructorOptions) {
         const facetsContainer = $('<div class="facets-container"></div>');
 
+        this.settings = DEFAULT_SETTINGS;
         this.element = $(options.element).append(facetsContainer);
 
         this.hostServices = options.host.createSelectionManager()['hostServices'];
@@ -122,6 +106,23 @@ export default class FacetsVisual implements IVisual {
     }
 
     /**
+     * Converts the dataview into our own model
+     */
+    public static converter(dataView: DataView, colors: IColorInfo[], settings: any) {
+        const values = dataView.categorical.values || <powerbi.DataViewValueColumn[]>[];
+        const highlights = values[0] && values[0].highlights;
+
+        const dataPointsMap = convertDataview(dataView);
+        const aggregatedData = aggregateDataPointMap(dataPointsMap)
+        const facetsData = convertDataPointMap(aggregatedData, {
+            settings: settings,
+            colors: colors,
+            hasHighlight: !!highlights,
+        });
+        return _.extend({ dataPointsMap: dataPointsMap }, facetsData);
+    }
+
+    /**
      * Notifies the IVisual of an update (data, viewmode, size change).
      */
     public update(options: VisualUpdateOptions): void {
@@ -136,7 +137,7 @@ export default class FacetsVisual implements IVisual {
 
         this.previousData = this.data || {};
         this.dataView = options.dataViews[0];
-        this.settings = this.validateSettings($.extend(true, {}, FacetsVisual.DEFAULT_SETTINGS, this.dataView.metadata.objects));
+        this.settings = this.validateSettings($.extend(true, {}, this.settings, this.dataView.metadata.objects));
 
         const isFreshData = (options['operationKind'] === VisualDataChangeOperationKind.Create);
         const isMoreData = !isFreshData;
@@ -218,13 +219,14 @@ export default class FacetsVisual implements IVisual {
             const { key, order, collapsed, isRange } = facetData;
             facetState[isRange ? 'rangeFacet' : 'normalFacet'][key] = { order, collapsed };
         });
+        this.settings.facetState = {
+            rangeFacet: JSON.stringify(facetState.rangeFacet),
+            normalFacet: JSON.stringify(facetState.normalFacet),
+        }
         const instance = {
             objectName: 'facetState',
             selector: null,
-            properties: {
-                rangeFacet: JSON.stringify(facetState.rangeFacet),
-                normalFacet: JSON.stringify(facetState.normalFacet),
-            },
+            properties: this.settings.facetState,
         };
         instances.push(instance);
         const objects: powerbi.VisualObjectInstancesToPersist = { merge: instances };
@@ -323,6 +325,7 @@ export default class FacetsVisual implements IVisual {
         this.facets.on('facet-group:collapse', (e: any, key: string) => {
             const facetGroup = this.getFacetGroup(key);
             facetGroup.collapsed = true;
+            this.saveFacetState();
             if (facetGroup.isRange) {
                 this.rangeFilter && this.rangeFilter[key] && (this.rangeFilter[key] = undefined)
                 this.filterFacets(false, true);
@@ -334,13 +337,12 @@ export default class FacetsVisual implements IVisual {
             const deselected = _.remove(this.selectedInstances, (selected) => selected.facetKey === key);
             this.selectedInstances.length > 0 && this.selectFacetInstances(this.selectedInstances);
             this.updateFacetsSelection(this.selectedInstances);
-            this.saveFacetState();
         });
 
         this.facets.on('facet-group:expand', (e: any, key: string) => {
             this.getFacetGroup(key).collapsed = false;
-            this.resetGroup(key)
             this.saveFacetState();
+            this.resetGroup(key)
         });
 
         this.facets.on('facet-group:dragging:end', () => {

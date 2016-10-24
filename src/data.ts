@@ -269,8 +269,8 @@ export function aggregateDataPointMap(dataPointsMap: any, options: any = {}) {
 
 export function convertDataPointMap(aggregatedData: any,  params: any = {}) {
     const { hasHighlight, colors, rangeFilter, settings } = params;
-    const rangeFacetState = settings.facetState ? JSON.parse(settings.facetState.rangeFacet) : {};
-    const normalFacetState = settings.facetState ? JSON.parse(settings.facetState.normalFacet) : {};
+    const rangeFacetState = JSON.parse(settings.facetState.rangeFacet);
+    const normalFacetState = JSON.parse(settings.facetState.normalFacet);
     const colorPalette = COLOR_PALETTE.slice().concat(colors.map((color: any) => color.value));
     const data = {
         aggregatedData: aggregatedData,
