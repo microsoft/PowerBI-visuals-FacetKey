@@ -1,0 +1,168 @@
+{
+  "dataRoles": [
+    {
+      "name": "facet",
+      "kind": 0,
+      "displayName": "Facet",
+      "description": ""
+    },
+    {
+      "name": "facetInstance",
+      "kind": 0,
+      "displayName": "Instance",
+      "description": ""
+    },
+    {
+      "name": "count",
+      "kind": 1,
+      "displayName": "Count",
+      "requiredTypes": [
+        {
+          "numeric": true
+        },
+        {
+          "integer": true
+        }
+      ]
+    },
+    {
+      "name": "rangeValue",
+      "kind": 2,
+      "displayName": "Range Value"
+    },
+    {
+      "name": "facetInstanceColor",
+      "kind": 0,
+      "displayName": "Color",
+      "description": ""
+    },
+    {
+      "name": "iconClass",
+      "kind": 0,
+      "displayName": "Icon Class",
+      "description": ""
+    }
+  ],
+
+  "dataViewMappings": [
+    {
+      "conditions": [
+        {
+          "facet": {
+            "max": 1
+          },
+          "facetInstance": {
+            "max": 1
+          },
+          "count": {
+            "max": 1
+          },
+          "rangeValue": {
+            "max": 5
+          },
+          "iconClass": {
+            "max": 1
+          },
+          "facetInstanceColor": {
+            "max": 1
+          }
+        }
+      ],
+      "categorical": {
+        "categories": {
+          "for": {
+            "in": "facetInstance"
+          },
+          "dataReductionAlgorithm": {
+            "window": {
+              "count": 5000
+            }
+          }
+        },
+        "values": {
+          "select": [
+            {
+              "bind": {
+                "to": "facet"
+              }
+            },
+            {
+              "bind": {
+                "to": "count"
+              }
+            },
+            {
+              "bind": {
+                "to": "rangeValue"
+              }
+            },
+            {
+              "bind": {
+                "to": "facetInstanceColor"
+              }
+            },
+            {
+              "bind": {
+                "to": "iconClass"
+              }
+            }
+          ]
+        },
+        "rowCount": {
+          "preferred": {
+            "min": 2
+          },
+          "supported": {
+            "min": 0
+          }
+        }
+      }
+    }
+  ],
+  "sorting": {
+    "custom": {},
+    "implicit": {
+      "clauses": [
+        {
+          "role": "count",
+          "direction": 2
+        }
+      ]
+    }
+  },
+  "objects": {
+    "facetState": {
+      "properties": {
+        "rangeFacet": {
+          "type": {
+            "text": true
+          }
+        },
+        "normalFacet": {
+          "type": {
+            "text": true
+          }
+        }
+      }
+    },
+    "facetCount": {
+      "displayName": "Facet Count",
+      "description": "Configure how many facets are loaded",
+      "properties": {
+        "initial": {
+          "displayName": "Initial",
+          "type": {
+            "numeric": true
+          }
+        },
+        "increment": {
+          "displayName": "Increment",
+          "type": {
+            "numeric": true
+          }
+        }
+      }
+    }
+  },
+  "supportsHighlight": true
+}

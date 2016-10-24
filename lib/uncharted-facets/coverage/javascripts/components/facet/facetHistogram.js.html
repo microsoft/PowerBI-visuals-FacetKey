@@ -1,0 +1,782 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for javascripts/components/facet/facetHistogram.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../../prettify.css" />
+    <link rel="stylesheet" href="../../../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../../../index.html">all files</a> / <a href="index.html">javascripts/components/facet/</a> facetHistogram.js
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">16.88% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>13/77</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>0/14</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>0/11</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">16.88% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>13/77</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line low'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/*
+ * *
+ *  Copyright © 2015 Uncharted Software Inc.
+ *
+ *  Property of Uncharted™, formerly Oculus Info Inc.
+ *  http://uncharted.software/
+ *
+ *  Released under the MIT License.
+ *
+ *  Permission is hereby granted, free of charge, to any person obtaining a copy of
+ *  this software and associated documentation files (the "Software"), to deal in
+ *  the Software without restriction, including without limitation the rights to
+ *  use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ *  of the Software, and to permit persons to whom the Software is furnished to do
+ *  so, subject to the following conditions:
+ *
+ *  The above copyright notice and this permission notice shall be included in all
+ *  copies or substantial portions of the Software.
+ *
+ *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ *  SOFTWARE.
+ * /
+ */
+&nbsp;
+var FacetBar = require('./facetHistogramBar');
+&nbsp;
+/**
+ * This class creates a histogram in the given `svgContainer` using the data provided in the `spec`
+ *
+ * @class FacetHistogram
+ * @param {element} svgContainer - SVG element where the histogram should be created (can be an SVG group)
+ * @param {Object} spec - Object describing the histogram to be created.
+ * @constructor
+ */
+<span class="fstat-no" title="function not covered" >function FacetHistogram (svgContainer, spec) {</span>
+<span class="cstat-no" title="statement not covered" >	this._svg = svgContainer;</span>
+<span class="cstat-no" title="statement not covered" >	this._spec = spec;</span>
+<span class="cstat-no" title="statement not covered" >	this._totalWidth = 0;</span>
+<span class="cstat-no" title="statement not covered" >	this._barWidth = 0;</span>
+<span class="cstat-no" title="statement not covered" >	this._minBarWidth = ('minBarWidth' in spec) ? spec.minBarWidth : 3;</span>
+<span class="cstat-no" title="statement not covered" >	this._maxBarWidth = ('maxBarWidth' in spec) ? spec.maxBarWidth : Number.MAX_VALUE;</span>
+<span class="cstat-no" title="statement not covered" >	this._barPadding = ('barPadding' in spec) ? spec.barPadding : 1;</span>
+<span class="cstat-no" title="statement not covered" >	this._bars = [];</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >	this.initializeSlices(svgContainer, spec.slices, spec.yMax);</span>
+}
+&nbsp;
+/**
+ * The total width of the histogram.
+ *
+ * @property totalWidth
+ * @type {Number}
+ * @readonly
+ */
+Object.defineProperty(FacetHistogram.prototype, 'totalWidth', {
+	get: <span class="fstat-no" title="function not covered" >function () {</span>
+<span class="cstat-no" title="statement not covered" >		return this._totalWidth;</span>
+	}
+});
+&nbsp;
+/**
+ * The width of each individual bar in the histogram.
+ *
+ * @property barWidth
+ * @type {Number}
+ * @readonly
+ */
+Object.defineProperty(FacetHistogram.prototype, 'barWidth', {
+	get: <span class="fstat-no" title="function not covered" >function () {</span>
+<span class="cstat-no" title="statement not covered" >		return this._barWidth;</span>
+	}
+});
+&nbsp;
+/**
+ * The amount of padding used between bars in the histogram.
+ *
+ * @property barPadding
+ * @type {Number}
+ * @readonly
+ */
+Object.defineProperty(FacetHistogram.prototype, 'barPadding', {
+	get: <span class="fstat-no" title="function not covered" >function () {</span>
+<span class="cstat-no" title="statement not covered" >		return this._barPadding;</span>
+	}
+});
+&nbsp;
+/**
+ * The internal array containing the bars in this histogram.
+ *
+ * @property bars
+ * @type {Array}
+ * @readonly
+ */
+Object.defineProperty(FacetHistogram.prototype, 'bars', {
+	get: <span class="fstat-no" title="function not covered" >function () {</span>
+<span class="cstat-no" title="statement not covered" >		return this._bars;</span>
+	}
+});
+&nbsp;
+/**
+ * Initializes the slices (bars/buckets) of this histogram and saves them to the `_bars` array.
+ *
+ * @method initializeSlices
+ * @param {element} svg - The SVG element where the slices should be created.
+ * @param {Array} slices - An array containing the slices to be created.
+ * @param {Number} yMax - The maximum value, in the Y axis, that any given slice will have.
+ */
+FacetHistogram.prototype.initializeSlices = <span class="fstat-no" title="function not covered" >function(svg, slices, yMax) {</span>
+<span class="cstat-no" title="statement not covered" >	var svgWidth = svg.width();</span>
+<span class="cstat-no" title="statement not covered" >	var svgHeight = svg.height();</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >	var minBarWidth = this._minBarWidth;</span>
+<span class="cstat-no" title="statement not covered" >	var maxBarWidth = this._maxBarWidth;</span>
+<span class="cstat-no" title="statement not covered" >	var barPadding = this._barPadding;</span>
+<span class="cstat-no" title="statement not covered" >	var x = 0;</span>
+<span class="cstat-no" title="statement not covered" >	var barsLength = slices.length;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >	var maxBarsNumber = Math.floor(svgWidth / (minBarWidth + barPadding));</span>
+<span class="cstat-no" title="statement not covered" >	var stackedBarsNumber = Math.ceil(barsLength / maxBarsNumber);</span>
+<span class="cstat-no" title="statement not covered" >	var barsToCreate = Math.ceil(barsLength / stackedBarsNumber);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >	var barWidth = Math.floor((svgWidth - ((barsToCreate - 1) * barPadding)) / barsToCreate);</span>
+<span class="cstat-no" title="statement not covered" >	barWidth = Math.max(barWidth, minBarWidth);</span>
+<span class="cstat-no" title="statement not covered" >	barWidth = Math.min(barWidth, maxBarWidth);</span>
+<span class="cstat-no" title="statement not covered" >	this._barWidth = barWidth;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >	for (var i = 0; i &lt; barsLength; i += stackedBarsNumber) {</span>
+<span class="cstat-no" title="statement not covered" >		var metadata = [];</span>
+<span class="cstat-no" title="statement not covered" >		var count = 0;</span>
+<span class="cstat-no" title="statement not covered" >		for (var ii = 0; ii &lt; stackedBarsNumber &amp;&amp; (i + ii) &lt; barsLength; ++ii) {</span>
+<span class="cstat-no" title="statement not covered" >			var slice = slices[i + ii];</span>
+<span class="cstat-no" title="statement not covered" >			count = Math.max(count, slice.count);</span>
+<span class="cstat-no" title="statement not covered" >			metadata.push(slice);</span>
+		}
+<span class="cstat-no" title="statement not covered" >		var barHeight = Math.ceil(svgHeight * (count / yMax));</span>
+<span class="cstat-no" title="statement not covered" >		var bar = new FacetBar(svg, x, barWidth, barHeight);</span>
+<span class="cstat-no" title="statement not covered" >		bar.highlighted = false;</span>
+<span class="cstat-no" title="statement not covered" >		bar.metadata = metadata;</span>
+<span class="cstat-no" title="statement not covered" >		this._bars.push(bar);</span>
+<span class="cstat-no" title="statement not covered" >		x += barWidth + barPadding;</span>
+	}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >	this._totalWidth = x - barPadding;</span>
+};
+&nbsp;
+/**
+ * Converts a pixel range into a bar range.
+ *
+ * @method pixelRangeToBarRange
+ * @param {{from: number, to: number}} pixelRange - The range in pixels to convert.
+ * @returns {{from: number, to: number}}
+ */
+FacetHistogram.prototype.pixelRangeToBarRange = <span class="fstat-no" title="function not covered" >function (pixelRange) {</span>
+<span class="cstat-no" title="statement not covered" >	return {</span>
+		from: Math.min(this._bars.length - 1, Math.max(0, Math.round(pixelRange.from / (this._barWidth + this._barPadding)))),
+		to: Math.min(this._bars.length - 1, Math.max(0, Math.round((pixelRange.to - this._barWidth) / (this._barWidth + this._barPadding))))
+	};
+};
+&nbsp;
+/**
+ * Converts a bar range into a pixel range.
+ *
+ * @method barRangeToPixelRange
+ * @param {{from: number, to: number}} barRange - The bar range to convert.
+ * @returns {{from: number, to: number}}
+ */
+FacetHistogram.prototype.barRangeToPixelRange = <span class="fstat-no" title="function not covered" >function (barRange) {</span>
+<span class="cstat-no" title="statement not covered" >	return {</span>
+		from: barRange.from * (this._barWidth + this._barPadding),
+		to: (barRange.to * (this._barWidth + this._barPadding)) + this._barWidth
+	};
+};
+&nbsp;
+/**
+ * Highlights the given bar range.
+ *
+ * @method highlightRange
+ * @param {{from: number, to: number}} range - The bar range to highlight.
+ */
+FacetHistogram.prototype.highlightRange = <span class="fstat-no" title="function not covered" >function (range) {</span>
+<span class="cstat-no" title="statement not covered" >	var bars = this._bars;</span>
+<span class="cstat-no" title="statement not covered" >	for (var i = 0, n = bars.length; i &lt; n; ++i) {</span>
+<span class="cstat-no" title="statement not covered" >		bars[i].highlighted = (i &gt;= range.from &amp;&amp; i &lt;= range.to);</span>
+	}
+};
+&nbsp;
+/**
+ * Selects the specified counts for each bar as specified in the `slices` parameter.
+ *
+ * @method select
+ * @param {Object} slices - Data used to select sub-bar counts in this histogram.
+ */
+FacetHistogram.prototype.select = <span class="fstat-no" title="function not covered" >function (slices) {</span>
+<span class="cstat-no" title="statement not covered" >	var bars = this._bars;</span>
+<span class="cstat-no" title="statement not covered" >	var yMax = this._spec.yMax;</span>
+<span class="cstat-no" title="statement not covered" >	var svgHeight = this._svg.height();</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >	for (var i = 0, n = bars.length; i &lt; n; ++i) {</span>
+<span class="cstat-no" title="statement not covered" >		var bar = bars[i];</span>
+<span class="cstat-no" title="statement not covered" >		var barMetadata = bar.metadata;</span>
+<span class="cstat-no" title="statement not covered" >		for (var ii = 0, nn = barMetadata.length; ii &lt; nn; ++ii) {</span>
+<span class="cstat-no" title="statement not covered" >			var slice = barMetadata[ii];</span>
+<span class="cstat-no" title="statement not covered" >			var count = 0;</span>
+<span class="cstat-no" title="statement not covered" >			if (slice.label in slices) {</span>
+<span class="cstat-no" title="statement not covered" >				count = slices[slice.label];</span>
+			}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >			var newHeight = Math.ceil(svgHeight * (count / yMax));</span>
+<span class="cstat-no" title="statement not covered" >			if (bar.selectedHeight === null) {</span>
+<span class="cstat-no" title="statement not covered" >				bar.selectedHeight = newHeight;</span>
+			} else {
+<span class="cstat-no" title="statement not covered" >				bar.selectedHeight = Math.max(bar.selectedHeight, newHeight);</span>
+			}
+		}
+	}
+};
+&nbsp;
+/**
+ * Clears the selection state of all bars in this histogram.
+ *
+ * @method deselect
+ */
+FacetHistogram.prototype.deselect = <span class="fstat-no" title="function not covered" >function () {</span>
+<span class="cstat-no" title="statement not covered" >	var bars = this._bars;</span>
+<span class="cstat-no" title="statement not covered" >	for (var i = 0, n = bars.length; i &lt; n; ++i) {</span>
+<span class="cstat-no" title="statement not covered" >		bars[i].selectedHeight = null;</span>
+	}
+};
+&nbsp;
+/**
+ * @export
+ * @type {Histogram}
+ */
+module.exports = FacetHistogram;
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon Jul 11 2016 15:19:38 GMT-0400 (EDT)
+</div>
+</div>
+<script src="../../../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../../../sorter.js"></script>
+</body>
+</html>

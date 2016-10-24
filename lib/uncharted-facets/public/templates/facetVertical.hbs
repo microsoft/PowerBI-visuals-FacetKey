@@ -1,0 +1,50 @@
+<div id="{{id}}" class="facets-facet-base facets-facet-vertical
+{{#if hidden}}
+	facets-facet-vertical-hidden
+{{/if}}
+">
+    <div class="facet-icon">
+		{{> facetVertical_icon}}
+    </div>
+    <div class="facet-block">
+        <div class="facet-bar-container">
+            <div class="facet-bar-base facet-bar-background" style="width:{{percentage count total}}%;"></div>
+			{{#ifCond selected '>=' 0}}
+                <div class="facet-bar-base facet-bar-selected" style="width:{{percentage selected total}}%;"></div>
+			{{/ifCond}}
+
+			{{#ifCond selected '===' undefined}}
+				{{#if icon.color}}
+                    <div class="facet-bar-base" style="width:{{percentage count total}}%; background-color:{{icon.color}}"></div>
+				{{else}}
+                    <div class="facet-bar-base facet-bar-default" style="width:{{percentage count total}}%;"></div>
+				{{/if}}
+
+			{{/ifCond}}
+        </div>
+        <div class="facet-label-container">
+            <span class="facet-label-count">
+				{{#if countLabel}}
+					{{countLabel}}
+				{{else}}
+					{{count}}
+				{{/if}}
+			</span>
+			<span class="facet-label">
+				{{#if displayValue}}
+					{{{displayValue}}}
+				{{else if label}}
+					{{{label}}}
+				{{else}}
+					{{{value}}}
+				{{/if}}
+			</span>
+        </div>
+    </div>
+	<div class="facet-links">
+		{{> facetVertical_links}}
+    </div>
+	<div class="facet-search-container">
+		{{> facetVertical_search}}
+	</div>
+</div>

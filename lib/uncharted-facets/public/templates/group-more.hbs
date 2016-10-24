@@ -1,0 +1,37 @@
+<div class="group-more-container{{#ifCond more 'instanceof' 'number'}} group-other-target" style="cursor: pointer;{{/ifCond}}">
+	{{#if more}}
+		{{#ifCond more 'instanceof' 'number'}}
+			{{#ifCond more '>' 0}}
+                <div class="group-more-marker">
+                    <i>●</i>
+                </div>
+                <div class="group-other-block">
+                    <div class="group-other-bar"></div>
+                    <div class="group-other-label-container">
+                        <span class="group-other-label-count">{{more}}+</span>
+                        <span class="group-other-label-other">other</span>
+                        <span class="group-other-label-show-more group-more-target">show more</span>
+                    </div>
+                </div>
+			{{/ifCond}}
+		{{else}}
+            <div class="group-other-block">
+				<div class="group-other-label-container">
+					{{#ifCond more 'instanceof' 'Array'}}
+						<span class="group-other-label-show-more group-more-not-target">
+						{{#each more}}
+							{{#ifCond this 'instanceof' 'object'}}
+								<span class="{{#ifCond clickable '===' true}}group-more-target {{/ifCond}}{{#if class}}{{class}}{{/if}}" index={{@index}}>{{label}}</span>
+							{{else}}
+                                <span>{{this}}</span>
+							{{/ifCond}}
+						{{/each}}
+						</span>
+					{{else ifCond more '===' true}}
+						<span class="group-other-label-show-more group-more-target">show more</span>
+					{{/ifCond}}
+				</div>
+			</div>
+		{{/ifCond}}
+	{{/if}}
+</div>

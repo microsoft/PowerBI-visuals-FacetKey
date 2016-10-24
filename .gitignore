@@ -1,0 +1,20 @@
+
+# Installed Modules
+node_modules
+
+# Temp Files
+.tmp
+.DS_Store
+
+# IDE / Editors
+.idea
+.vscode
+
+# Build Artifacts
+dist
+
+# log files
+*.log
+
+todo.txt
+.npmrc
