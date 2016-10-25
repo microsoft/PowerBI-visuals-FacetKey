@@ -18,7 +18,7 @@ import { findColumn, convertHex, otherLabelTemplate } from './utils';
 
 const Facets = require('../lib/uncharted-facets/public/javascripts/main');
 
-const MAX_DATA_LOADS = 5;
+const MAX_DATA_LOADS = 5; 
 
 /**
  * Default objects settings
