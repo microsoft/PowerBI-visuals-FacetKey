@@ -10,6 +10,7 @@ import VisualObjectInstance = powerbi.VisualObjectInstance;
 import IVisualHostServices = powerbi.IVisualHostServices;
 import EnumerateVisualObjectInstancesOptions = powerbi.EnumerateVisualObjectInstancesOptions;
 import SQExprBuilder = powerbi.data.SQExprBuilder;
+import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
 import * as _ from 'lodash';
 import * as $ from 'jquery';
 import { formatValue, convertDataview, aggregateDataPointMap, compareRangeValue, convertDataPointMap } from './data';
@@ -448,22 +449,6 @@ export default class FacetsVisual implements IVisual {
         return Object.keys(this.rangeFilter).reduce((prev: boolean, key: any) => !!this.rangeFilter[key] || prev, false);
     }
 
-    private getRangeSQExpr(dataViewColumn: any, from: any, to: any) {
-        const isNumeric = (n: any) => !isNaN(parseFloat(n)) && isFinite(n);
-        let sqExprBuilderbyType: any = isNumeric(from) ? SQExprBuilder.double : SQExprBuilder.text;
-        if (dataViewColumn.type.dateTime) {
-            sqExprBuilderbyType = SQExprBuilder.dateTime;
-        } else if (dataViewColumn.type.numeric) {
-            sqExprBuilderbyType = SQExprBuilder.double;
-        } else if (dataViewColumn.type.text) {
-            sqExprBuilderbyType = SQExprBuilder.text;
-        } else if (dataViewColumn.type.boolean) {
-            sqExprBuilderbyType = SQExprBuilder.boolean;
-        }
-        const rangeExpr = SQExprBuilder.between(dataViewColumn.expr, sqExprBuilderbyType(from), sqExprBuilderbyType(to));
-        return rangeExpr;
-    }
-
     private createSQExprFromRangeFilter(rangeFilter: any) {
         const rangeValueColumns = findColumn(this.dataView, 'rangeValue', true);
         let sqExpr: any;
@@ -473,7 +458,7 @@ export default class FacetsVisual implements IVisual {
             if (filter) {
                 const from = filter.from.metadata[0].rangeValue;
                 const to = filter.to.metadata[filter.to.metadata.length - 1].rangeValue;
-                const rangeExpr = this.getRangeSQExpr(column, from, to);
+                const rangeExpr = SQExprBuilder.between(column.expr,  SQExprBuilder.typedConstant(from, column.type), SQExprBuilder.typedConstant(to, column.type));
                 sqExpr = sqExpr ? SQExprBuilder.and(rangeExpr, sqExpr) : rangeExpr;
             }
         });
@@ -481,7 +466,6 @@ export default class FacetsVisual implements IVisual {
     };
 
     private selectRanges() {
-        const rangeValueColumn = findColumn(this.dataView, 'rangeValue');
         const sqExpr: any = this.hasRangeFilter()
             ? this.createSQExprFromRangeFilter(this.rangeFilter)
             : undefined;
@@ -491,16 +475,15 @@ export default class FacetsVisual implements IVisual {
     private selectFacetInstances(selectedInstances: any[]) {
         const facetColumn = findColumn(this.dataView, 'facet');
         const instanceColumn = findColumn(this.dataView, 'facetInstance');
-        const rangeValueColumn = findColumn(this.dataView, 'rangeValue');
 
         let sqExpr = selectedInstances.reduce((prevExpr: any, selected: any) => {
             if (!selected.rows[0]) { return prevExpr; }
             const { facet, facetInstance } = selected.rows[0];
-            let expr: any = instanceColumn && facetInstance
-                ? SQExprBuilder.equal(instanceColumn.expr, SQExprBuilder.text(facetInstance))
+            let expr: any = instanceColumn
+                ? SQExprBuilder.equal(instanceColumn.expr, SQExprBuilder.typedConstant(facetInstance, instanceColumn.type))
                 : undefined;
-            expr = facetColumn && facet
-                ? SQExprBuilder.and(expr, SQExprBuilder.equal(facetColumn.expr, SQExprBuilder.text(facet)))
+            expr = facetColumn
+                ? SQExprBuilder.and(expr, SQExprBuilder.equal(facetColumn.expr, SQExprBuilder.typedConstant(facet, facetColumn.type)))
                 : expr;
             return prevExpr ? SQExprBuilder.or(prevExpr, expr) : expr;
         }, undefined);
