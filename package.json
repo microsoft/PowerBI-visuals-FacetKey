@@ -15,12 +15,10 @@
     "dev": "node bin/startDev",
     "watch:templates": "onchange 'lib/uncharted-facets/public/templates/**/*' -- npm run compiletemplates",
     "compiletemplates": "node bin/compileHandlebars",
-    "package": "mkdirp dist && npm run compiletemplates && npm run package:code && node bin/packageVisual $npm_package_config_tmpProd",
-    "package:code": "mkdirp $npm_package_config_tmpProd && npm-run-all --parallel package:script package:style",
-    "package:script": "webpack --color --output-filename $npm_package_config_tmpProd/visual.js | sed '/node_modules/ { N; N; d; }'",
-    "package:style": "node-sass $(json -f pbiviz.json style) > $npm_package_config_tmpProd/visual.css",
-    "test": "karma start --color | sed '/node_modules/ { N; N; d; }'",
-    "test:tdd": "karma start --color --tdd | sed '/node_modules/ { N; N; d; }'",
+    "package": "npm run compiletemplates && node bin/packageVisual",
+    "test": "karma start --color | node bin/filterErrors",
+    "test:tdd": "karma start --color --tdd | node bin/filterErrors",
+    "lint": "tslint src/**/*.ts",
     "clean": "rm -rf node_modules .tmp"
   },
   "config": {
@@ -53,6 +51,7 @@
     "karma-sinon-chai": "^1.2.4",
     "karma-sourcemap-loader": "^0.3.7",
     "karma-webpack": "^1.8.0",
+    "memory-fs": "^0.3.0",
     "mkdirp": "^0.5.1",
     "mocha": "^3.1.2",
     "node-sass": "^3.10.0",
@@ -64,6 +63,8 @@
     "sinon": "^1.17.6",
     "sinon-chai": "^2.8.0",
     "ts-loader": "^0.8.2",
+    "tslint": "^3.15.1",
+    "tslint-loader": "^2.1.5",
     "typescript": "^2.0.3",
     "typings": "^1.4.0",
     "webpack": "^1.13.2"

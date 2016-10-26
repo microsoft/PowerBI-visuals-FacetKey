@@ -17,7 +17,6 @@ const config = {
     capabilitiesJsonPath: pbivizJson.capabilities,
     tmpDropDir: '.tmp/drop',
     sassEntry: pbivizJson.style,
-    sassDir: 'style',
     server: {
         cert: 'certs/PowerBICustomVisualTest_public.crt', 
         key: 'certs/PowerBICustomVisualTest_private.key',
@@ -39,7 +38,7 @@ const compileSass = () => {
 
 const emitPbivizJson = () => {
     console.info('Updating pbiviz.json...');
-    const pbiviz = JSON.parse(fs.readFileSync(config.pbivizJsonPath).toString());
+    const pbiviz = JSON.parse(fs.readFileSync(config.pbivizJsonPath));
     const capabilities = JSON.parse(fs.readFileSync(config.capabilitiesJsonPath))
     pbiviz.capabilities = capabilities;
     fs.writeFileSync(pbiResource.pbivizJsonFile, JSON.stringify(pbiviz, null, 2));

@@ -36,7 +36,7 @@ function aggregateDataPoints(dataPoints: any[], options: any = {}) {
     const result = {
         aggregatedDataPoints: <any>[],
         ignoredDataPoints: <any>[]
-    }
+    };
     dataPoints.forEach((dp: any) => {
         const instanceLabel = dp.instanceLabel;
         if (_.find(ignore, (ignoreDp: any) => ignoreDp.instanceLabel === dp.instanceLabel && ignoreDp.facetKey === dp.facetKey)) {
@@ -186,7 +186,7 @@ export function convertDataview(dataView: DataView) {
                         value: columnValue,
                         valueLabel: formatValue(rangeValueFormatter, columnValue, ''),
                         key: columnName.replace(/[\(\)]/g, '\\$&')
-                    }
+                    };
                     columnValue && rowObj.rangeValues.push(value);
                 } else {
                     rowObj[role] = columnValue;

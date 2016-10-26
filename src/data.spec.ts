@@ -62,15 +62,15 @@ describe('.convertDataview', () => {
 
         expect(dataPoint.facetKey).to.equal('location');
         // Capitalize first letter of the facet
-        expect(dataPoint.facetLabel).to.equal('Location')
+        expect(dataPoint.facetLabel).to.equal('Location');
 
         // instacne value = facetInstacne + index
-        expect(dataPoint.instanceValue).to.equal('California2')
+        expect(dataPoint.instanceValue).to.equal('California2');
 
-        expect(dataPoint.instanceLabel).to.equal('California')
-        expect(dataPoint.instanceCount).to.equal(1)
-        expect(dataPoint.instanceColor).to.equal('rgba(255, 255, 255 1)')
-        expect(dataPoint.instanceIconClass).to.equal('fa fa-globe')
+        expect(dataPoint.instanceLabel).to.equal('California');
+        expect(dataPoint.instanceCount).to.equal(1);
+        expect(dataPoint.instanceColor).to.equal('rgba(255, 255, 255 1)');
+        expect(dataPoint.instanceIconClass).to.equal('fa fa-globe');
     });
     it('should return the result with corretly formatted values with available formats', () => {
         dataView.metadata.columns[0].format = '*'; // facet
@@ -80,9 +80,9 @@ describe('.convertDataview', () => {
         data = dataConversion.convertDataview(<any>dataView);
         const dataPoint = data['location'][0];
 
-        expect(dataPoint.facetLabel).to.equal('*Location')
-        expect(dataPoint.instanceValue).to.equal('@California2')
-        expect(dataPoint.instanceLabel).to.equal('@California')
+        expect(dataPoint.facetLabel).to.equal('*Location');
+        expect(dataPoint.instanceValue).to.equal('@California2');
+        expect(dataPoint.instanceLabel).to.equal('@California');
         expect(dataPoint.rangeValues[1].valueLabel[0]).to.equal('#');
         expect(dataPoint.instanceCountFormatter.format).to.be.an('function');
     });
@@ -153,7 +153,7 @@ describe('.aggregateDataPointMap', () => {
                 expect(dp.instanceCountFormatter).to.equal(inputDp.instanceCountFormatter);
                 expect(dp.instanceColor).to.equal(inputDp.instanceColor);
                 expect(dp.instanceIconClass).to.equal(inputDp.instanceIconClass);
-            }
+            };
             expect(dp.rows).to.deep.equal(['fakeRow3']);
             expect(dp.highlight).to.equal(2);
             expect(dp.instanceCount).to.equal(3);
@@ -178,10 +178,10 @@ describe('.aggregateDataPointMap', () => {
             expect(dp.highlight).to.equal(6); // 6 + 0
             expect(dp.instanceCount).to.equal(10);
         });
-        it('should apply rnage filter')
-        it('should apply keyword filter')
-        it('should handle correctly with selected instances')
-    })
+        it('should apply rnage filter');
+        it('should apply keyword filter');
+        it('should handle correctly with selected instances');
+    });
     describe('for rangeDataMap result', () => {
         it('should unwind and aggregate dp by its range values and group them by range value key ', () => {
             const classRangeDps = result.rangeDataMap['class'];
@@ -222,9 +222,9 @@ describe('.aggregateDataPointMap', () => {
                 }
             });
         });
-        it('should apply rnage filter')
-        it('should apply keyword filter')
-        it('should handle correctly with selected instances')
+        it('should apply rnage filter');
+        it('should apply keyword filter');
+        it('should handle correctly with selected instances');
     });
 });
 

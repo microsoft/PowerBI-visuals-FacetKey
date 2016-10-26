@@ -10,15 +10,16 @@ module.exports = function(config) {
         frameworks: ['mocha', 'sinon-chai'],
         files: [
             'node_modules/jquery/dist/jquery.min.js',
-            'src/**/*.spec.ts',
+            'src/**/*.spec.ts'
         ],
         exclude: [
         ],
         preprocessors: {
-            'src/**/*.spec.ts': ['webpack', 'sourcemap'],
+            'src/**/*.spec.ts': ['webpack', 'sourcemap']
         },
         webpack: {
             module: {
+                preLoaders: webpackConfig.module.preLoaders,
                 loaders: [
                     {
                         test: /\.ts?$/,
@@ -30,14 +31,14 @@ module.exports = function(config) {
             externals: [
                 {
                     sinon: "sinon",
-                    chai: "chai",
+                    chai: "chai"
                 },
             ],
             plugins: [
-                new webpack.SourceMapDevToolPlugin({
-                    filename: null, // if no value is provided the sourcemap is inlined
-                    test: /\.(ts|js)($|\?)/i // process .js and .ts files only
-                }),
+              new webpack.SourceMapDevToolPlugin({
+                filename: null, // if no value is provided the sourcemap is inlined
+                test: /\.(ts|js)($|\?)/i // process .js and .ts files only
+              })
             ]
         },
         reporters: ['progress'],

@@ -18,7 +18,7 @@ import { findColumn, convertHex, otherLabelTemplate } from './utils';
 
 const Facets = require('../lib/uncharted-facets/public/javascripts/main');
 
-const MAX_DATA_LOADS = 5; 
+const MAX_DATA_LOADS = 5;
 
 /**
  * Default objects settings
@@ -114,7 +114,7 @@ export default class FacetsVisual implements IVisual {
         const highlights = values[0] && values[0].highlights;
 
         const dataPointsMap = convertDataview(dataView);
-        const aggregatedData = aggregateDataPointMap(dataPointsMap)
+        const aggregatedData = aggregateDataPointMap(dataPointsMap);
         const facetsData = convertDataPointMap(aggregatedData, {
             settings: settings,
             colors: colors,
@@ -223,7 +223,7 @@ export default class FacetsVisual implements IVisual {
         this.settings.facetState = {
             rangeFacet: JSON.stringify(facetState.rangeFacet),
             normalFacet: JSON.stringify(facetState.normalFacet),
-        }
+        };
         const instance = {
             objectName: 'facetState',
             selector: null,
@@ -231,7 +231,7 @@ export default class FacetsVisual implements IVisual {
         };
         instances.push(instance);
         const objects: powerbi.VisualObjectInstancesToPersist = { merge: instances };
-        this.suppressNextUpdate = true;;
+        this.suppressNextUpdate = true;
         this.hostServices.persistProperties(objects);
     }
 
@@ -300,7 +300,7 @@ export default class FacetsVisual implements IVisual {
             filters: this.keywordFilter,
             rangeFilter: this.rangeFilter,
             selectedInstances: this.selectedInstances
-        })
+        });
         const result: any =  _.extend({}, data, convertDataPointMap(aggregatedData, {
                 hasHighlight: this.data.hasHighlight,
                 rangeFilter: this.rangeFilter,
@@ -328,7 +328,7 @@ export default class FacetsVisual implements IVisual {
             facetGroup.collapsed = true;
             this.saveFacetState();
             if (facetGroup.isRange) {
-                this.rangeFilter && this.rangeFilter[key] && (this.rangeFilter[key] = undefined)
+                this.rangeFilter && this.rangeFilter[key] && (this.rangeFilter[key] = undefined);
                 this.filterFacets(false, true);
                 this.selectedInstances.length > 0
                     ? this.selectFacetInstances(this.selectedInstances)
@@ -343,7 +343,7 @@ export default class FacetsVisual implements IVisual {
         this.facets.on('facet-group:expand', (e: any, key: string) => {
             this.getFacetGroup(key).collapsed = false;
             this.saveFacetState();
-            this.resetGroup(key)
+            this.resetGroup(key);
         });
 
         this.facets.on('facet-group:dragging:end', () => {
@@ -351,13 +351,13 @@ export default class FacetsVisual implements IVisual {
             this.data.facetsData.forEach((facetGroupData) => {
                 const group = this.facets._getGroup(facetGroupData.key);
                 facetGroupData.order = group.index;
-            })
+            });
             this.saveFacetState();
         });
 
         this.facets.on('facet-histogram:rangechangeduser', (e: any, key: string, range: any) => {
             const isFullRange = range.from.metadata[0].isFirst && range.to.metadata[range.to.metadata.length - 1].isLast;
-            !this.rangeFilter && (this.rangeFilter = {})
+            !this.rangeFilter && (this.rangeFilter = {});
             this.rangeFilter[key] = isFullRange ? undefined : { from: range.from, to: range.to };
             if (this.data.hasHighlight) {
                 this.retainFilters = true;
