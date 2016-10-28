@@ -145,6 +145,18 @@
         }
       }
     },
+    "display": {
+      "displayName": "Display",
+      "description": "Facet display option",
+      "properties": {
+        "selectionCount": {
+          "displayName": "Selection Count",
+          "type": {
+            "bool": true
+          }
+        }
+      }
+    },
     "facetCount": {
       "displayName": "Facet Count",
       "description": "Configure how many facets are loaded",

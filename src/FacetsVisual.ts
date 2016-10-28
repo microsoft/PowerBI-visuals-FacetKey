@@ -32,6 +32,9 @@ const DEFAULT_SETTINGS = {
         rangeFacet: '{}',
         normalFacet: '{}',
     },
+    display: {
+        selectionCount: false,
+    }
 };
 
 export default class FacetsVisual implements IVisual {

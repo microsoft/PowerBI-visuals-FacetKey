@@ -360,6 +360,9 @@ export function convertDataPointMap(aggregatedData: any,  params: any = {}) {
                 instanceColor,
                 instanceIconClass,
             } = dp;
+            const selectionCountLabel = settings.display.selectionCount
+                ? `${formatValue(instanceCountFormatter, highlight, '')} / ${formatValue(instanceCountFormatter, instanceCount, '')}`
+                : formatValue(instanceCountFormatter, instanceCount, '');
             const nextColorOpacity = opacities.shift();
             const defaultColor = facetGroupColor && nextColorOpacity && convertHex(facetGroupColor, nextColorOpacity);
             const useDataPoint = hasHighlight ? !!highlight : true;
@@ -367,7 +370,7 @@ export function convertDataPointMap(aggregatedData: any,  params: any = {}) {
             !!highlight && selectionGroup.facets.push({
                 selected: highlight,
                 value: instanceValue,
-                countLabel: `${formatValue(instanceCountFormatter, highlight, '')} / ${formatValue(instanceCountFormatter, instanceCount, '')}`,
+                countLabel: selectionCountLabel
             });
 
             // update datapoint color
