@@ -1,4 +1,5 @@
-var outputString = "";
+'use strict';
+
 var regex = new RegExp("\\bnode_modules\\b");
 
 process.stdin.setEncoding('utf8');
