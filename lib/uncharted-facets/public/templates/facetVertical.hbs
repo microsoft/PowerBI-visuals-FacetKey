@@ -25,7 +25,7 @@
         <div class="facet-label-container">
             <span class="facet-label-count">
 				{{#if countLabel}}
-					{{countLabel}}
+                    {{{countLabel}}}
 				{{else}}
 					{{count}}
 				{{/if}}
@@ -43,6 +43,9 @@
     </div>
 	<div class="facet-links">
 		{{> facetVertical_links}}
+    </div>
+    <div class="facet-query-close">
+        {{> facetVertical_queryClose}}
     </div>
 	<div class="facet-search-container">
 		{{> facetVertical_search}}

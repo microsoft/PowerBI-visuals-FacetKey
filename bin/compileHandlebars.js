@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const mkdirp = require('mkdirp');
 const fileTools = require('./fileTools');
 const handlebars = require('handlebars');
 
@@ -13,6 +14,7 @@ const createAsModule = (content) => {
     return template;
 }
 
+mkdirp.sync(outputDir);
 files.forEach((filename) => {
     const filePath = path.join(templatesDir, filename);
     const contents = fs.readFileSync(filePath).toString();

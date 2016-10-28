@@ -10,7 +10,7 @@
     "preinstall:dependencies": "node bin/installSubmoduleDeps",
     "preinstall": "npm run clean && npm run preinstall:prereq && npm run preinstall:submodules && npm run preinstall:dependencies",
     "install-certificate": "node bin/openCert",
-    "start": "npm-run-all --parallel dev watch:templates",
+    "start": "npm run compiletemplates && npm-run-all --parallel dev watch:templates",
     "tdd": "npm-run-all --parallel dev watch:templates test:tdd",
     "dev": "node bin/startDev",
     "watch:templates": "onchange 'lib/uncharted-facets/public/templates/**/*' -- npm run compiletemplates",
@@ -29,7 +29,7 @@
   "author": "Uncharted Software Inc.",
   "license": "MIT",
   "privateSubmodules": {
-    "uncharted-facets": "2.3.0"
+    "uncharted-facets": "2.4.3"
   },
   "devDependencies": {
     "@types/jquery": "^2.0.33",

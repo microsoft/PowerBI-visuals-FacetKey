@@ -367,6 +367,7 @@ export function convertDataPointMap(aggregatedData: any,  params: any = {}) {
             !!highlight && selectionGroup.facets.push({
                 selected: highlight,
                 value: instanceValue,
+                countLabel: `${formatValue(instanceCountFormatter, highlight, '')} / ${formatValue(instanceCountFormatter, instanceCount, '')}`,
             });
 
             // update datapoint color

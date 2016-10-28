@@ -82,18 +82,20 @@
 				position: absolute;
 				height: 4px;
 				box-sizing: content-box;
+				-webkit-print-color-adjust:exact; 	/* Chrome */
+				color-adjust:exact;					/* Firefox */
 			}
 
 			.facet-bar-background {
-				background: #ddd;
+				background: #ddd !important;
 			}
 
 			.facet-bar-default {
-				background-color: #aaa;
+				background-color: #aaa !important;
 			}
 
 			.facet-bar-selected {
-				background-color: #00c6e1;
+				background-color: #00c6e1 !important;
 			}
 		}
 
@@ -139,6 +141,21 @@
 		color: #9B857A;
 		right: 10px;
 		margin-top: -8px;
+		white-space: nowrap;
+		overflow-y: hidden;
+		text-align: right;
+		height: 100%;
+	}
+
+	.facet-query-close {
+		transition: height $facet_abbreviation_animation_duration ease,
+		opacity $facet_abbreviation_animation_duration ease;
+		position: absolute;
+		font-size: 1em;
+		float:right;
+		color: #9B857A;
+		right: 13px;
+		margin-top: -20px;
 		white-space: nowrap;
 		overflow-y: hidden;
 		text-align: right;
