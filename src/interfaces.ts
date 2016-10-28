@@ -6,6 +6,7 @@ interface IRangeValue {
 
 interface IRowObject {
     index: number,
+    identity: powerbi.DataViewScopeIdentity,
     facet?: Date | string | number | boolean,
     facetInstance?: Date | string | number | boolean,
     count?: Date | string | number | boolean,
@@ -15,9 +16,7 @@ interface IRowObject {
 }
 
 interface IDataPoint {
-    identity?: powerbi.DataViewScopeIdentity,
-    row?: IRowObject,
-    rows?: IRowObject[],
+    rows: IRowObject[],
     highlight: number,
     facetKey: string,
     facetLabel: string,
