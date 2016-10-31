@@ -1,15 +1,16 @@
 import DataView = powerbi.DataView;
 import IValueFormatter = powerbi.visuals.IValueFormatter;
 import DataViewObjects = powerbi.DataViewObjects;
+import IColorInfo = powerbi.IColorInfo;
 import { findColumn, convertHex, otherLabelTemplate } from './utils';
 import * as _ from 'lodash';
 
 const COLOR_PALETTE = ['#FF001F', '#FF8000', '#AC8000', '#95AF00', '#1BBB6A', '#B44AE7', '#DB00B0'];
 
-function checkRangeFilter(rangeFilter: any, rangeValues: any) {
+function checkRangeFilter(rangeFilter: any, rangeValues: RangeValue[]) {
     if (!rangeFilter) { return true; }
     const compare = compareRangeValue;
-    return rangeValues.reduce((prev: boolean, rangeValue: any) => {
+    return rangeValues.reduce((prev: boolean, rangeValue: RangeValue) => {
         const filter = rangeFilter[rangeValue.key];
         if (!filter) { return prev && true; }
         const from = filter.from.metadata[0].rangeValue;
@@ -18,9 +19,9 @@ function checkRangeFilter(rangeFilter: any, rangeValues: any) {
     }, true);
 }
 
-function checkKeywordFilters(keywordFilters: any[], dataPoint: any) {
+function checkKeywordFilters(keywordFilters: any[], dataPoint: DataPoint) {
     if (!keywordFilters || keywordFilters.length === 0) { return true; }
-    const instance = dataPoint.row.facetInstance;
+    const instance = String(dataPoint.rows[0].facetInstance);
     return keywordFilters.reduce((prevResult: any, filterKeyword: string) => {
         const isMatch = instance.toLowerCase().indexOf(filterKeyword) >= 0;
         return isMatch || prevResult;
@@ -30,16 +31,16 @@ function checkKeywordFilters(keywordFilters: any[], dataPoint: any) {
 /**
  * Aggregate given dataPoints by facet intance.
  */
-function aggregateDataPoints(dataPoints: any[], options: any = {}) {
+function aggregateDataPoints(dataPoints: DataPoint[], options: AggregateDataPointsOptions = {}) {
     const { rangeFilter, filters, forEachDataPoint, ignore } = options;
     const instanceMap = {};
     const result = {
-        aggregatedDataPoints: <any>[],
-        ignoredDataPoints: <any>[]
+        aggregatedDataPoints: [],
+        ignoredDataPoints: []
     };
-    dataPoints.forEach((dp: any) => {
+    dataPoints.forEach(dp => {
         const instanceLabel = dp.instanceLabel;
-        if (_.find(ignore, (ignoreDp: any) => ignoreDp.instanceLabel === dp.instanceLabel && ignoreDp.facetKey === dp.facetKey)) {
+        if (_.find(ignore, ignoreDp => ignoreDp.instanceLabel === dp.instanceLabel && ignoreDp.facetKey === dp.facetKey)) {
             return result.ignoredDataPoints.push(dp);
         }
 
@@ -49,7 +50,7 @@ function aggregateDataPoints(dataPoints: any[], options: any = {}) {
         }
         if (!instanceMap[instanceLabel]) {
             result.aggregatedDataPoints.push(instanceMap[instanceLabel] = {
-                rows: [dp.row],
+                rows: dp.rows,
                 facetKey: dp.facetKey,
                 highlight: dp.highlight,
                 facetLabel: dp.facetLabel,
@@ -63,7 +64,7 @@ function aggregateDataPoints(dataPoints: any[], options: any = {}) {
         } else {
             instanceMap[instanceLabel].highlight += dp.highlight;
             instanceMap[instanceLabel].instanceCount += dp.instanceCount;
-            instanceMap[instanceLabel].rows.push(dp.row);
+            instanceMap[instanceLabel].rows.push(...dp.rows);
         }
     });
     return result;
@@ -72,11 +73,11 @@ function aggregateDataPoints(dataPoints: any[], options: any = {}) {
 /**
  * Aggregate datapoints by facetInstance applying rangefilter only. (used to create a list of datapoints for selected facet instances)
  */
-function aggregateUsingRangeFilterOnly(dataPoints: any[], options: any = {}): any {
+function aggregateUsingRangeFilterOnly(dataPoints: DataPoint[], options: AggregateDataPointsOptions = {}): DataPoint[] {
     const { rangeFilter, forEachDataPoint } = options;
     const instanceMap = {};
-    const result: any[] = [];
-    dataPoints.forEach((dp: any) => {
+    const result: DataPoint[] = [];
+    dataPoints.forEach(dp => {
         const instanceLabel = dp.instanceLabel;
         dp.isSelected = true;
         forEachDataPoint && forEachDataPoint(dp);
@@ -96,7 +97,7 @@ function aggregateUsingRangeFilterOnly(dataPoints: any[], options: any = {}): an
         if (!checkRangeFilter(rangeFilter, dp.rangeValues)) { return; }
         instanceMap[instanceLabel].highlight += dp.highlight;
         instanceMap[instanceLabel].instanceCount += dp.instanceCount;
-        instanceMap[instanceLabel].rows.push(dp.row);
+        instanceMap[instanceLabel].rows.push(...dp.rows);
     });
     return result;
 }
@@ -123,7 +124,7 @@ export function formatValue(defaultFormatter: IValueFormatter, value: any, defau
     }
 }
 
-export function compareRangeValue(a: string, b: string) {
+export function compareRangeValue(a: any, b: any) {
     const isNumeric = (n: any) => !isNaN(parseFloat(n)) && isFinite(n);
     let aValue: any = Date.parse(a);
     let bValue: any = Date.parse(b);
@@ -142,7 +143,7 @@ export function compareRangeValue(a: string, b: string) {
  * Process the dataView and convert it's table data to the data point map such that each data points (table rows) are grouped by facet key.
  */
 export function convertDataview(dataView: DataView) {
-    const viz: any = powerbi.visuals;
+    const viz = powerbi.visuals;
     const category = dataView.categorical.categories && dataView.categorical.categories[0];
     const values = dataView.categorical.values || <powerbi.DataViewValueColumn[]>[];
     const highlights = values[0] && values[0].highlights;
@@ -167,11 +168,11 @@ export function convertDataview(dataView: DataView) {
 
     // Convert rows to datapointsMap
     rows.forEach((row, index) => {
-        const highlight = (highlights && highlights[index]) || 0;
+        const highlight = (highlights && <number>highlights[index]) || 0;
         const identity = identities[index];
         const objects = category && category.objects && category.objects[index];
         // map each value with corresponding column name
-        const rowObj = <any>{ index: index };
+        const rowObj: RowObject = { index, identity };
         row.forEach((colValue, idx) => {
             const colRoles = Object.keys(columns[idx].roles);
             // In sandbox mode, date type colValue sometimes include string so we have to force it to be date.
@@ -182,7 +183,7 @@ export function convertDataview(dataView: DataView) {
                     const columnName = columns[idx].displayName;
                     const rangeValueFormatter = viz.valueFormatter.create({ format: format });
                     !rowObj.rangeValues && (rowObj.rangeValues = []);
-                    const value = {
+                    const value: RangeValue = {
                         value: columnValue,
                         valueLabel: formatValue(rangeValueFormatter, columnValue, ''),
                         key: columnName.replace(/[\(\)]/g, '\\$&')
@@ -200,13 +201,10 @@ export function convertDataview(dataView: DataView) {
         const instanceValue = instanceLabel !== '' ? instanceLabel + index : '';
         const instanceCount = count || 0;
         const instanceCountFormatter = countFormatter;
-        const instanceColor = colorColumn ? (facetInstanceColor || '#DDDDDD') : undefined;
-        const instanceIconClass = iconClass || 'default fa fa-circle';
-
-        !dataPointsMap[facetKey] && (dataPointsMap[facetKey] = []);
-        dataPointsMap[facetKey].push({
-            identity,
-            row: rowObj,
+        const instanceColor = colorColumn ? (facetInstanceColor && String(facetInstanceColor)) || '#DDDDDD' : undefined;
+        const instanceIconClass = (iconClass && String(iconClass)) || 'default fa fa-circle';
+        const dataPoint: DataPoint = {
+            rows: [rowObj],
             highlight,
             facetKey,
             facetLabel,
@@ -217,18 +215,21 @@ export function convertDataview(dataView: DataView) {
             instanceColor,
             instanceIconClass,
             rangeValues,
-        });
+        };
+
+        !dataPointsMap[facetKey] && (dataPointsMap[facetKey] = []);
+        dataPointsMap[facetKey].push(dataPoint);
     });
     return dataPointsMap;
 }
 
-export function aggregateDataPointMap(dataPointsMap: any, options: any = {}) {
+export function aggregateDataPointMap(dataPointsMap: any, options: AggregateDataPointMapOptions = {}) {
     const { filters, rangeFilter, selectedInstances } = options;
     const keywordFilter = filters ? [filters] : [];
     const aggregatedData = { dataPointsMap: {}, rangeDataMap: {} };
-    const constructRangeFacetData = (dp: any) => {
+    const constructRangeFacetData = (dp: DataPoint) => {
         if (!dp.rangeValues) { return; }
-        dp.rangeValues.forEach((rangeValue: any) => {
+        dp.rangeValues.forEach((rangeValue: RangeValue) => {
             const key = rangeValue.key;
             const rangeDataMap = aggregatedData.rangeDataMap[key] || (aggregatedData.rangeDataMap[key] = {});
             !rangeDataMap[rangeValue.valueLabel] && (rangeDataMap[rangeValue.valueLabel] = {
@@ -242,7 +243,7 @@ export function aggregateDataPointMap(dataPointsMap: any, options: any = {}) {
                     rangeValue: rangeValue.value,
                 },
             });
-            rangeDataMap[rangeValue.valueLabel].rows.push(dp.row);
+            rangeDataMap[rangeValue.valueLabel].rows.push(...dp.rows);
             rangeDataMap[rangeValue.valueLabel].count += dp.instanceCount;
             rangeDataMap[rangeValue.valueLabel].highlight += dp.highlight;
             const passFilter = dp.isSelected || (checkKeywordFilters(keywordFilter, dp) && checkRangeFilter(rangeFilter, dp.rangeValues));
@@ -259,26 +260,25 @@ export function aggregateDataPointMap(dataPointsMap: any, options: any = {}) {
     };
     Object.keys(dataPointsMap).forEach((key: string) => {
         const aggregateResult = aggregateDataPoints(dataPointsMap[key], opt);
-        const dataPoints = aggregateResult.aggregatedDataPoints
+        const dataPoints: DataPoint[] = aggregateResult.aggregatedDataPoints
             .concat(aggregateUsingRangeFilterOnly(aggregateResult.ignoredDataPoints, opt));
         dataPoints.length > 0 && (aggregatedData.dataPointsMap[key] = dataPoints);
     });
-    // console.log(JSON.stringify(aggregatedData, null, 2));
     return aggregatedData;
 };
 
-export function convertDataPointMap(aggregatedData: any,  params: any = {}) {
+export function convertDataPointMap(aggregatedData: AggregatedData, params: ConvertDataPointMapParams) {
     const { hasHighlight, colors, rangeFilter, settings } = params;
     const rangeFacetState = JSON.parse(settings.facetState.rangeFacet);
     const normalFacetState = JSON.parse(settings.facetState.normalFacet);
-    const colorPalette = COLOR_PALETTE.slice().concat(colors.map((color: any) => color.value));
+    const colorPalette = COLOR_PALETTE.slice().concat(colors.map((color: IColorInfo) => color.value));
     const data = {
         aggregatedData: aggregatedData,
         hasHighlight: hasHighlight,
         facetsData: <any>[],
         facetsSelectionData: <any>[],
         maxFacetInstanceCount: 0,
-        selectedDataPoints: <any>[],
+        selectedDataPoints: <DataPoint[]>[],
     };
 
     // Construct the data for range facets

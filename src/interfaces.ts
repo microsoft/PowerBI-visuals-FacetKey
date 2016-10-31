@@ -1,22 +1,36 @@
-interface IRangeValue {
+interface FacetKeySettings {
+    facetCount: {
+        initial: number,
+        increment: number,
+    },
+    facetState: {
+        rangeFacet: string,
+        normalFacet: string,
+    },
+    display: {
+        selectionCount: boolean,
+    }
+}
+
+interface RangeValue {
     value: Date | string | number | boolean,
     valueLabel: string,
     key: string
 }
 
-interface IRowObject {
+interface RowObject {
     index: number,
     identity: powerbi.DataViewScopeIdentity,
     facet?: Date | string | number | boolean,
     facetInstance?: Date | string | number | boolean,
-    count?: Date | string | number | boolean,
+    count?: number,
     facetInstanceColor?: Date | string | number | boolean,
     iconClass?: Date | string | number | boolean,
-    rangeValues?: IRangeValue[],
+    rangeValues?: RangeValue[],
 }
 
-interface IDataPoint {
-    rows: IRowObject[],
+interface DataPoint {
+    rows: RowObject[],
     highlight: number,
     facetKey: string,
     facetLabel: string,
@@ -26,6 +40,31 @@ interface IDataPoint {
     instanceCountFormatter: any,
     instanceColor: string,
     instanceIconClass: string,
-    rangeValues?: IRangeValue[],
+    rangeValues?: RangeValue[],
     isSelected?: boolean,
+}
+
+interface AggregatedData {
+    rangeDataMap: any,
+    dataPointsMap: any,
+}
+
+interface AggregateDataPointsOptions {
+    rangeFilter?: any,
+    filters?: any,
+    forEachDataPoint?: (dp: DataPoint) => void,
+    ignore?: DataPoint[],
+}
+
+interface AggregateDataPointMapOptions {
+    rangeFilter?: any,
+    filters?: any,
+    selectedInstances?: DataPoint[],
+}
+
+interface ConvertDataPointMapParams {
+    hasHighlight: boolean,
+    colors: powerbi.IColorInfo[],
+    settings: FacetKeySettings,
+    rangeFilter?: any,
 }

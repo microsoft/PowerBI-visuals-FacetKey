@@ -23,7 +23,7 @@ const MAX_DATA_LOADS = 5;
 /**
  * Default objects settings
  */
-const DEFAULT_SETTINGS = {
+const DEFAULT_SETTINGS: FacetKeySettings = {
     facetCount: {
         initial: 4,
         increment: 50,
@@ -44,7 +44,7 @@ export default class FacetsVisual implements IVisual {
     private loader: JQuery;
     private searchBox: JQuery;
     private facets: any;
-    private settings: any;
+    private settings: FacetKeySettings;
     private colors: IColorInfo[];
     private dataView: DataView;
     private data: any;
@@ -56,7 +56,7 @@ export default class FacetsVisual implements IVisual {
     private previousFreshData: any;
     private hostServices: IVisualHostServices;
     private firstSelectionInHighlightedState: boolean;
-    private selectedInstances: any[] = [];
+    private selectedInstances: DataPoint[] = [];
     private loadMoreCount: number;
     private reDrawRangeFilter: any = _.debounce(() => {
         if (this.data && this.data.facetsData) {
@@ -380,7 +380,7 @@ export default class FacetsVisual implements IVisual {
     private resetGroup(key: string): void {
         const facetGroup = this.getFacetGroup(key);
         this.facets.replaceGroup(facetGroup);
-        this.facets.highlight(this.selectedInstances.map((dp) => ({ key: dp.facetKey, value: dp.instanceValue, count: dp.instanceCount })));
+        this.facets.highlight(this.selectedInstances.map(dp => ({ key: dp.facetKey, value: dp.instanceValue, count: dp.instanceCount })));
         this.data.hasHighlight && this.facets.select(this.data.facetsSelectionData);
     }
 
@@ -475,7 +475,7 @@ export default class FacetsVisual implements IVisual {
         this.sendSelectionToHost(sqExpr ? [powerbi.data.createDataViewScopeIdentity(sqExpr)] : []);
     }
 
-    private selectFacetInstances(selectedInstances: any[]) {
+    private selectFacetInstances(selectedInstances: DataPoint[]) {
         const facetColumn = findColumn(this.dataView, 'facet');
         const instanceColumn = findColumn(this.dataView, 'facetInstance');
 
@@ -507,14 +507,14 @@ export default class FacetsVisual implements IVisual {
     }
 
     private toggleFacetSelection(key: string, value: string): void {
-        const dataPoint = _.find(this.data.aggregatedData.dataPointsMap[key], (dp: any) => dp.facetKey === key && dp.instanceValue === value);
+        const dataPoint = _.find(this.data.aggregatedData.dataPointsMap[key], (dp: DataPoint) => dp.facetKey === key && dp.instanceValue === value);
         const deselected = _.remove(this.selectedInstances, (selected) => selected.facetKey === key && selected.instanceValue === value);
         deselected.length === 0 && this.selectedInstances.push(dataPoint);
         this.selectFacetInstances(this.selectedInstances);
         this.updateFacetsSelection(this.selectedInstances);
     }
 
-    private updateFacetsSelection(selectedInstances: any[] = [], reset: boolean = true): void {
+    private updateFacetsSelection(selectedInstances: DataPoint[] = [], reset: boolean = true): void {
         this.facets.unhighlight();
         this.facets.highlight(selectedInstances.map((dp) => ({ key: dp.facetKey, value: dp.instanceValue, count: dp.instanceCount })));
         this.deselectNormalFacetInstances();

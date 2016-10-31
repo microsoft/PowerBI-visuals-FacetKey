@@ -33,22 +33,22 @@ describe('.convertDataview', () => {
         expect(data['location']).to.be.an('array').length(1);
     });
     it('should return the resut with identity of each rows', () => {
-        expect(data['organization'][0].identity).to.equal('fakeId1');
-        expect(data['organization'][1].identity).to.equal('fakeId2');
-        expect(data['location'][0].identity).to.equal('fakeId3');
+        expect(data['organization'][0].rows[0].identity).to.equal('fakeId1');
+        expect(data['organization'][1].rows[0].identity).to.equal('fakeId2');
+        expect(data['location'][0].rows[0].identity).to.equal('fakeId3');
     });
     it('should return the result with original row values mapped with corresponding column names in object form', () => {
         const dataPoint = data['organization'][0];
-        expect(dataPoint.row.index).to.equal(0);
-        expect(dataPoint.row.facet).to.equal('organization');
-        expect(dataPoint.row.facetInstance).to.equal('Wand');
-        expect(dataPoint.row.count).to.equal(2);
-        expect(dataPoint.row.facetInstanceColor).to.equal('rgba(0, 0, 0, 1)');
-        expect(dataPoint.row.iconClass).to.equal('fa fa-sitemap');
+        expect(dataPoint.rows[0].index).to.equal(0);
+        expect(dataPoint.rows[0].facet).to.equal('organization');
+        expect(dataPoint.rows[0].facetInstance).to.equal('Wand');
+        expect(dataPoint.rows[0].count).to.equal(2);
+        expect(dataPoint.rows[0].facetInstanceColor).to.equal('rgba(0, 0, 0, 1)');
+        expect(dataPoint.rows[0].iconClass).to.equal('fa fa-sitemap');
     });
     it('should return the result with rangeValues', () => {
         const dataPoint = data['organization'][1];
-        expect(dataPoint.row.rangeValues).to.equal(dataPoint.rangeValues);
+        expect(dataPoint.rows[0].rangeValues).to.equal(dataPoint.rangeValues);
 
         expect(dataPoint.rangeValues[0].value).to.equal('fa fa-sitemap');
         expect(dataPoint.rangeValues[0].valueLabel).to.equal('fa fa-sitemap');
@@ -108,7 +108,7 @@ describe('.convertDataview', () => {
         data = dataConversion.convertDataview(<any>dataView);
         const dataPoint = data[' '][0];
 
-        expect(dataPoint.identity).to.equal('id1');
+        expect(dataPoint.rows[0].identity).to.equal('id1');
         expect(dataPoint.facetKey).to.equal(' ');
         expect(dataPoint.facetLabel).to.equal('');
         expect(dataPoint.instanceValue).to.equal('');

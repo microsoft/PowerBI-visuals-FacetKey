@@ -2,7 +2,7 @@ export default {
     'organization': [
         {
             identity: 'fakeId1',
-            row: 'fakeRow1',
+            rows: ['fakeRow1'],
             highlight: 2,
             facetKey: 'organization',
             facetLabel: 'Organization',
@@ -27,7 +27,7 @@ export default {
         },
         {
             identity: 'fakeId2',
-            row: 'fakeRow2',
+            rows: ['fakeRow2'],
             highlight: 2,
             facetKey: 'organization',
             facetLabel: 'Organization',
@@ -54,7 +54,7 @@ export default {
     'location': [
         {
             identity: 'fakeId3',
-            row: 'fakeRow3',
+            rows: ['fakeRow3'],
             highlight: 2,
             facetKey: 'location',
             facetLabel: 'Location',
@@ -79,7 +79,7 @@ export default {
         },
         {
             identity: 'fakeId4',
-            row: 'fakeRow4',
+            rows: ['fakeRow4'],
             highlight: 6,
             facetKey: 'location',
             facetLabel: 'Location',
@@ -104,7 +104,7 @@ export default {
         },
         {
             identity: 'fakeId5',
-            row: 'fakeRow5',
+            rows: ['fakeRow5'],
             highlight: 0,
             facetKey: 'location',
             facetLabel: 'Location',
