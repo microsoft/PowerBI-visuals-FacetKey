@@ -17,9 +17,9 @@ const packagingWebpackConfig = {
         emitErrors: true,
         failOnHint: true
     },
-    output: { 
-        filename: 'visual.js', path: '/' 
-    } 
+    output: {
+        filename: 'visual.js', path: '/'
+    }
 }
 const buildPackageJson = {
     version: packageJson.version,
@@ -31,7 +31,7 @@ const buildPackageJson = {
             file: `resources/${ pbivizJson.visual.guid }.pbiviz.json`,
         }
     ],
-    visual: pbivizJson.visual,
+    visual: Object.assign(pbivizJson.visual, { version: packageJson.version }),
     metadata: {
         pbivizjson: {
             resourceId: 'rId0'
@@ -55,7 +55,7 @@ const compileScripts = (callback) => {
         });
         log = log.split('\n\n').filter(msg => msg.indexOf('node_module') === -1 ).join('\n\n');
         console.info(log);
-        const fileContent = fs.readFileSync("/visual.js").toString(); 
+        const fileContent = fs.readFileSync("/visual.js").toString();
         callback(err, fileContent);
     });
 
