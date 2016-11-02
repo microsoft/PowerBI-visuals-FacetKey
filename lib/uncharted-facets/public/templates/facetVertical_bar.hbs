@@ -1,0 +1,26 @@
+<div class="facet-bar-base facet-bar-background" style="width:{{percentage count total}}%;"></div>
+{{#ifCond selected '>=' 0}}
+    {{#if segments }}
+        <div class="facet-bar-base facet-bar-selected facet-bar-segments-container" style="width:{{percentage selected total}}%;">
+            {{#each segments}}
+                <div class="facet-bar-segment" style="width:{{percentage this.count ../selected}}%; background-color:{{this.color}}"></div>
+            {{/each}}
+        </div>
+    {{else}}
+        <div class="facet-bar-base facet-bar-selected" style="width:{{percentage selected total}}%;"></div>
+    {{/if}}
+{{/ifCond}}
+
+{{#ifCond selected '===' undefined}}
+    {{#if segments }}
+        <div class="facet-bar-base facet-bar-segments-container" style="width:{{percentage count total}}%;">
+            {{#each segments}}
+                <div class="facet-bar-segment" style="width:{{percentage this.count ../count}}%; background-color:{{this.color}}"></div>
+            {{/each}}
+        </div>
+    {{else if icon.color}}
+        <div class="facet-bar-base" style="width:{{percentage count total}}%; background-color:{{icon.color}}"></div>
+    {{else}}
+        <div class="facet-bar-base facet-bar-default" style="width:{{percentage count total}}%;"></div>
+    {{/if}}
+{{/ifCond}}

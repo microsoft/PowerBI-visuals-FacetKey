@@ -86,6 +86,20 @@
 				color-adjust:exact;					/* Firefox */
 			}
 
+			.facet-bar-segments-container {
+				display: flex;
+			}
+
+			.facet-bar-segment {
+				box-sizing: border-box;
+				border-right: 1px solid #ddd;
+				position: initial;
+			}
+
+			.facet-bar-segment:last-child {
+				border: none;
+			}
+
 			.facet-bar-background {
 				background: #ddd !important;
 			}

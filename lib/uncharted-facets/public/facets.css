@@ -95,6 +95,14 @@
         /* Chrome */
         color-adjust: exact;
         /* Firefox */ }
+      .facets-facet-vertical .facet-block .facet-bar-container .facet-bar-segments-container {
+        display: flex; }
+      .facets-facet-vertical .facet-block .facet-bar-container .facet-bar-segment {
+        box-sizing: border-box;
+        border-right: 1px solid #ddd;
+        position: initial; }
+      .facets-facet-vertical .facet-block .facet-bar-container .facet-bar-segment:last-child {
+        border: none; }
       .facets-facet-vertical .facet-block .facet-bar-container .facet-bar-background {
         background: #ddd !important; }
       .facets-facet-vertical .facet-block .facet-bar-container .facet-bar-default {

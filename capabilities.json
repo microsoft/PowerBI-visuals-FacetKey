@@ -31,6 +31,11 @@
       "displayName": "Range Value"
     },
     {
+      "name": "bucket",
+      "kind": 0,
+      "displayName": "Bucket"
+    },
+    {
       "name": "facetInstanceColor",
       "kind": 0,
       "displayName": "Color",

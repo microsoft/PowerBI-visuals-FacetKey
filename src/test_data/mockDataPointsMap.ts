@@ -1,8 +1,10 @@
 export default {
     'organization': [
         {
-            identity: 'fakeId1',
-            rows: ['fakeRow1'],
+            rows: [{
+                identity: 'fakeId1',
+                bucket: 'level1',
+            }],
             highlight: 2,
             facetKey: 'organization',
             facetLabel: 'Organization',
@@ -26,8 +28,10 @@ export default {
             ]
         },
         {
-            identity: 'fakeId2',
-            rows: ['fakeRow2'],
+            rows: [{
+                identity: 'fakeId2',
+                bucket: 'level2',
+            }],
             highlight: 2,
             facetKey: 'organization',
             facetLabel: 'Organization',
@@ -53,8 +57,11 @@ export default {
     ],
     'location': [
         {
+            rows: [{
+                identity: 'fakeId3',
+                bucket: 'level1',
+            }],
             identity: 'fakeId3',
-            rows: ['fakeRow3'],
             highlight: 2,
             facetKey: 'location',
             facetLabel: 'Location',
@@ -78,8 +85,10 @@ export default {
             ]
         },
         {
-            identity: 'fakeId4',
-            rows: ['fakeRow4'],
+            rows: [{
+                identity: 'fakeId4',
+                bucket: 'level1',
+            }],
             highlight: 6,
             facetKey: 'location',
             facetLabel: 'Location',
@@ -103,8 +112,10 @@ export default {
             ]
         },
         {
-            identity: 'fakeId5',
-            rows: ['fakeRow5'],
+            rows: [{
+                identity: 'fakeId5',
+                bucket: 'level1',
+            }],
             highlight: 0,
             facetKey: 'location',
             facetLabel: 'Location',

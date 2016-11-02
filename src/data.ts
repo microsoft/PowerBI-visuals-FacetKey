@@ -38,9 +38,18 @@ function aggregateDataPoints(dataPoints: DataPoint[], options: AggregateDataPoin
         aggregatedDataPoints: [],
         ignoredDataPoints: []
     };
-    dataPoints.forEach(dp => {
+    const createBucket = (obj: {bucket: any}, dp: DataPoint) => {
+        const bucketName = String(dp.rows[0].bucket)
+        if (!obj.bucket[bucketName]) {
+            obj.bucket[bucketName] = { instanceCount: dp.instanceCount, highlight: dp.highlight };
+        } else {
+            obj.bucket[bucketName].instanceCount += dp.instanceCount;
+            obj.bucket[bucketName].highlight += dp.highlight;
+        }
+    }
+    dataPoints.forEach((dp: DataPoint) => {
         const instanceLabel = dp.instanceLabel;
-        if (_.find(ignore, ignoreDp => ignoreDp.instanceLabel === dp.instanceLabel && ignoreDp.facetKey === dp.facetKey)) {
+        if (_.find(ignore, (ignoreDp: DataPoint) => ignoreDp.instanceLabel === dp.instanceLabel && ignoreDp.facetKey === dp.facetKey)) {
             return result.ignoredDataPoints.push(dp);
         }
 
@@ -60,11 +69,14 @@ function aggregateDataPoints(dataPoints: DataPoint[], options: AggregateDataPoin
                 instanceCountFormatter: dp.instanceCountFormatter,
                 instanceColor: dp.instanceColor,
                 instanceIconClass: dp.instanceIconClass,
+                bucket: {},
             });
+            createBucket(instanceMap[instanceLabel], dp);
         } else {
             instanceMap[instanceLabel].highlight += dp.highlight;
             instanceMap[instanceLabel].instanceCount += dp.instanceCount;
             instanceMap[instanceLabel].rows.push(...dp.rows);
+            createBucket(instanceMap[instanceLabel], dp);
         }
     });
     return result;
@@ -77,7 +89,7 @@ function aggregateUsingRangeFilterOnly(dataPoints: DataPoint[], options: Aggrega
     const { rangeFilter, forEachDataPoint } = options;
     const instanceMap = {};
     const result: DataPoint[] = [];
-    dataPoints.forEach(dp => {
+    dataPoints.forEach((dp: DataPoint) => {
         const instanceLabel = dp.instanceLabel;
         dp.isSelected = true;
         forEachDataPoint && forEachDataPoint(dp);
@@ -350,7 +362,7 @@ export function convertDataPointMap(aggregatedData: AggregatedData, params: Conv
             const countComparison = b.instanceCount - a.instanceCount;
             return countComparison === 0 ? a.instanceLabel.localeCompare(b.instanceLabel) : countComparison;
         });
-        dataPoints.forEach((dp: any) => {
+        dataPoints.forEach((dp: DataPoint) => {
             const {
                 highlight,
                 instanceValue,
