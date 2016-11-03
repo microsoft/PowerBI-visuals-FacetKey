@@ -13,6 +13,7 @@ window['powerbi'] = {
 import * as sinon from 'sinon';
 import { expect } from 'chai';
 import * as $ from 'jquery';
+import * as _ from 'lodash';
 
 import * as dataConversion from './data';
 import mockDataView from './test_data/mockdataview';

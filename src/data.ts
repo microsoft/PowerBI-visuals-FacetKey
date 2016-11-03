@@ -39,14 +39,14 @@ function aggregateDataPoints(dataPoints: DataPoint[], options: AggregateDataPoin
         ignoredDataPoints: []
     };
     const createBucket = (obj: {bucket: any}, dp: DataPoint) => {
-        const bucketName = String(dp.rows[0].bucket)
+        const bucketName = String(dp.rows[0].bucket);
         if (!obj.bucket[bucketName]) {
             obj.bucket[bucketName] = { instanceCount: dp.instanceCount, highlight: dp.highlight };
         } else {
             obj.bucket[bucketName].instanceCount += dp.instanceCount;
             obj.bucket[bucketName].highlight += dp.highlight;
         }
-    }
+    };
     dataPoints.forEach((dp: DataPoint) => {
         const instanceLabel = dp.instanceLabel;
         if (_.find(ignore, (ignoreDp: DataPoint) => ignoreDp.instanceLabel === dp.instanceLabel && ignoreDp.facetKey === dp.facetKey)) {
