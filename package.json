@@ -29,7 +29,7 @@
   "author": "Uncharted Software Inc.",
   "license": "MIT",
   "privateSubmodules": {
-    "uncharted-facets": "2.4.3"
+    "uncharted-facets": "2.4.5"
   },
   "devDependencies": {
     "@types/jquery": "^2.0.33",

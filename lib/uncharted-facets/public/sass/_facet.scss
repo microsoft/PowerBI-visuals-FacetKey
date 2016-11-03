@@ -88,16 +88,19 @@
 
 			.facet-bar-segments-container {
 				display: flex;
-			}
 
-			.facet-bar-segment {
-				box-sizing: border-box;
-				border-right: 1px solid #ddd;
-				position: initial;
-			}
+				.facet-bar-segment {
+					box-sizing: border-box;
+					border-right: 1px solid #ddd;
+					position: initial;
+					transition: width $facet_bar_width_animation_duration ease,
+					background-color $facet_bar_width_animation_duration ease,
+					opacity $facet_abbreviation_animation_duration ease;
+				}
 
-			.facet-bar-segment:last-child {
-				border: none;
+				.facet-bar-segment:last-child {
+					border: none;
+				}
 			}
 
 			.facet-bar-background {
@@ -110,6 +113,10 @@
 
 			.facet-bar-selected {
 				background-color: #00c6e1 !important;
+
+				.facet-bar-segment {
+					border: none;
+				}
 			}
 		}
 
