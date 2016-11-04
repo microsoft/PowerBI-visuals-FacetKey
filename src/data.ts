@@ -28,6 +28,18 @@ function checkKeywordFilters(keywordFilters: any[], dataPoint: DataPoint) {
     }, false);
 }
 
+function createBucket(targetObj: any, dp: DataPoint) {
+    if (!dp.rows[0].bucket) { return; }
+    const bucketName = String(dp.rows[0].bucket);
+    !targetObj.bucket && (targetObj.bucket = {});
+    if (!targetObj.bucket[bucketName]) {
+        targetObj.bucket[bucketName] = { instanceCount: dp.instanceCount, highlight: dp.highlight };
+    } else {
+        targetObj.bucket[bucketName].instanceCount += dp.instanceCount;
+        targetObj.bucket[bucketName].highlight += dp.highlight;
+    }
+}
+
 /**
  * Aggregate given dataPoints by facet intance.
  */
@@ -37,15 +49,6 @@ function aggregateDataPoints(dataPoints: DataPoint[], options: AggregateDataPoin
     const result = {
         aggregatedDataPoints: [],
         ignoredDataPoints: []
-    };
-    const createBucket = (obj: {bucket: any}, dp: DataPoint) => {
-        const bucketName = String(dp.rows[0].bucket);
-        if (!obj.bucket[bucketName]) {
-            obj.bucket[bucketName] = { instanceCount: dp.instanceCount, highlight: dp.highlight };
-        } else {
-            obj.bucket[bucketName].instanceCount += dp.instanceCount;
-            obj.bucket[bucketName].highlight += dp.highlight;
-        }
     };
     dataPoints.forEach((dp: DataPoint) => {
         const instanceLabel = dp.instanceLabel;
@@ -69,7 +72,6 @@ function aggregateDataPoints(dataPoints: DataPoint[], options: AggregateDataPoin
                 instanceCountFormatter: dp.instanceCountFormatter,
                 instanceColor: dp.instanceColor,
                 instanceIconClass: dp.instanceIconClass,
-                bucket: {},
             });
             createBucket(instanceMap[instanceLabel], dp);
         } else {
@@ -110,6 +112,8 @@ function aggregateUsingRangeFilterOnly(dataPoints: DataPoint[], options: Aggrega
         instanceMap[instanceLabel].highlight += dp.highlight;
         instanceMap[instanceLabel].instanceCount += dp.instanceCount;
         instanceMap[instanceLabel].rows.push(...dp.rows);
+        // TODO: need test
+        createBucket(instanceMap[instanceLabel], dp);
     });
     return result;
 }
@@ -371,6 +375,7 @@ export function convertDataPointMap(aggregatedData: AggregatedData, params: Conv
                 instanceCountFormatter,
                 instanceColor,
                 instanceIconClass,
+                bucket,
             } = dp;
             const selectionCountLabel = settings.display.selectionCount
                 ? `${formatValue(instanceCountFormatter, highlight, '')} / ${formatValue(instanceCountFormatter, instanceCount, '')}`
@@ -378,12 +383,17 @@ export function convertDataPointMap(aggregatedData: AggregatedData, params: Conv
             const nextColorOpacity = opacities.shift();
             const defaultColor = facetGroupColor && nextColorOpacity && convertHex(facetGroupColor, nextColorOpacity);
             const useDataPoint = hasHighlight ? !!highlight : true;
+            const createSegment = (countType: string, mainColor: string) =>
+                _.sortBy(Object.keys(bucket), (key: string) => {
+                    const parsedDate = Date.parse(key);
+                    return !isNaN(<any>key) ? Number(key) : (isNaN(parsedDate) ? key : parsedDate)
+                })
+                .map((key) => ({ count: bucket[key][countType], color: mainColor}));
 
-            !!highlight && selectionGroup.facets.push({
-                selected: highlight,
+            const selectionSpec = {
+                selected: { count: highlight, countLabel: selectionCountLabel },
                 value: instanceValue,
-                countLabel: selectionCountLabel
-            });
+            };
 
             // update datapoint color
             dp.instanceColor = instanceColor || defaultColor || '#DDDDDD';
@@ -397,6 +407,13 @@ export function convertDataPointMap(aggregatedData: AggregatedData, params: Conv
                 value: instanceValue,
                 label: instanceLabel,
             };
+            // add segments
+            if (bucket) {
+                selectionSpec.selected['segments'] = createSegment('highlight', '#00c6e1');
+                facet['segments'] = createSegment('instanceCount', dp.instanceColor);
+            }
+
+            !!highlight && selectionGroup.facets.push(selectionSpec);
             dp.isSelected
                 ? data.selectedDataPoints.push(dp) && prependedSelectedFacets.push(facet)
                 : useDataPoint && facets.push(facet);

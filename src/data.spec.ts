@@ -192,7 +192,16 @@ describe('.aggregateDataPointMap', () => {
 
             expect(dp.bucket['level1'].instanceCount).to.equal(10);
             expect(dp.bucket['level1'].highlight).to.equal(6);
-        })
+        });
+        it('should bucket counts if the rows have no bucket value', () => {
+            dataPointsMap = _.cloneDeep(mockDataPointsMap);
+            delete dataPointsMap.organization[0].rows[0].bucket;
+            delete dataPointsMap.organization[1].rows[0].bucket;
+            result = dataConversion.aggregateDataPointMap(dataPointsMap);
+
+            let dp = result.dataPointsMap['organization'][0];
+            expect(dp.bucket).to.be.undefined;
+        });
         it('should apply rnage filter');
         it('should apply keyword filter');
         it('should handle correctly with selected instances');

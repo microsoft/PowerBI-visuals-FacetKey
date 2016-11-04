@@ -98,6 +98,10 @@
 					opacity $facet_abbreviation_animation_duration ease;
 				}
 
+				.facet-bar-segment.zero-width {
+					border: none;
+				}
+
 				.facet-bar-segment:last-child {
 					border: none;
 				}
