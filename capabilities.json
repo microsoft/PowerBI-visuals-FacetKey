@@ -65,6 +65,9 @@
           "rangeValue": {
             "max": 5
           },
+          "bucket": {
+            "max": 1
+          },
           "iconClass": {
             "max": 1
           },
@@ -99,6 +102,11 @@
             {
               "bind": {
                 "to": "rangeValue"
+              }
+            },
+            {
+              "bind": {
+                "to": "bucket"
               }
             },
             {
