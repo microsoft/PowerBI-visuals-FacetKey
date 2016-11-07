@@ -2,10 +2,11 @@ import DataView = powerbi.DataView;
 import IValueFormatter = powerbi.visuals.IValueFormatter;
 import DataViewObjects = powerbi.DataViewObjects;
 import IColorInfo = powerbi.IColorInfo;
-import { findColumn, convertHex, otherLabelTemplate } from './utils';
+import { findColumn, convertHex, convertToHSL, otherLabelTemplate } from './utils';
 import * as _ from 'lodash';
 
 const COLOR_PALETTE = ['#FF001F', '#FF8000', '#AC8000', '#95AF00', '#1BBB6A', '#B44AE7', '#DB00B0'];
+const HIGHLIGHT_COLOR = '#00c6e1';
 
 function checkRangeFilter(rangeFilter: any, rangeValues: RangeValue[]) {
     if (!rangeFilter) { return true; }
@@ -382,35 +383,45 @@ export function convertDataPointMap(aggregatedData: AggregatedData, params: Conv
                 : formatValue(instanceCountFormatter, instanceCount, '');
             const nextColorOpacity = opacities.shift();
             const defaultColor = facetGroupColor && nextColorOpacity && convertHex(facetGroupColor, nextColorOpacity);
+            const facetColor = instanceColor || defaultColor || '#DDDDDD';
             const useDataPoint = hasHighlight ? !!highlight : true;
-            const createSegment = (countType: string, mainColor: string) =>
-                _.sortBy(Object.keys(bucket), (key: string) => {
-                    const parsedDate = Date.parse(key);
-                    return !isNaN(<any>key) ? Number(key) : (isNaN(parsedDate) ? key : parsedDate)
-                })
-                .map((key) => ({ count: bucket[key][countType], color: mainColor}));
 
             const selectionSpec = {
                 selected: { count: highlight, countLabel: selectionCountLabel },
                 value: instanceValue,
             };
-
-            // update datapoint color
-            dp.instanceColor = instanceColor || defaultColor || '#DDDDDD';
             const facet = {
                 icon: {
                      class: instanceIconClass,
-                     color: dp.instanceColor,
+                     color: facetColor,
                 },
                 count: instanceCount,
                 countLabel: formatValue(instanceCountFormatter, instanceCount, ''),
                 value: instanceValue,
                 label: instanceLabel,
             };
-            // add segments
+
+            // add segments if there is bucket
             if (bucket) {
-                selectionSpec.selected['segments'] = createSegment('highlight', '#00c6e1');
-                facet['segments'] = createSegment('instanceCount', dp.instanceColor);
+                const getSegmentColor = (baseColor, opacity, segmentIndex, totalNumSegments, isHighlight) => {
+                    const h = convertToHSL(baseColor)[0] * 360;
+                    const [s, minL, maxL] = isHighlight
+                        ? [100, 50, 90]
+                        : [25, 30, 90];
+                    const range = maxL - minL;
+                    const n = range / totalNumSegments;
+                    const l = minL + (n * segmentIndex);
+                    return `hsla(${h}, ${s}%, ${l}%, ${opacity / 100})`;
+                };
+                const createSegment = (countType: string, mainColor: string) =>
+                    _.sortBy(Object.keys(bucket), (key: string) => {
+                        const parsedDate = Date.parse(key);
+                        return !isNaN(<any>key) ? Number(key) : (isNaN(parsedDate) ? key : parsedDate);
+                    })
+                    .map((key, index, array) => ({ count: bucket[key][countType], color: getSegmentColor(mainColor, nextColorOpacity, index, array.length, !!highlight) }));
+                selectionSpec.selected['segments'] = createSegment('highlight', HIGHLIGHT_COLOR);
+                facet['segments'] = createSegment('instanceCount', facetColor);
+                facet.icon.color = getSegmentColor(facetColor, nextColorOpacity, 0, 1, false);
             }
 
             !!highlight && selectionGroup.facets.push(selectionSpec);

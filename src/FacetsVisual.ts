@@ -142,6 +142,7 @@ export default class FacetsVisual implements IVisual {
         this.previousData = this.data || {};
         this.dataView = options.dataViews[0];
         this.settings = this.validateSettings($.extend(true, {}, this.settings, this.dataView.metadata.objects));
+        this.element.toggleClass('render-segments', Boolean(findColumn(this.dataView, 'bucket')));
 
         const isFreshData = (options['operationKind'] === VisualDataChangeOperationKind.Create);
         const isMoreData = !isFreshData;

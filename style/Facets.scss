@@ -92,6 +92,16 @@ body.visual-sandbox {
   color: #ddd;
 }
 
+// facets bar
+.render-segments .facets-facet-vertical .facet-block .facet-bar-container .facet-bar-background {
+  background: hsl(187, 0%, 95%) !important;
+}
+.facets-facet-vertical .facet-block .facet-bar-container .facet-bar-segments-container .facet-bar-segment {
+  background: hsl(187, 0%, 95%);
+  border-color: hsl(187, 0%, 95%);
+}
+// facets bar end
+
 //=========== Loader ==============
 .facets-loader:before,
 .facets-loader:after,
