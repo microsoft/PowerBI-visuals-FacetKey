@@ -70,6 +70,21 @@ export function findColumn(dataView: DataView, dataRoleName: string, multi?: boo
         : result;
 }
 
+/**
+ * Return a hsl color string based on the given color, opacity, index, total number of segments, and boolean indicating it's highlight or not
+ */
+export function getSegmentColor(baseColor: string, opacity: number, segmentIndex: number, totalNumSegments:number, isHighlight: boolean): string {
+    const h = convertToHSL(baseColor)[0] * 360;
+    const [s, minL, maxL] = isHighlight
+        ? [100, 50, 90]
+        : [25, 30, 90];
+    const range = maxL - minL;
+    const n = range / totalNumSegments;
+    const l = minL + (n * segmentIndex);
+    return `hsla(${h}, ${s}%, ${l}%, ${opacity / 100})`;
+};
+
+
 export function otherLabelTemplate(remaining: number) {
     return `Other (${roundToNearestTen(remaining)}${remaining < 10 || !(remaining % 10) ? '' : '+'})`;
 }
