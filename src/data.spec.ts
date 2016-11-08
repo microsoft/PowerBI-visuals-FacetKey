@@ -13,6 +13,7 @@ window['powerbi'] = {
 import * as sinon from 'sinon';
 import { expect } from 'chai';
 import * as $ from 'jquery';
+import * as _ from 'lodash';
 
 import * as dataConversion from './data';
 import mockDataView from './test_data/mockdataview';
@@ -45,6 +46,7 @@ describe('.convertDataview', () => {
         expect(dataPoint.rows[0].count).to.equal(2);
         expect(dataPoint.rows[0].facetInstanceColor).to.equal('rgba(0, 0, 0, 1)');
         expect(dataPoint.rows[0].iconClass).to.equal('fa fa-sitemap');
+        expect(dataPoint.rows[0].bucket).to.equal('level1');
     });
     it('should return the result with rangeValues', () => {
         const dataPoint = data['organization'][1];
@@ -142,7 +144,6 @@ describe('.aggregateDataPointMap', () => {
 
     describe('for dataPointsMap result', () => {
         it('should return datapoints map with correct values', () => {
-            const orgDataPoints = result.dataPointsMap['location'];
             let dp = result.dataPointsMap['location'][0];
 
             const expectDataPointsPropertyMatch = (dp, inputDp) => {
@@ -154,7 +155,7 @@ describe('.aggregateDataPointMap', () => {
                 expect(dp.instanceColor).to.equal(inputDp.instanceColor);
                 expect(dp.instanceIconClass).to.equal(inputDp.instanceIconClass);
             };
-            expect(dp.rows).to.deep.equal(['fakeRow3']);
+            expect(dp.rows[0].identity).to.equal('fakeId3');
             expect(dp.highlight).to.equal(2);
             expect(dp.instanceCount).to.equal(3);
             expectDataPointsPropertyMatch(dp, dataPointsMap['location'][0]);
@@ -163,20 +164,43 @@ describe('.aggregateDataPointMap', () => {
             expectDataPointsPropertyMatch(dp, dataPointsMap['organization'][0]);
         });
         it('should aggregate the datapoints on facetInstanceLabel', () => {
-            const orgDataPoints = result.dataPointsMap['organization'];
             let dp = result.dataPointsMap['organization'][0];
 
             expect(result.dataPointsMap['organization']).to.be.an('array').length(1);
             // note fakeRow1 and fakeRow2 both have same facetInstance label
-            expect(dp.rows).to.deep.equal(['fakeRow1', 'fakeRow2']);
+            expect(dp.rows[0].identity).to.equal('fakeId1');
+            expect(dp.rows[1].identity).to.equal('fakeId2');
             expect(dp.highlight).to.equal(4); // 2 + 2
             expect(dp.instanceCount).to.equal(7); // 4 + 3
 
             dp = result.dataPointsMap['location'][1];
             expect(result.dataPointsMap['location']).to.be.an('array').length(2);
-            expect(dp.rows).to.deep.equal(['fakeRow4', 'fakeRow5']);
+            expect(dp.rows[0].identity).to.equal('fakeId4');
+            expect(dp.rows[1].identity).to.equal('fakeId5');
             expect(dp.highlight).to.equal(6); // 6 + 0
             expect(dp.instanceCount).to.equal(10);
+        });
+        it('should bucket aggregated count and higlights on bucket value', () => {
+            let dp = result.dataPointsMap['organization'][0];
+
+            expect(dp.bucket['level1'].instanceCount).to.equal(4);
+            expect(dp.bucket['level2'].instanceCount).to.equal(3);
+            expect(dp.bucket['level1'].highlight).to.equal(2);
+            expect(dp.bucket['level2'].highlight).to.equal(2);
+
+            dp = result.dataPointsMap['location'][1];
+
+            expect(dp.bucket['level1'].instanceCount).to.equal(10);
+            expect(dp.bucket['level1'].highlight).to.equal(6);
+        });
+        it('should bucket counts if the rows have no bucket value', () => {
+            dataPointsMap = _.cloneDeep(mockDataPointsMap);
+            delete dataPointsMap.organization[0].rows[0].bucket;
+            delete dataPointsMap.organization[1].rows[0].bucket;
+            result = dataConversion.aggregateDataPointMap(dataPointsMap);
+
+            let dp = result.dataPointsMap['organization'][0];
+            expect(dp.bucket).to.be.undefined;
         });
         it('should apply rnage filter');
         it('should apply keyword filter');
@@ -191,13 +215,12 @@ describe('.aggregateDataPointMap', () => {
         });
         it('should return the correct aggregated values', () => {
             let rangePoint = result.rangeDataMap['class']['fa fa-globe'];
+            expect(rangePoint.rows[0].identity).to.equal('fakeId3');
+            expect(rangePoint.rows[1].identity).to.equal('fakeId4');
+            expect(rangePoint.rows[2].identity).to.equal('fakeId5');
+            delete rangePoint.rows;
             expect(rangePoint).to.deep.equal({
                 facetKey: 'class',
-                rows: [
-                  'fakeRow3',
-                  'fakeRow4',
-                  'fakeRow5'
-                ],
                 label: 'fa fa-globe',
                 count: 13,
                 highlight: 8,
@@ -207,12 +230,11 @@ describe('.aggregateDataPointMap', () => {
                 }
             });
             rangePoint = result.rangeDataMap['date']['2016-01-02'];
+            expect(rangePoint.rows[0].identity).to.equal('fakeId2');
+            expect(rangePoint.rows[1].identity).to.equal('fakeId4');
+            delete rangePoint.rows;
             expect(rangePoint).to.deep.equal({
                 facetKey: 'date',
-                rows: [
-                  'fakeRow2',
-                  'fakeRow4',
-                ],
                 label: '2016-01-02',
                 count: 11,
                 highlight: 8,

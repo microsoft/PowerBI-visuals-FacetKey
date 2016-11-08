@@ -18,3 +18,15 @@ dist
 
 todo.txt
 .npmrc
+
+# Uncharted facets (ignore non-source files)
+lib/uncharted-facets/bamboo
+lib/uncharted-facets/config.js
+lib/uncharted-facets/coverage
+lib/uncharted-facets/jspm_packages
+lib/uncharted-facets/public/facets.css
+lib/uncharted-facets/public/facets.min.css
+lib/uncharted-facets/public/facets.js
+lib/uncharted-facets/public/facets.min.js
+lib/uncharted-facets/public/facets.extern.js
+lib/uncharted-facets/public/javascripts/templates

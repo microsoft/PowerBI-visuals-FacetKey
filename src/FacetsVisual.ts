@@ -14,7 +14,7 @@ import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
 import * as _ from 'lodash';
 import * as $ from 'jquery';
 import { formatValue, convertDataview, aggregateDataPointMap, compareRangeValue, convertDataPointMap } from './data';
-import { findColumn, convertHex, otherLabelTemplate } from './utils';
+import { findColumn, convertHex, otherLabelTemplate, createSegments, HIGHLIGHT_COLOR } from './utils';
 
 const Facets = require('../lib/uncharted-facets/public/javascripts/main');
 
@@ -147,7 +147,11 @@ export default class FacetsVisual implements IVisual {
         const isMoreData = !isFreshData;
         const hasMoreData = !!this.dataView.metadata.segment;
         const rangeValueColumn = findColumn(this.dataView, 'rangeValue');
-        const loadAllDataBeforeRender = !!rangeValueColumn;
+        const bucketColumn = findColumn(this.dataView, 'bucket');
+        const loadAllDataBeforeRender = Boolean(rangeValueColumn) || Boolean(bucketColumn);
+
+        this.element.toggleClass('render-segments', Boolean(bucketColumn));
+
         this.previousFreshData = isFreshData ? (this.data || {}) : this.previousFreshData;
         this.retainFilters = this.previousFreshData.hasHighlight && this.retainFilters;
         isFreshData && !this.retainFilters && this.clearFilters();
@@ -522,7 +526,10 @@ export default class FacetsVisual implements IVisual {
             key: selected.facetKey,
             facets: [{
                 value: selected.instanceValue,
-                selected: selected.instanceCount,
+                selected: selected.bucket ? {
+                    count: selected.instanceCount,
+                    segments: createSegments(selected.bucket, HIGHLIGHT_COLOR, false, 100, true)
+                } : selected.instanceCount,
             }],
         })));
         if (reset && this.selectedInstances.length === 0) {

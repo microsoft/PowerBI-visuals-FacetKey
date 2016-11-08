@@ -2,10 +2,17 @@ import DataView = powerbi.DataView;
 import IValueFormatter = powerbi.visuals.IValueFormatter;
 import DataViewObjects = powerbi.DataViewObjects;
 import IColorInfo = powerbi.IColorInfo;
-import { findColumn, convertHex, otherLabelTemplate } from './utils';
+import {
+    findColumn,
+    convertHex,
+    convertToHSL,
+    getSegmentColor,
+    otherLabelTemplate,
+    createSegments,
+    HIGHLIGHT_COLOR,
+    COLOR_PALETTE
+} from './utils';
 import * as _ from 'lodash';
-
-const COLOR_PALETTE = ['#FF001F', '#FF8000', '#AC8000', '#95AF00', '#1BBB6A', '#B44AE7', '#DB00B0'];
 
 function checkRangeFilter(rangeFilter: any, rangeValues: RangeValue[]) {
     if (!rangeFilter) { return true; }
@@ -28,6 +35,18 @@ function checkKeywordFilters(keywordFilters: any[], dataPoint: DataPoint) {
     }, false);
 }
 
+function createBucket(targetObj: any, dp: DataPoint) {
+    if (!dp.rows[0].bucket) { return; }
+    const bucketName = String(dp.rows[0].bucket);
+    !targetObj.bucket && (targetObj.bucket = {});
+    if (!targetObj.bucket[bucketName]) {
+        targetObj.bucket[bucketName] = { instanceCount: dp.instanceCount, highlight: dp.highlight };
+    } else {
+        targetObj.bucket[bucketName].instanceCount += dp.instanceCount;
+        targetObj.bucket[bucketName].highlight += dp.highlight;
+    }
+}
+
 /**
  * Aggregate given dataPoints by facet intance.
  */
@@ -38,9 +57,9 @@ function aggregateDataPoints(dataPoints: DataPoint[], options: AggregateDataPoin
         aggregatedDataPoints: [],
         ignoredDataPoints: []
     };
-    dataPoints.forEach(dp => {
+    dataPoints.forEach((dp: DataPoint) => {
         const instanceLabel = dp.instanceLabel;
-        if (_.find(ignore, ignoreDp => ignoreDp.instanceLabel === dp.instanceLabel && ignoreDp.facetKey === dp.facetKey)) {
+        if (_.find(ignore, (ignoreDp: DataPoint) => ignoreDp.instanceLabel === dp.instanceLabel && ignoreDp.facetKey === dp.facetKey)) {
             return result.ignoredDataPoints.push(dp);
         }
 
@@ -61,10 +80,12 @@ function aggregateDataPoints(dataPoints: DataPoint[], options: AggregateDataPoin
                 instanceColor: dp.instanceColor,
                 instanceIconClass: dp.instanceIconClass,
             });
+            createBucket(instanceMap[instanceLabel], dp);
         } else {
             instanceMap[instanceLabel].highlight += dp.highlight;
             instanceMap[instanceLabel].instanceCount += dp.instanceCount;
             instanceMap[instanceLabel].rows.push(...dp.rows);
+            createBucket(instanceMap[instanceLabel], dp);
         }
     });
     return result;
@@ -77,7 +98,7 @@ function aggregateUsingRangeFilterOnly(dataPoints: DataPoint[], options: Aggrega
     const { rangeFilter, forEachDataPoint } = options;
     const instanceMap = {};
     const result: DataPoint[] = [];
-    dataPoints.forEach(dp => {
+    dataPoints.forEach((dp: DataPoint) => {
         const instanceLabel = dp.instanceLabel;
         dp.isSelected = true;
         forEachDataPoint && forEachDataPoint(dp);
@@ -98,6 +119,8 @@ function aggregateUsingRangeFilterOnly(dataPoints: DataPoint[], options: Aggrega
         instanceMap[instanceLabel].highlight += dp.highlight;
         instanceMap[instanceLabel].instanceCount += dp.instanceCount;
         instanceMap[instanceLabel].rows.push(...dp.rows);
+        // TODO: need test
+        createBucket(instanceMap[instanceLabel], dp);
     });
     return result;
 }
@@ -350,7 +373,7 @@ export function convertDataPointMap(aggregatedData: AggregatedData, params: Conv
             const countComparison = b.instanceCount - a.instanceCount;
             return countComparison === 0 ? a.instanceLabel.localeCompare(b.instanceLabel) : countComparison;
         });
-        dataPoints.forEach((dp: any) => {
+        dataPoints.forEach((dp: DataPoint) => {
             const {
                 highlight,
                 instanceValue,
@@ -359,32 +382,40 @@ export function convertDataPointMap(aggregatedData: AggregatedData, params: Conv
                 instanceCountFormatter,
                 instanceColor,
                 instanceIconClass,
+                bucket,
             } = dp;
             const selectionCountLabel = settings.display.selectionCount
                 ? `${formatValue(instanceCountFormatter, highlight, '')} / ${formatValue(instanceCountFormatter, instanceCount, '')}`
                 : formatValue(instanceCountFormatter, instanceCount, '');
             const nextColorOpacity = opacities.shift();
             const defaultColor = facetGroupColor && nextColorOpacity && convertHex(facetGroupColor, nextColorOpacity);
+            const facetColor = instanceColor || defaultColor || '#DDDDDD';
             const useDataPoint = hasHighlight ? !!highlight : true;
 
-            !!highlight && selectionGroup.facets.push({
-                selected: highlight,
+            const selectionSpec = {
+                selected: { count: highlight, countLabel: selectionCountLabel },
                 value: instanceValue,
-                countLabel: selectionCountLabel
-            });
-
-            // update datapoint color
-            dp.instanceColor = instanceColor || defaultColor || '#DDDDDD';
+            };
             const facet = {
                 icon: {
                      class: instanceIconClass,
-                     color: dp.instanceColor,
+                     color: facetColor,
                 },
                 count: instanceCount,
                 countLabel: formatValue(instanceCountFormatter, instanceCount, ''),
                 value: instanceValue,
                 label: instanceLabel,
             };
+
+            // add segments if there is bucket
+            if (bucket) {
+                const opacity = instanceColor ? 100 : nextColorOpacity;
+                selectionSpec.selected['segments'] = createSegments(bucket, HIGHLIGHT_COLOR, true);
+                facet['segments'] = createSegments(bucket, facetColor, false, opacity || 0);
+                opacity && (facet.icon.color = getSegmentColor(facetColor, opacity, 0, 1, false));
+            }
+
+            !!highlight && selectionGroup.facets.push(selectionSpec);
             dp.isSelected
                 ? data.selectedDataPoints.push(dp) && prependedSelectedFacets.push(facet)
                 : useDataPoint && facets.push(facet);

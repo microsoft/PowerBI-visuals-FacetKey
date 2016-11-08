@@ -27,6 +27,7 @@ interface RowObject {
     facetInstanceColor?: Date | string | number | boolean,
     iconClass?: Date | string | number | boolean,
     rangeValues?: RangeValue[],
+    bucket?: Date | string | number | boolean,
 }
 
 interface DataPoint {
@@ -40,6 +41,7 @@ interface DataPoint {
     instanceCountFormatter: any,
     instanceColor: string,
     instanceIconClass: string,
+    bucket?: any,
     rangeValues?: RangeValue[],
     isSelected?: boolean,
 }

@@ -8,19 +8,7 @@
     </div>
     <div class="facet-block">
         <div class="facet-bar-container">
-            <div class="facet-bar-base facet-bar-background" style="width:{{percentage count total}}%;"></div>
-			{{#ifCond selected '>=' 0}}
-                <div class="facet-bar-base facet-bar-selected" style="width:{{percentage selected total}}%;"></div>
-			{{/ifCond}}
-
-			{{#ifCond selected '===' undefined}}
-				{{#if icon.color}}
-                    <div class="facet-bar-base" style="width:{{percentage count total}}%; background-color:{{icon.color}}"></div>
-				{{else}}
-                    <div class="facet-bar-base facet-bar-default" style="width:{{percentage count total}}%;"></div>
-				{{/if}}
-
-			{{/ifCond}}
+			{{> facetVertical_bar}}
         </div>
         <div class="facet-label-container">
             <span class="facet-label-count">

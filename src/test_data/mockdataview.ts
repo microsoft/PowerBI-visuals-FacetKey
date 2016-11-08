@@ -63,6 +63,16 @@ export default {
                     dateTime: true,
                 }
             },
+            {
+                format: '',
+                displayName: 'uncertainty',
+                roles: {
+                    bucket: true,
+                },
+                type: {
+                    text: true,
+                }
+            },
         ]
     },
     categorical : {
@@ -82,6 +92,7 @@ export default {
                 'rgba(0, 0, 0, 1)',
                 'fa fa-sitemap',
                 '2016/01/01',
+                'level1',
             ],
             [
                 'organization',
@@ -90,6 +101,7 @@ export default {
                 'rgba(0, 0, 0, 1)',
                 'fa fa-sitemap',
                 '2016/01/02',
+                'level2',
             ],
             [
                 'location',
@@ -98,6 +110,7 @@ export default {
                 'rgba(255, 255, 255 1)',
                 'fa fa-globe',
                 '2016/01/03',
+                'level1',
             ],
         ],
         identity: [

@@ -31,6 +31,11 @@
       "displayName": "Range Value"
     },
     {
+      "name": "bucket",
+      "kind": 0,
+      "displayName": "Bucket"
+    },
+    {
       "name": "facetInstanceColor",
       "kind": 0,
       "displayName": "Color",
@@ -59,6 +64,9 @@
           },
           "rangeValue": {
             "max": 5
+          },
+          "bucket": {
+            "max": 1
           },
           "iconClass": {
             "max": 1
@@ -94,6 +102,11 @@
             {
               "bind": {
                 "to": "rangeValue"
+              }
+            },
+            {
+              "bind": {
+                "to": "bucket"
               }
             },
             {
