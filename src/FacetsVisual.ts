@@ -523,10 +523,10 @@ export default class FacetsVisual implements IVisual {
             key: selected.facetKey,
             facets: [{
                 value: selected.instanceValue,
-                selected: {
+                selected: selected.bucket ? {
                     count: selected.instanceCount,
                     segments: createSegments(selected.bucket, HIGHLIGHT_COLOR, false, 100, true)
-                },
+                } : selected.instanceCount,
             }],
         })));
         if (reset && this.selectedInstances.length === 0) {
