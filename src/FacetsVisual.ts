@@ -142,13 +142,16 @@ export default class FacetsVisual implements IVisual {
         this.previousData = this.data || {};
         this.dataView = options.dataViews[0];
         this.settings = this.validateSettings($.extend(true, {}, this.settings, this.dataView.metadata.objects));
-        this.element.toggleClass('render-segments', Boolean(findColumn(this.dataView, 'bucket')));
 
         const isFreshData = (options['operationKind'] === VisualDataChangeOperationKind.Create);
         const isMoreData = !isFreshData;
         const hasMoreData = !!this.dataView.metadata.segment;
         const rangeValueColumn = findColumn(this.dataView, 'rangeValue');
-        const loadAllDataBeforeRender = !!rangeValueColumn;
+        const bucketColumn = findColumn(this.dataView, 'bucket');
+        const loadAllDataBeforeRender = Boolean(rangeValueColumn) || Boolean(bucketColumn);
+
+        this.element.toggleClass('render-segments', Boolean(bucketColumn));
+
         this.previousFreshData = isFreshData ? (this.data || {}) : this.previousFreshData;
         this.retainFilters = this.previousFreshData.hasHighlight && this.retainFilters;
         isFreshData && !this.retainFilters && this.clearFilters();
