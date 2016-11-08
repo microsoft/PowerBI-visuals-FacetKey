@@ -2,11 +2,17 @@ import DataView = powerbi.DataView;
 import IValueFormatter = powerbi.visuals.IValueFormatter;
 import DataViewObjects = powerbi.DataViewObjects;
 import IColorInfo = powerbi.IColorInfo;
-import { findColumn, convertHex, convertToHSL, getSegmentColor, otherLabelTemplate } from './utils';
+import {
+    findColumn,
+    convertHex,
+    convertToHSL,
+    getSegmentColor,
+    otherLabelTemplate,
+    createSegments,
+    HIGHLIGHT_COLOR,
+    COLOR_PALETTE
+} from './utils';
 import * as _ from 'lodash';
-
-const COLOR_PALETTE = ['#FF001F', '#FF8000', '#AC8000', '#95AF00', '#1BBB6A', '#B44AE7', '#DB00B0'];
-const HIGHLIGHT_COLOR = '#00c6e1';
 
 function checkRangeFilter(rangeFilter: any, rangeValues: RangeValue[]) {
     if (!rangeFilter) { return true; }
@@ -403,15 +409,10 @@ export function convertDataPointMap(aggregatedData: AggregatedData, params: Conv
 
             // add segments if there is bucket
             if (bucket) {
-                const createSegment = (countType: string, mainColor: string) =>
-                    _.sortBy(Object.keys(bucket), (key: string) => {
-                        const parsedDate = Date.parse(key);
-                        return !isNaN(<any>key) ? Number(key) : (isNaN(parsedDate) ? key : parsedDate);
-                    })
-                    .map((key, index, array) => ({ count: bucket[key][countType], color: getSegmentColor(mainColor, nextColorOpacity, index, array.length, !!highlight) }));
-                selectionSpec.selected['segments'] = createSegment('highlight', HIGHLIGHT_COLOR);
-                facet['segments'] = createSegment('instanceCount', facetColor);
-                facet.icon.color = getSegmentColor(facetColor, nextColorOpacity, 0, 1, false);
+                const opacity = instanceColor ? 100 : nextColorOpacity;
+                selectionSpec.selected['segments'] = createSegments(bucket, HIGHLIGHT_COLOR, true);
+                facet['segments'] = createSegments(bucket, facetColor, false, opacity || 0);
+                opacity && (facet.icon.color = getSegmentColor(facetColor, opacity, 0, 1, false));
             }
 
             !!highlight && selectionGroup.facets.push(selectionSpec);

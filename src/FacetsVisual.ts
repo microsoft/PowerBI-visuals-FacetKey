@@ -14,7 +14,7 @@ import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
 import * as _ from 'lodash';
 import * as $ from 'jquery';
 import { formatValue, convertDataview, aggregateDataPointMap, compareRangeValue, convertDataPointMap } from './data';
-import { findColumn, convertHex, otherLabelTemplate } from './utils';
+import { findColumn, convertHex, otherLabelTemplate, createSegments, HIGHLIGHT_COLOR } from './utils';
 
 const Facets = require('../lib/uncharted-facets/public/javascripts/main');
 
@@ -523,7 +523,10 @@ export default class FacetsVisual implements IVisual {
             key: selected.facetKey,
             facets: [{
                 value: selected.instanceValue,
-                selected: selected.instanceCount,
+                selected: {
+                    count: selected.instanceCount,
+                    segments: createSegments(selected.bucket, HIGHLIGHT_COLOR, false, 100, true)
+                },
             }],
         })));
         if (reset && this.selectedInstances.length === 0) {

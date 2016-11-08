@@ -1,6 +1,9 @@
 import DataView = powerbi.DataView;
 import * as _ from 'lodash';
 
+export const COLOR_PALETTE = ['#FF001F', '#FF8000', '#AC8000', '#95AF00', '#1BBB6A', '#B44AE7', '#DB00B0'];
+export const HIGHLIGHT_COLOR = '#00c6e1';
+
 function roundToNearestTen(num: number) {
     return num <= 10 ? num : (Math.floor(num * 0.1) * 10);
 }
@@ -73,7 +76,7 @@ export function findColumn(dataView: DataView, dataRoleName: string, multi?: boo
 /**
  * Return a hsl color string based on the given color, opacity, index, total number of segments, and boolean indicating it's highlight or not
  */
-export function getSegmentColor(baseColor: string, opacity: number, segmentIndex: number, totalNumSegments:number, isHighlight: boolean): string {
+export function getSegmentColor(baseColor: string, opacity: number = 100, segmentIndex: number, totalNumSegments: number, isHighlight: boolean): string {
     const h = convertToHSL(baseColor)[0] * 360;
     const [s, minL, maxL] = isHighlight
         ? [100, 50, 90]
@@ -82,8 +85,22 @@ export function getSegmentColor(baseColor: string, opacity: number, segmentIndex
     const n = range / totalNumSegments;
     const l = minL + (n * segmentIndex);
     return `hsla(${h}, ${s}%, ${l}%, ${opacity / 100})`;
-};
+}
 
+/**
+ * Create a facet bar segments data from the bucket data with given color
+ */
+export function createSegments(bucket: any, mainColor: string, isHighlight: boolean, opacity: number = 100, useHighlightColor?: boolean) {
+    const countType = isHighlight ? 'highlight' : 'instanceCount';
+    return _.sortBy(Object.keys(bucket), (key: string) => {
+        const parsedDate = Date.parse(key);
+        return !isNaN(<any>key) ? Number(key) : (isNaN(parsedDate) ? key : parsedDate);
+    })
+    .map((key, index, array) => ({
+        count: bucket[key][countType],
+        color: getSegmentColor(mainColor, opacity, index, array.length, useHighlightColor || isHighlight)
+    }));
+}
 
 export function otherLabelTemplate(remaining: number) {
     return `Other (${roundToNearestTen(remaining)}${remaining < 10 || !(remaining % 10) ? '' : '+'})`;
