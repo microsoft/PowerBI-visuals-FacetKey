@@ -14,7 +14,7 @@ import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
 import * as _ from 'lodash';
 import * as $ from 'jquery';
 import { formatValue, convertDataview, aggregateDataPointMap, compareRangeValue, convertDataPointMap } from './data';
-import { findColumn, convertHex, otherLabelTemplate, createSegments, HIGHLIGHT_COLOR } from './utils';
+import { findColumn, hexToRgba, otherLabelTemplate, createSegments, HIGHLIGHT_COLOR } from './utils';
 
 const Facets = require('../lib/uncharted-facets/public/javascripts/main');
 

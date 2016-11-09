@@ -4,7 +4,7 @@ import DataViewObjects = powerbi.DataViewObjects;
 import IColorInfo = powerbi.IColorInfo;
 import {
     findColumn,
-    convertHex,
+    hexToRgba,
     convertToHSL,
     getSegmentColor,
     otherLabelTemplate,
@@ -290,86 +290,86 @@ export function aggregateDataPointMap(dataPointsMap: any, options: AggregateData
     return aggregatedData;
 };
 
-export function convertDataPointMap(aggregatedData: AggregatedData, params: ConvertDataPointMapParams) {
-    const { hasHighlight, colors, rangeFilter, settings } = params;
+export function convertDataPointMap(aggregatedData: AggregatedData, options: ConvertDataPointMapOptions) {
+    const { hasHighlight, colors, rangeFilter, settings } = options;
     const rangeFacetState = JSON.parse(settings.facetState.rangeFacet);
     const normalFacetState = JSON.parse(settings.facetState.normalFacet);
     const colorPalette = COLOR_PALETTE.slice().concat(colors.map((color: IColorInfo) => color.value));
     const data = {
         aggregatedData: aggregatedData,
         hasHighlight: hasHighlight,
-        facetsData: <any>[],
+        facetsData: <FacetGroup[]>[],
         facetsSelectionData: <any>[],
-        maxFacetInstanceCount: 0,
         selectedDataPoints: <DataPoint[]>[],
     };
+    let maxFacetInstanceCount = 0;
 
     // Construct the data for range facets
-    Object.keys(aggregatedData.rangeDataMap).forEach((key: string) => {
-        const dataPoints = aggregatedData.rangeDataMap[key];
-        const rangeKeys = Object.keys(dataPoints);
-        const group = {
-            label: key.replace(/_/, ' ').split(/\W/).map((word: string) => word.charAt(0).toUpperCase() + word.slice(1) ).join(' '),
-            key: key,
-            facets: <any>[], // initial facet
-            order: (rangeFacetState[key] && rangeFacetState[key].order) || 0,
-            isRange: true,
-            collapsed: !!rangeFacetState[key] && rangeFacetState[key].collapsed,
-        };
-        const selectionSlices = {};
-        const facet = {
-            value: key,
-            selection: {},
-            histogram: {
-                slices: rangeKeys.map((rangeKey: any) => {
-                    selectionSlices[rangeKey] = hasHighlight ? dataPoints[rangeKey].highlight : dataPoints[rangeKey].subSelection;
-                    return dataPoints[rangeKey];
-                }).sort((a: any, b: any) => compareRangeValue(a.metadata.rangeValue, b.metadata.rangeValue))
-            }
-        };
-
-        // set flag to the first and last item of the slices
-        facet.histogram.slices[0].metadata.isFirst = true;
-        facet.histogram.slices[facet.histogram.slices.length - 1].metadata.isLast = true;
-
-        // set initial selection state
-        facet.selection['slices'] = selectionSlices;
-        rangeFilter && rangeFilter[key] && (facet.selection['range'] = {
-            from: rangeFilter[key].from.index,
-            to: rangeFilter[key].to.index,
-        });
-
-        group.facets.push(facet);
-        data.facetsData.push(group);
-    });
+    // Object.keys(aggregatedData.rangeDataMap).forEach((key: string) => {
+    //     const dataPoints = aggregatedData.rangeDataMap[key];
+    //     const rangeKeys = Object.keys(dataPoints);
+    //     const group = {
+    //         label: key.replace(/_/, ' ').split(/\W/).map((word: string) => word.charAt(0).toUpperCase() + word.slice(1) ).join(' '),
+    //         key: key,
+    //         facets: <any>[], // initial facet
+    //         order: (rangeFacetState[key] && rangeFacetState[key].order) || 0,
+    //         isRange: true,
+    //         collapsed: !!rangeFacetState[key] && rangeFacetState[key].collapsed,
+    //     };
+    //     const selectionSlices = {};
+    //     const facet = {
+    //         value: key,
+    //         selection: {},
+    //         histogram: {
+    //             slices: rangeKeys.map((rangeKey: any) => {
+    //                 selectionSlices[rangeKey] = hasHighlight ? dataPoints[rangeKey].highlight : dataPoints[rangeKey].subSelection;
+    //                 return dataPoints[rangeKey];
+    //             }).sort((a: any, b: any) => compareRangeValue(a.metadata.rangeValue, b.metadata.rangeValue))
+    //         }
+    //     };
+    //
+    //     // set flag to the first and last item of the slices
+    //     facet.histogram.slices[0].metadata.isFirst = true;
+    //     facet.histogram.slices[facet.histogram.slices.length - 1].metadata.isLast = true;
+    //
+    //     // set initial selection state
+    //     facet.selection['slices'] = selectionSlices;
+    //     rangeFilter && rangeFilter[key] && (facet.selection['range'] = {
+    //         from: rangeFilter[key].from.index,
+    //         to: rangeFilter[key].to.index,
+    //     });
+    //
+    //     group.facets.push(facet);
+    //     data.facetsData.push(group);
+    // });
 
     // Construct the data for normal facets
     Object.keys(aggregatedData.dataPointsMap).forEach((key: string) => {
         const dataPoints = aggregatedData.dataPointsMap[key];
 
-        let facets = <any>[];
-        const prependedSelectedFacets = <any>[];
+        const facets: Facet[] = [];
+        const prependedSelectedFacets: Facet[] = [];
 
         // highlighted facets
         const selectionGroup = {
             key: key,
             facets: <any>[],
         };
-        const facetGroup = {
+        const facetGroup: FacetGroup = {
             label: dataPoints[0].facetLabel,
             key: key,
-            facets: <any>[], // initial facet
-            more: <any>0,
+            facets: [], // initial facet
+            more: 0,
+            total: 0,
 
-            // below properties are used keeping track of ths states in pbi visual
-            allFacets: <any>[],
+            allFacets: [],
             order: (normalFacetState[key] && normalFacetState[key].order) || 0,
             collapsed: !!normalFacetState[key] && normalFacetState[key].collapsed,
         };
         const facetGroupColor = colorPalette.shift();
         const opacities = [100, 60, 35];
 
-        dataPoints.sort((a: any, b: any) => {
+        dataPoints.sort((a: DataPoint, b: DataPoint) => {
             const countComparison = b.instanceCount - a.instanceCount;
             return countComparison === 0 ? a.instanceLabel.localeCompare(b.instanceLabel) : countComparison;
         });
@@ -388,7 +388,7 @@ export function convertDataPointMap(aggregatedData: AggregatedData, params: Conv
                 ? `${formatValue(instanceCountFormatter, highlight, '')} / ${formatValue(instanceCountFormatter, instanceCount, '')}`
                 : formatValue(instanceCountFormatter, instanceCount, '');
             const nextColorOpacity = opacities.shift();
-            const defaultColor = facetGroupColor && nextColorOpacity && convertHex(facetGroupColor, nextColorOpacity);
+            const defaultColor = facetGroupColor && nextColorOpacity && hexToRgba(facetGroupColor, nextColorOpacity);
             const facetColor = instanceColor || defaultColor || '#DDDDDD';
             const useDataPoint = hasHighlight ? !!highlight : true;
 
@@ -396,7 +396,7 @@ export function convertDataPointMap(aggregatedData: AggregatedData, params: Conv
                 selected: { count: highlight, countLabel: selectionCountLabel },
                 value: instanceValue,
             };
-            const facet = {
+            const facet: Facet = {
                 icon: {
                      class: instanceIconClass,
                      color: facetColor,
@@ -420,11 +420,10 @@ export function convertDataPointMap(aggregatedData: AggregatedData, params: Conv
                 ? data.selectedDataPoints.push(dp) && prependedSelectedFacets.push(facet)
                 : useDataPoint && facets.push(facet);
 
-            data.maxFacetInstanceCount = Math.max(data.maxFacetInstanceCount, instanceCount);
+            maxFacetInstanceCount = Math.max(maxFacetInstanceCount, instanceCount);
         });
-        // prepend sorted selected facets to the facets array
-        prependedSelectedFacets.sort((a: any, b: any) => b.count - a.count);
-        facets = prependedSelectedFacets.concat(facets);
+        // prepend selected facets to the facets array
+        facets.unshift(...prependedSelectedFacets);
 
         // Limit the number of facets to display
         const initialNumFacets = Math.max(settings.facetCount.initial, prependedSelectedFacets.length);
@@ -434,15 +433,13 @@ export function convertDataPointMap(aggregatedData: AggregatedData, params: Conv
             { label: otherLabelTemplate(remainingFacetsCount), class: 'other', clickable: false },
             { label: 'More', class: 'more', clickable: true },
         ];
-
         facetGroup.allFacets = facets;
 
-        // Display groups with facets in it (length is always > 0 when non-highlight mode)
         facets.length > 0 && data.facetsData.push(facetGroup);
         data.facetsSelectionData.push(selectionGroup);
     });
 
-    data.facetsData.forEach((group: any) => group.total = data.maxFacetInstanceCount) ;
+    data.facetsData.forEach((group: FacetGroup) => group.total = maxFacetInstanceCount) ;
     data.facetsData.sort((a: any, b: any) => a.order - b.order);
 
     return data;

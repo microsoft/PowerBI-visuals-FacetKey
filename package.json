@@ -42,7 +42,6 @@
     "chokidar": "^1.6.1",
     "connect": "^3.5.0",
     "handlebars": "^4.0.5",
-    "inject-loader": "^3.0.0-beta2",
     "json": "^9.0.4",
     "karma": "^1.3.0",
     "karma-chrome-launcher": "^2.0.0",

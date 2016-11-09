@@ -45,7 +45,7 @@ function toHSL(rgb) {
 /**
  * Convert the hex color code to the equivalent rgba color code
  */
-export function convertHex(hex: string, opacity: number = 100) {
+export function hexToRgba(hex: string, opacity: number = 100) {
     hex = hex.replace('#', '');
     const r = parseInt(hex.substring(0, 2), 16);
     const g = parseInt(hex.substring(2, 4), 16);
@@ -54,16 +54,16 @@ export function convertHex(hex: string, opacity: number = 100) {
 }
 
 /**
- * convert hex or rgba color to hsl color
+ * converts hex or rgba color to hsl color
  */
 export function convertToHSL(colorString: string) {
-    const rgba = colorString.indexOf('#') >= 0 ? convertHex(colorString) : colorString;
+    const rgba = colorString.indexOf('#') >= 0 ? hexToRgba(colorString) : colorString;
     const [r, g, b] = rgba.substring(rgba.indexOf('(') + 1, rgba.indexOf(')')).split(',').map(n => Number(n));
     return toHSL([r, g, b]);
 }
 
 /**
- * Find and return the the column that matches the given data role name
+ * Finds and return the the column that matches the given data role name
  */
 export function findColumn(dataView: DataView, dataRoleName: string, multi?: boolean): any {
     const columns = dataView.metadata.columns;
@@ -74,7 +74,7 @@ export function findColumn(dataView: DataView, dataRoleName: string, multi?: boo
 }
 
 /**
- * Return a hsl color string based on the given color, opacity, index, total number of segments, and boolean indicating it's highlight or not
+ * Returns a hsl color string based on the given color, opacity, index, total number of segments, and boolean indicating it's highlight or not
  */
 export function getSegmentColor(baseColor: string, opacity: number = 100, segmentIndex: number, totalNumSegments: number, isHighlight: boolean): string {
     const h = convertToHSL(baseColor)[0] * 360;
@@ -88,7 +88,7 @@ export function getSegmentColor(baseColor: string, opacity: number = 100, segmen
 }
 
 /**
- * Create a facet bar segments data from the bucket data with given color
+ * Creates a facet bar segments data from the bucket data with given color
  */
 export function createSegments(bucket: any, mainColor: string, isHighlight: boolean, opacity: number = 100, useHighlightColor?: boolean) {
     const countType = isHighlight ? 'highlight' : 'instanceCount';
@@ -102,6 +102,9 @@ export function createSegments(bucket: any, mainColor: string, isHighlight: bool
     }));
 }
 
+/**
+ * Creates a label displaying remaining number of facets for a facet group.
+ */
 export function otherLabelTemplate(remaining: number) {
     return `Other (${roundToNearestTen(remaining)}${remaining < 10 || !(remaining % 10) ? '' : '+'})`;
 }
