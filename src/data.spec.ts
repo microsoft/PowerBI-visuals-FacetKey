@@ -23,6 +23,8 @@ import mockDataPointsMap from './test_data/mockDataPointsMap';
 import mockAggregatedData from './test_data/mockAggregatedData';
 import DataViewObjects = powerbi.DataViewObjects;
 
+describe('Data Conversion Functions', () => {
+
 describe('.convertDataview', () => {
     let dataView;
     let data;
@@ -324,7 +326,7 @@ describe('.convertDataPointMap', () => {
         expect(locGroup.facets).to.be.length(2);
         expect(locGroup.facets[0].count > locGroup.facets[1].count).to.be.true;
     });
-    it('should sort facets with same count by alphabetical order', () => {
+    it('should sort facets by alphabetical order if they have same count', () => {
         aggregatedData.dataPointsMap.location[0].instanceCount = 0;
         aggregatedData.dataPointsMap.location[1].instanceCount = 0;
 
@@ -340,7 +342,7 @@ describe('.convertDataPointMap', () => {
         expect(locGroup.facets[1].label).to.equal('New York');
     });
     /* Colors */
-    it('should assign facests default colors of 3 diffrent opacity and grey default color', () => {
+    it('should assign facests default colors of 3 diffrent opacities and grey default color', () => {
         sinon.stub(utils, 'getSegmentColor', (baseColor) => baseColor);
         const locationDps = aggregatedData.dataPointsMap.location;
         locationDps.push(...(_.cloneDeep(locationDps)));
@@ -363,7 +365,7 @@ describe('.convertDataPointMap', () => {
 
         utils.getSegmentColor['restore']();
     });
-    it('should choose colors from provided colors when no more colors are in default palette', () => {
+    it('should choose colors from provided colors when the default color palette has no more color', () => {
         sinon.stub(utils, 'getSegmentColor', (baseColor) => baseColor);
         const locationDps = aggregatedData.dataPointsMap.location;
         locationDps.map((dp: DataPoint) => (dp.instanceColor = undefined) && dp);
@@ -379,7 +381,7 @@ describe('.convertDataPointMap', () => {
         expect(locGroup.facets[0].icon.color).to.equal('rgba(255, 255, 255, 1)');
         utils.getSegmentColor['restore']();
     });
-    it('should assign maximum instanceCount to each facetGroup data', () => {
+    it('should assign maximum instanceCount to each facetGroup', () => {
         result = dataConversion.convertDataPointMap(aggregatedData, {
             colors: [],
             hasHighlight: false,
@@ -391,7 +393,7 @@ describe('.convertDataPointMap', () => {
         expect(orgGroup.total).to.equal(10);
         expect(locGroup.total).to.equal(10);
     });
-    it('should limit number of facets data by initial facetCountSetting', () => {
+    it('should limit the number of facets by initial facetCountSetting', () => {
         result = dataConversion.convertDataPointMap(aggregatedData, {
             colors: [],
             hasHighlight: false,
@@ -427,10 +429,10 @@ describe('.convertDataPointMap', () => {
         const locGroup = <FacetGroup>getFacetGroup(facetsData, 'location');
         expect(locGroup.more).to.deep.equal(0);
     });
-    it('should order facet group based on provided facetState', () => {
+    it('should order facet groups based on provided facetState', () => {
         const facetState = {
-            rangeFacet: '{}',
-            normalFacet: '{"organization":{"order":1},"location":{"order":0}}',
+            rangeFacet: '{"date":{"order":2}}',
+            normalFacet: '{"organization":{"order":3},"location":{"order":1}}',
         };
         result = dataConversion.convertDataPointMap(aggregatedData, {
             colors: [],
@@ -438,13 +440,15 @@ describe('.convertDataPointMap', () => {
             settings: _.assign({}, DEFAULT_SETTINGS, { facetState: facetState })
         });
         const facetsData = result.facetsData;
-        expect(facetsData[0].key).to.equal('location');
-        expect(facetsData[1].key).to.equal('organization');
+        expect(facetsData[0].key).to.equal('icon_class');
+        expect(facetsData[1].key).to.equal('location');
+        expect(facetsData[2].key).to.equal('date');
+        expect(facetsData[3].key).to.equal('organization');
     });
-    it('should set collased flag on facet group based on provided facetState', () => {
+    it('should set collased flag on each facet group based on the provided facetState', () => {
         const facetState = {
-            rangeFacet: '{}',
-            normalFacet: '{"location":{"order":1,"collapsed":true}}',
+            rangeFacet: '{"date":{"order":2}}',
+            normalFacet: '{"organization":{"order":3},"location":{"order":1,"collapsed":true}}',
         };
         result = dataConversion.convertDataPointMap(aggregatedData, {
             colors: [],
@@ -452,10 +456,10 @@ describe('.convertDataPointMap', () => {
             settings: _.assign({}, DEFAULT_SETTINGS, { facetState: facetState })
         });
         const facetsData = result.facetsData;
-        expect(facetsData[0].key).to.equal('organization');
-        expect(facetsData[0].collapsed).to.be.false;
         expect(facetsData[1].key).to.equal('location');
         expect(facetsData[1].collapsed).to.be.true;
+        expect(facetsData[3].key).to.equal('organization');
+        expect(facetsData[3].collapsed).to.be.false;
     });
     it('should populate facets selection data if there are highlights', () => {
         aggregatedData.dataPointsMap.organization.forEach((dp) => { delete dp.bucket; });
@@ -501,7 +505,7 @@ describe('.convertDataPointMap', () => {
         });
         const facetsData = result.facetsData;
         const locGroup = <FacetGroup>getFacetGroup(facetsData, 'location');
-        expect(facetsData).to.have.length(1);
+        expect(facetsData).to.have.length(3); // 2 range facet group + location facet group
         expect(locGroup.facets).to.have.length(1);
     });
     it('should return selected data points', () => {
@@ -520,7 +524,7 @@ describe('.convertDataPointMap', () => {
         expect(result.selectedDataPoints[0].instanceValue).to.equal('selected2');
         expect(result.selectedDataPoints[1].instanceValue).to.equal('selected1');
     });
-    it('should convert selected datapoints and prepend them to facets list in descending order', () => {
+    it('should convert selected datapoints to facets data and prepend them to facets list in descending order', () => {
         const locationDps = aggregatedData.dataPointsMap.location;
         locationDps.push(...(_.cloneDeep(locationDps)));
         locationDps[2].isSelected = true;
@@ -542,7 +546,7 @@ describe('.convertDataPointMap', () => {
         expect(locGroup.facets[0].value).to.equal('prepend2');
         expect(locGroup.facets[1].value).to.equal('prepend1');
     });
-    it('should create segments data for each facet when there is a bucket', () => {
+    it('should create segments data for each facet when there is bucket data', () => {
         const stub = sinon.stub(utils, 'createSegments', (bucket, color, isHighlight, opacity) => {
             const seg = isHighlight ? 'fakeHighlightSeg' : 'fakeSeg';
             return `${seg}:${JSON.stringify(bucket)}:${color}:${opacity}`;
@@ -561,9 +565,9 @@ describe('.convertDataPointMap', () => {
         expect(selectionLocGroup.facets[0].selected.segments).to.deep.equal('fakeHighlightSeg:{"level1":{"instanceCount":10,"highlight":6}}:#00c6e1:undefined');
         stub.restore();
     });
-    it('should assign colors with diffrent opacity to segments and icon', () => {
+    it('should assign colors with diffrent opacities to segments and icon', () => {
         sinon.stub(utils, 'createSegments', (bucket, color, isHighlight, opacity) => 'opacity:' + opacity);
-        sinon.stub(utils, 'getSegmentColor',(arg1, arg2, arg3, arg4, arg5) => '' + arg1 + arg2 + arg3 + arg4 + arg5)
+        sinon.stub(utils, 'getSegmentColor', (arg1, arg2, arg3, arg4, arg5) => '' + arg1 + arg2 + arg3 + arg4 + arg5);
 
         const locationDps = aggregatedData.dataPointsMap.location;
         locationDps.push(...(_.cloneDeep(locationDps)));
@@ -593,4 +597,101 @@ describe('.convertDataPointMap', () => {
         utils.getSegmentColor['restore']();
         utils.createSegments['restore']();
     });
+
+    /* Range Facets */
+    it('should return range facet group', () => {
+        const facetState = {
+            normalFacet: '{}',
+            rangeFacet: '{"date":{"order":1,"collapsed":true}}',
+        };
+        result = dataConversion.convertDataPointMap(aggregatedData, {
+            colors: [],
+            hasHighlight: false,
+            settings: _.assign({}, DEFAULT_SETTINGS, { facetState: facetState })
+        });
+        const facetsData = result.facetsData;
+        const dateGroup = <FacetGroup>getFacetGroup(facetsData, 'date');
+        const classGroup = <FacetGroup>getFacetGroup(facetsData, 'icon_class');
+
+        expect(dateGroup.label).to.equal('Date');
+        expect(dateGroup.order).to.equal(1);
+        expect(dateGroup.isRange).to.equal(true);
+        expect(dateGroup.collapsed).to.equal(true);
+
+        expect(classGroup.label).to.equal('Icon Class');
+        expect(classGroup.order).to.equal(0);
+        expect(classGroup.isRange).to.equal(true);
+        expect(classGroup.collapsed).to.equal(false);
+    });
+    it('should return range facet slices sorted by range value', () => {
+        result = dataConversion.convertDataPointMap(aggregatedData, {
+            colors: [],
+            hasHighlight: false,
+            settings: DEFAULT_SETTINGS
+        });
+        const facetsData = result.facetsData;
+        const dateGroup = <FacetGroup>getFacetGroup(facetsData, 'date');
+        const classGroup = <FacetGroup>getFacetGroup(facetsData, 'icon_class');
+
+        expect(dateGroup.facets[0].value).to.equal('date');
+        expect(dateGroup.facets[0]['histogram'].slices[0].label).to.equal('2016-01-01');
+        expect(dateGroup.facets[0]['histogram'].slices[1].label).to.equal('2016-01-02');
+        expect(dateGroup.facets[0]['histogram'].slices[2].label).to.equal('2016-01-04');
+        expect(dateGroup.facets[0]['histogram'].slices[0].metadata.isFirst).to.be.true;
+        expect(dateGroup.facets[0]['histogram'].slices[2].metadata.isLast).to.be.true;
+
+        expect(classGroup.facets[0].value).to.equal('icon_class');
+        expect(classGroup.facets[0]['histogram'].slices[0].label).to.equal('fa fa-globe');
+        expect(classGroup.facets[0]['histogram'].slices[1].label).to.equal('fa fa-sitemap');
+        expect(classGroup.facets[0]['histogram'].slices[0].metadata.isFirst).to.be.true;
+        expect(classGroup.facets[0]['histogram'].slices[1].metadata.isLast).to.be.true;
+    });
+    it('should return subselection range facet slices', () => {
+        result = dataConversion.convertDataPointMap(aggregatedData, {
+            colors: [],
+            hasHighlight: false,
+            settings: DEFAULT_SETTINGS
+        });
+        const facetsData = result.facetsData;
+        const dateGroup = <FacetGroup>getFacetGroup(facetsData, 'date');
+
+        expect(Object.keys(dateGroup.facets[0]['selection'].slices)).to.have.length(3);
+        expect(dateGroup.facets[0]['selection'].slices['2016-01-01']).to.equal(11);
+        expect(dateGroup.facets[0]['selection'].slices['2016-01-02']).to.equal(2);
+        expect(dateGroup.facets[0]['selection'].slices['2016-01-04']).to.equal(7);
+    });
+    it('should return highlight range facet slices', () => {
+        result = dataConversion.convertDataPointMap(aggregatedData, {
+            colors: [],
+            hasHighlight: true,
+            settings: DEFAULT_SETTINGS
+        });
+        const facetsData = result.facetsData;
+        const dateGroup = <FacetGroup>getFacetGroup(facetsData, 'date');
+
+        expect(Object.keys(dateGroup.facets[0]['selection'].slices)).to.have.length(3);
+        expect(dateGroup.facets[0]['selection'].slices['2016-01-01']).to.equal(8);
+        expect(dateGroup.facets[0]['selection'].slices['2016-01-02']).to.equal(0);
+        expect(dateGroup.facets[0]['selection'].slices['2016-01-04']).to.equal(4);
+    });
+    it('should set selection range based on the provided range filter', () => {
+        result = dataConversion.convertDataPointMap(aggregatedData, {
+            rangeFilter: { date: { from: { index: 1 }, to: { index: 3 }}},
+            colors: [],
+            hasHighlight: true,
+            settings: DEFAULT_SETTINGS
+        });
+        const facetsData = result.facetsData;
+        const dateGroup = <FacetGroup>getFacetGroup(facetsData, 'date');
+        const classGroup = <FacetGroup>getFacetGroup(facetsData, 'icon_class');
+
+        expect(dateGroup.facets[0]['selection'].range.from).to.equal(1);
+        expect(dateGroup.facets[0]['selection'].range.to).to.equal(3);
+
+        expect(classGroup.facets[0]['selection'].range).to.be.undefined;
+
+    });
+    /* Range Facets End */
+});
+
 });

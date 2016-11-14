@@ -304,46 +304,7 @@ export function convertDataPointMap(aggregatedData: AggregatedData, options: Con
     };
     let maxFacetInstanceCount = 0;
 
-    // Construct the data for range facets
-    // Object.keys(aggregatedData.rangeDataMap).forEach((key: string) => {
-    //     const dataPoints = aggregatedData.rangeDataMap[key];
-    //     const rangeKeys = Object.keys(dataPoints);
-    //     const group = {
-    //         label: key.replace(/_/, ' ').split(/\W/).map((word: string) => word.charAt(0).toUpperCase() + word.slice(1) ).join(' '),
-    //         key: key,
-    //         facets: <any>[], // initial facet
-    //         order: (rangeFacetState[key] && rangeFacetState[key].order) || 0,
-    //         isRange: true,
-    //         collapsed: !!rangeFacetState[key] && rangeFacetState[key].collapsed,
-    //     };
-    //     const selectionSlices = {};
-    //     const facet = {
-    //         value: key,
-    //         selection: {},
-    //         histogram: {
-    //             slices: rangeKeys.map((rangeKey: any) => {
-    //                 selectionSlices[rangeKey] = hasHighlight ? dataPoints[rangeKey].highlight : dataPoints[rangeKey].subSelection;
-    //                 return dataPoints[rangeKey];
-    //             }).sort((a: any, b: any) => compareRangeValue(a.metadata.rangeValue, b.metadata.rangeValue))
-    //         }
-    //     };
-    //
-    //     // set flag to the first and last item of the slices
-    //     facet.histogram.slices[0].metadata.isFirst = true;
-    //     facet.histogram.slices[facet.histogram.slices.length - 1].metadata.isLast = true;
-    //
-    //     // set initial selection state
-    //     facet.selection['slices'] = selectionSlices;
-    //     rangeFilter && rangeFilter[key] && (facet.selection['range'] = {
-    //         from: rangeFilter[key].from.index,
-    //         to: rangeFilter[key].to.index,
-    //     });
-    //
-    //     group.facets.push(facet);
-    //     data.facetsData.push(group);
-    // });
-
-    // Construct the data for normal facets
+    // 1. Construct the data for normal facets
     Object.keys(aggregatedData.dataPointsMap).forEach((key: string) => {
         const dataPoints = aggregatedData.dataPointsMap[key];
 
@@ -364,7 +325,7 @@ export function convertDataPointMap(aggregatedData: AggregatedData, options: Con
 
             allFacets: [],
             order: (normalFacetState[key] && normalFacetState[key].order) || 0,
-            collapsed: !!normalFacetState[key] && normalFacetState[key].collapsed,
+            collapsed: !!normalFacetState[key] && !!normalFacetState[key].collapsed,
         };
         const facetGroupColor = colorPalette.shift();
         const opacities = [100, 60, 35];
@@ -438,8 +399,46 @@ export function convertDataPointMap(aggregatedData: AggregatedData, options: Con
         facets.length > 0 && data.facetsData.push(facetGroup);
         data.facetsSelectionData.push(selectionGroup);
     });
+    data.facetsData.forEach((group: FacetGroup) => group.total = maxFacetInstanceCount);
 
-    data.facetsData.forEach((group: FacetGroup) => group.total = maxFacetInstanceCount) ;
+    // 2. Construct the data for range facets
+    Object.keys(aggregatedData.rangeDataMap).forEach((key: string) => {
+        const rangeValueMap = aggregatedData.rangeDataMap[key];
+        const rangeKeys = Object.keys(rangeValueMap);
+        const group = {
+            label: key.replace(/_/, ' ').split(/\W/).map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+            key: key,
+            facets: [], // initial facet
+            order: (rangeFacetState[key] && rangeFacetState[key].order) || 0,
+            isRange: true,
+            collapsed: !!rangeFacetState[key] && !!rangeFacetState[key].collapsed,
+        };
+        const selectionSlices = {};
+        const facet = {
+            value: key,
+            selection: {},
+            histogram: {
+                slices: rangeKeys.map((rangeKey: any) => {
+                    selectionSlices[rangeKey] = hasHighlight ? rangeValueMap[rangeKey].highlight : rangeValueMap[rangeKey].subSelection;
+                    return rangeValueMap[rangeKey];
+                }).sort((a: any, b: any) => compareRangeValue(a.metadata.rangeValue, b.metadata.rangeValue))
+            }
+        };
+
+        // set flag to the first and last item of the slices
+        facet.histogram.slices[0].metadata.isFirst = true;
+        facet.histogram.slices[facet.histogram.slices.length - 1].metadata.isLast = true;
+
+        // set initial selection state
+        facet.selection['slices'] = selectionSlices;
+        rangeFilter && rangeFilter[key] && (facet.selection['range'] = {
+            from: rangeFilter[key].from.index,
+            to: rangeFilter[key].to.index,
+        });
+
+        group.facets.push(facet);
+        data.facetsData.unshift(group);
+    });
     data.facetsData.sort((a: any, b: any) => a.order - b.order);
 
     return data;

@@ -87,7 +87,7 @@ export default {
         ]
     },
     rangeDataMap: {
-        class: {
+        'icon_class': {
             'fa fa-sitemap': {
                 facetKey: 'class',
                 rows: [
@@ -134,7 +134,7 @@ export default {
             }
         },
         date: {
-            '2016-01-01': {
+            '2016-01-04': {
                 facetKey: 'date',
                 rows: [
                     {
@@ -146,15 +146,15 @@ export default {
                         bucket: 'level1'
                     }
                 ],
-                label: '2016-01-01',
+                label: '2016-01-04',
                 count: 7,
                 highlight: 4,
                 subSelection: 7,
                 metadata: {
-                    rangeValue: '2016-01-01'
+                    rangeValue: '2016-01-04'
                 }
             },
-            '2016-01-02': {
+            '2016-01-01': {
                 facetKey: 'date',
                 rows: [
                     {
@@ -166,15 +166,15 @@ export default {
                         bucket: 'level1'
                     }
                 ],
-                label: '2016-01-02',
+                label: '2016-01-01',
                 count: 11,
                 highlight: 8,
                 subSelection: 11,
                 metadata: {
-                    rangeValue: '2016-01-02'
+                    rangeValue: '2016-01-01'
                 }
             },
-            '2016-01-04': {
+            '2016-01-02': {
                 facetKey: 'date',
                 rows: [
                     {
@@ -182,7 +182,7 @@ export default {
                         bucket: 'level1'
                     }
                 ],
-                label: '2016-01-04',
+                label: '2016-01-02',
                 count: 2,
                 highlight: 0,
                 subSelection: 2,

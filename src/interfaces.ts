@@ -50,12 +50,13 @@ interface FacetGroup {
     label: string,
     key: string,
     facets: Facet[],
-    more: any,
-    total: number,
+    total?: number,
+    more?: any,
 
-    allFacets: Facet[],
     order: number,
     collapsed: boolean,
+    allFacets?: Facet[],
+    isRange?: boolean,
 };
 
 interface Facet {
