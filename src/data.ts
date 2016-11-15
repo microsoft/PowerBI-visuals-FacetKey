@@ -266,13 +266,14 @@ export function convertDataview(dataView: DataView) {
         !dataPointsMap[facetKey] && (dataPointsMap[facetKey] = []);
         dataPointsMap[facetKey].push(dataPoint);
     });
-    return dataPointsMap;
+    return { dataPointsMap, hasHighlight: !!highlights };
 }
 
-export function aggregateDataPointMap(dataPointsMap: any, options: AggregateDataPointMapOptions = {}) {
+export function aggregateDataPointMap(data: { dataPointsMap: any, hasHighlight: boolean }, options: AggregateDataPointMapOptions = {}) {
+    const dataPointsMap = data.dataPointsMap;
     const { filters, rangeFilter, selectedInstances } = options;
     const keywordFilter = filters ? [filters] : [];
-    const aggregatedData = { dataPointsMap: {}, rangeDataMap: {} };
+    const aggregatedData = { dataPointsMap: {}, rangeDataMap: {}, hasHighlight: !!data.hasHighlight };
     const constructRangeFacetData = (dp: DataPoint) => {
         if (!dp.rangeValues) { return; }
         dp.rangeValues.forEach((rangeValue: RangeValue) => {

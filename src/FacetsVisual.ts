@@ -139,14 +139,14 @@ export default class FacetsVisual implements IVisual {
         const values = dataView.categorical.values || <powerbi.DataViewValueColumn[]>[];
         const highlights = values[0] && values[0].highlights;
 
-        const dataPointsMap = convertDataview(dataView);
-        const aggregatedData = aggregateDataPointMap(dataPointsMap);
+        const convertedData = convertDataview(dataView);
+        const aggregatedData = aggregateDataPointMap(convertedData);
         const facetsData = convertDataPointMap(aggregatedData, {
             settings: settings,
             colors: colors,
             hasHighlight: !!highlights,
         });
-        return _.extend({ dataPointsMap: dataPointsMap }, facetsData);
+        return _.extend({ dataPointsMap: convertedData.dataPointsMap }, facetsData);
     }
 
     /**

@@ -66,7 +66,7 @@ function toHSL(rgb) {
 
 
 /**
- * Convert the hex color code to the equivalent rgba color code
+ * Converts the hex color code to the equivalent rgba color code
  */
 export function hexToRgba(hex: string, opacity: number = 100) {
     hex = hex.replace('#', '');
