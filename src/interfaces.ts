@@ -97,6 +97,7 @@ interface Facet {
 interface AggregatedData {
     rangeDataMap: any,
     dataPointsMap: any,
+    hasHighlight: boolean,
 }
 
 interface AggregateDataPointsOptions {

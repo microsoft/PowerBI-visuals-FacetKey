@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
- 
+
 // fake powerbi functions
 window['powerbi'] = {
     DataViewObjects: {
@@ -50,23 +50,31 @@ describe('Data Conversion Functions', () => {
 
 describe('.convertDataview', () => {
     let dataView;
-    let data;
 
     beforeEach(() => {
         dataView = _.cloneDeep(mockDataView);
-        data = dataConversion.convertDataview(<any>dataView);
     });
 
     it('should group rows by its facet value', () => {
+        const data = dataConversion.convertDataview(<any>dataView).dataPointsMap;
         expect(data['organization']).to.be.an('array').length(2);
         expect(data['location']).to.be.an('array').length(1);
     });
+    it('should return boolean indicating data has highlights or not', () => {
+        let hasHighlight = dataConversion.convertDataview(<any>dataView).hasHighlight;
+        expect(hasHighlight).to.be.false;
+        dataView.categorical.values[0].highlights = 1;
+        hasHighlight = dataConversion.convertDataview(<any>dataView).hasHighlight;
+        expect(hasHighlight).to.be.true;
+    });
     it('should return the resut with identity of each rows', () => {
+        const data = dataConversion.convertDataview(<any>dataView).dataPointsMap;
         expect(data['organization'][0].rows[0].identity).to.equal('fakeId1');
         expect(data['organization'][1].rows[0].identity).to.equal('fakeId2');
         expect(data['location'][0].rows[0].identity).to.equal('fakeId3');
     });
     it('should return the result with original row values mapped with corresponding column names in object form', () => {
+        const data = dataConversion.convertDataview(<any>dataView).dataPointsMap;
         const dataPoint = data['organization'][0];
         expect(dataPoint.rows[0].index).to.equal(0);
         expect(dataPoint.rows[0].facet).to.equal('organization');
@@ -77,6 +85,7 @@ describe('.convertDataview', () => {
         expect(dataPoint.rows[0].bucket).to.equal('level1');
     });
     it('should return the result with rangeValues', () => {
+        const data = dataConversion.convertDataview(<any>dataView).dataPointsMap;
         const dataPoint = data['organization'][1];
         expect(dataPoint.rows[0].rangeValues).to.equal(dataPoint.rangeValues);
 
@@ -88,6 +97,7 @@ describe('.convertDataview', () => {
         expect(dataPoint.rangeValues[1].key).to.equal('date');
     });
     it('should return the result with correct data values', () => {
+        const data = dataConversion.convertDataview(<any>dataView).dataPointsMap;
         const dataPoint = data['location'][0];
 
         expect(dataPoint.facetKey).to.equal('location');
@@ -107,7 +117,7 @@ describe('.convertDataview', () => {
         dataView.metadata.columns[1].format = '@'; // facetInstance
         dataView.metadata.columns[2].format = '$'; // count
         dataView.metadata.columns[5].format = '#'; // date
-        data = dataConversion.convertDataview(<any>dataView);
+        const data = dataConversion.convertDataview(<any>dataView).dataPointsMap;
         const dataPoint = data['location'][0];
 
         expect(dataPoint.facetLabel).to.equal('*Location');
@@ -117,12 +127,13 @@ describe('.convertDataview', () => {
         expect(dataPoint.instanceCountFormatter.format).to.be.an('function');
     });
     it('should return the result with default highlight value of 0', () => {
+        const data = dataConversion.convertDataview(<any>dataView).dataPointsMap;
         expect(data['location'][0].highlight).to.equal(0);
         expect(data['organization'][0].highlight).to.equal(0);
     });
     it('should return the result with correct highlight values', () => {
         dataView.categorical.values[0].highlights = [1, 2, null];
-        data = dataConversion.convertDataview(<any>dataView);
+        const data = dataConversion.convertDataview(<any>dataView).dataPointsMap;
 
         expect(data['organization'][0].highlight).to.equal(1);
         expect(data['organization'][1].highlight).to.equal(2);
@@ -135,7 +146,7 @@ describe('.convertDataview', () => {
             ],
             identity: [ 'id1' ],
         };
-        data = dataConversion.convertDataview(<any>dataView);
+        const data = dataConversion.convertDataview(<any>dataView).dataPointsMap;
         const dataPoint = data[' '][0];
 
         expect(dataPoint.rows[0].identity).to.equal('id1');
@@ -154,24 +165,40 @@ describe('.convertDataview', () => {
             ],
             identity: ['id1'],
         };
-        data = dataConversion.convertDataview(<any>dataView);
+        const data = dataConversion.convertDataview(<any>dataView).dataPointsMap;
         const key = Object.keys(data)[0];
         expect(data[key][0].facetKey).to.equal('\\(facet\\)');
     });
-    it('should return the result with undefined color with no color column provided');
+    it('should return the result with undefined color with no color column provided', () => {
+        sinon.stub(utils, 'findColumn').returns(undefined);
+        const data = dataConversion.convertDataview(<any>dataView).dataPointsMap;
+
+        expect(data['organization'][0].instanceColor).to.be.undefined;
+        expect(data['organization'][1].instanceColor).to.be.undefined;
+
+        utils.findColumn['restore']();
+    });
 });
 
 describe('.aggregateDataPointMap', () => {
-    let dataPointsMap;
+    let data;
     let result;
 
     beforeEach(() => {
-        dataPointsMap = _.cloneDeep(mockDataPointsMap);
-        result = dataConversion.aggregateDataPointMap(dataPointsMap);
+        data = { dataPointsMap: _.cloneDeep(mockDataPointsMap) }
+    });
+
+    it('should return hasHighlight flag', () => {
+        result = dataConversion.aggregateDataPointMap(data);
+        expect(result.hasHighlight).to.be.false;
+        data.hasHighlight = true;
+        result = dataConversion.aggregateDataPointMap(data);
+        expect(result.hasHighlight).to.be.true;
     });
 
     describe('for dataPointsMap result', () => {
         it('should return datapoints map with correct values', () => {
+            result = dataConversion.aggregateDataPointMap(data);
             let dp = result.dataPointsMap['location'][0];
 
             const expectDataPointsPropertyMatch = (dp, inputDp) => {
@@ -186,12 +213,13 @@ describe('.aggregateDataPointMap', () => {
             expect(dp.rows[0].identity).to.equal('fakeId3');
             expect(dp.highlight).to.equal(2);
             expect(dp.instanceCount).to.equal(3);
-            expectDataPointsPropertyMatch(dp, dataPointsMap['location'][0]);
+            expectDataPointsPropertyMatch(dp, data.dataPointsMap['location'][0]);
 
             dp = result.dataPointsMap['organization'][0];
-            expectDataPointsPropertyMatch(dp, dataPointsMap['organization'][0]);
+            expectDataPointsPropertyMatch(dp, data.dataPointsMap['organization'][0]);
         });
         it('should aggregate the datapoints on facetInstanceLabel', () => {
+            result = dataConversion.aggregateDataPointMap(data);
             let dp = result.dataPointsMap['organization'][0];
 
             expect(result.dataPointsMap['organization']).to.be.an('array').length(1);
@@ -209,6 +237,7 @@ describe('.aggregateDataPointMap', () => {
             expect(dp.instanceCount).to.equal(10);
         });
         it('should bucket aggregated count and highlights on bucket value', () => {
+            result = dataConversion.aggregateDataPointMap(data);
             let dp = result.dataPointsMap['organization'][0];
 
             expect(dp.bucket['level1'].instanceCount).to.equal(4);
@@ -222,26 +251,27 @@ describe('.aggregateDataPointMap', () => {
             expect(dp.bucket['level1'].highlight).to.equal(6);
         });
         it('should not return bucket if rows have no bucket value', () => {
-            dataPointsMap = _.cloneDeep(mockDataPointsMap);
-            delete dataPointsMap.organization[0].rows[0].bucket;
-            delete dataPointsMap.organization[1].rows[0].bucket;
-            result = dataConversion.aggregateDataPointMap(dataPointsMap);
+            delete data.dataPointsMap.organization[0].rows[0].bucket;
+            delete data.dataPointsMap.organization[1].rows[0].bucket;
+            result = dataConversion.aggregateDataPointMap(data);
 
             const dp = result.dataPointsMap['organization'][0];
             expect(dp.bucket).to.be.undefined;
         });
-        it('should apply range filter');
         it('should apply keyword filter');
+        it('should apply range filter');
         it('should handle correctly with selected instances');
     });
     describe('for rangeDataMap result', () => {
         it('should unwind and aggregate dp by its range values and group them by range value key ', () => {
+            result = dataConversion.aggregateDataPointMap(data);
             const classRangeDps = result.rangeDataMap['class'];
             const dateRangeDps = result.rangeDataMap['date'];
             expect(Object.keys(classRangeDps)).to.deep.equal(['fa fa-sitemap', 'fa fa-globe']);
             expect(Object.keys(dateRangeDps)).to.deep.equal(['2016-01-01', '2016-01-02', '2016-01-04']);
         });
         it('should return the correct aggregated values', () => {
+            result = dataConversion.aggregateDataPointMap(data);
             let rangePoint = result.rangeDataMap['class']['fa fa-globe'];
             expect(rangePoint.rows[0].identity).to.equal('fakeId3');
             expect(rangePoint.rows[1].identity).to.equal('fakeId4');
@@ -272,8 +302,8 @@ describe('.aggregateDataPointMap', () => {
                 }
             });
         });
-        it('should apply range filter');
         it('should apply keyword filter');
+        it('should apply range filter');
         it('should handle correctly with selected instances');
     });
 });
@@ -315,9 +345,9 @@ describe('.convertDataPointMap', () => {
         expect(result.aggregatedData).to.equal(aggregatedData);
     });
     it('should return the the result with boolean indicating that data has highlights', () => {
+        aggregatedData.hasHighlight = true;
         result = dataConversion.convertDataPointMap(aggregatedData, {
             colors: [],
-            hasHighlight: true,
             settings: DEFAULT_SETTINGS
         });
         expect(result.hasHighlight).to.equal(true);
@@ -327,7 +357,6 @@ describe('.convertDataPointMap', () => {
         aggregatedData.dataPointsMap.organization.forEach((dp) => { delete dp.bucket; });
         result = dataConversion.convertDataPointMap(aggregatedData, {
             colors: [],
-            hasHighlight: false,
             settings: DEFAULT_SETTINGS
         });
         const facetsData = result.facetsData;
@@ -355,7 +384,6 @@ describe('.convertDataPointMap', () => {
 
         result = dataConversion.convertDataPointMap(aggregatedData, {
             colors: [],
-            hasHighlight: false,
             settings: DEFAULT_SETTINGS
         });
         const facetsData = result.facetsData;
@@ -375,7 +403,6 @@ describe('.convertDataPointMap', () => {
 
         result = dataConversion.convertDataPointMap(aggregatedData, {
             colors: [],
-            hasHighlight: false,
             settings: DEFAULT_SETTINGS
         });
         const facetsData = result.facetsData;
@@ -396,7 +423,6 @@ describe('.convertDataPointMap', () => {
 
         result = dataConversion.convertDataPointMap(aggregatedData, {
             colors: [{ value: '#FFFFFF' }, {value: '#FFFFFF' }],
-            hasHighlight: false,
             settings: DEFAULT_SETTINGS
         });
         const facetsData = result.facetsData;
@@ -407,7 +433,6 @@ describe('.convertDataPointMap', () => {
     it('should assign maximum instanceCount to each facetGroup', () => {
         result = dataConversion.convertDataPointMap(aggregatedData, {
             colors: [],
-            hasHighlight: false,
             settings: DEFAULT_SETTINGS
         });
         const facetsData = result.facetsData;
@@ -419,7 +444,6 @@ describe('.convertDataPointMap', () => {
     it('should limit the number of facets by initial facetCountSetting', () => {
         result = dataConversion.convertDataPointMap(aggregatedData, {
             colors: [],
-            hasHighlight: false,
             settings: _.assign({}, DEFAULT_SETTINGS, { facetCount: {initial: 1, increment: 50}})
         });
         const facetsData = result.facetsData;
@@ -431,7 +455,6 @@ describe('.convertDataPointMap', () => {
         sinon.stub(utils, 'otherLabelTemplate').withArgs(1).returns('Label1');
         result = dataConversion.convertDataPointMap(aggregatedData, {
             colors: [],
-            hasHighlight: false,
             settings: _.assign({}, DEFAULT_SETTINGS, { facetCount: {initial: 1, increment: 50}})
         });
         const facetsData = result.facetsData;
@@ -445,7 +468,6 @@ describe('.convertDataPointMap', () => {
     it('should not return facetGroup.more when initial num facets > actual num of facets data', () => {
         result = dataConversion.convertDataPointMap(aggregatedData, {
             colors: [],
-            hasHighlight: false,
             settings: DEFAULT_SETTINGS
         });
         const facetsData = result.facetsData;
@@ -459,7 +481,6 @@ describe('.convertDataPointMap', () => {
         };
         result = dataConversion.convertDataPointMap(aggregatedData, {
             colors: [],
-            hasHighlight: false,
             settings: _.assign({}, DEFAULT_SETTINGS, { facetState: facetState })
         });
         const facetsData = result.facetsData;
@@ -475,7 +496,6 @@ describe('.convertDataPointMap', () => {
         };
         result = dataConversion.convertDataPointMap(aggregatedData, {
             colors: [],
-            hasHighlight: false,
             settings: _.assign({}, DEFAULT_SETTINGS, { facetState: facetState })
         });
         const facetsData = result.facetsData;
@@ -489,7 +509,6 @@ describe('.convertDataPointMap', () => {
         aggregatedData.dataPointsMap.location.forEach((dp) => { delete dp.bucket; });
         result = dataConversion.convertDataPointMap(aggregatedData, {
             colors: [],
-            hasHighlight: false,
             settings: DEFAULT_SETTINGS
         });
         const selectionData = result.facetsSelectionData;
@@ -510,7 +529,6 @@ describe('.convertDataPointMap', () => {
     it('should populate facets selection data with selction count label', () => {
         result = dataConversion.convertDataPointMap(aggregatedData, {
             colors: [],
-            hasHighlight: false,
             settings: _.assign({}, DEFAULT_SETTINGS, { display: { selectionCount: true}})
         });
         const selectionData = result.facetsSelectionData;
@@ -519,11 +537,11 @@ describe('.convertDataPointMap', () => {
         expect(orgGroup.facets[0].selected.countLabel).to.deep.equal('$4 / $7');
     });
     it('should filter out unhighlighted data when there are highlights', () => {
+        aggregatedData.hasHighlight = true;
         aggregatedData.dataPointsMap.organization[0].highlight = null;
         aggregatedData.dataPointsMap.location[0].highlight = null;
         result = dataConversion.convertDataPointMap(aggregatedData, {
             colors: [],
-            hasHighlight: true,
             settings: DEFAULT_SETTINGS
         });
         const facetsData = result.facetsData;
@@ -540,7 +558,6 @@ describe('.convertDataPointMap', () => {
         locationDps[3].instanceValue = 'selected2';
         result = dataConversion.convertDataPointMap(aggregatedData, {
             colors: [],
-            hasHighlight: false,
             settings: DEFAULT_SETTINGS
         });
         expect(result.selectedDataPoints).to.have.length(2);
@@ -558,7 +575,6 @@ describe('.convertDataPointMap', () => {
         locationDps[3].instanceCount = 11;
         result = dataConversion.convertDataPointMap(aggregatedData, {
             colors: [],
-            hasHighlight: false,
             settings: _.assign({}, DEFAULT_SETTINGS, { facetCount: {initial: 1, increment: 50}})
         });
         const facetsData = result.facetsData;
@@ -576,7 +592,6 @@ describe('.convertDataPointMap', () => {
         });
         result = dataConversion.convertDataPointMap(aggregatedData, {
             colors: [],
-            hasHighlight: false,
             settings: DEFAULT_SETTINGS,
         });
         const facetsData = result.facetsData;
@@ -599,7 +614,6 @@ describe('.convertDataPointMap', () => {
 
         result = dataConversion.convertDataPointMap(aggregatedData, {
             colors: [],
-            hasHighlight: false,
             settings: DEFAULT_SETTINGS,
         });
         const facetsData = result.facetsData;
@@ -629,7 +643,6 @@ describe('.convertDataPointMap', () => {
         };
         result = dataConversion.convertDataPointMap(aggregatedData, {
             colors: [],
-            hasHighlight: false,
             settings: _.assign({}, DEFAULT_SETTINGS, { facetState: facetState })
         });
         const facetsData = result.facetsData;
@@ -649,7 +662,6 @@ describe('.convertDataPointMap', () => {
     it('should return range facet slices sorted by range value', () => {
         result = dataConversion.convertDataPointMap(aggregatedData, {
             colors: [],
-            hasHighlight: false,
             settings: DEFAULT_SETTINGS
         });
         const facetsData = result.facetsData;
@@ -672,7 +684,6 @@ describe('.convertDataPointMap', () => {
     it('should return subselection range facet slices', () => {
         result = dataConversion.convertDataPointMap(aggregatedData, {
             colors: [],
-            hasHighlight: false,
             settings: DEFAULT_SETTINGS
         });
         const facetsData = result.facetsData;
@@ -684,9 +695,9 @@ describe('.convertDataPointMap', () => {
         expect(dateGroup.facets[0]['selection'].slices['2016-01-04']).to.equal(7);
     });
     it('should return highlight range facet slices', () => {
+        aggregatedData.hasHighlight = true;
         result = dataConversion.convertDataPointMap(aggregatedData, {
             colors: [],
-            hasHighlight: true,
             settings: DEFAULT_SETTINGS
         });
         const facetsData = result.facetsData;
@@ -701,7 +712,6 @@ describe('.convertDataPointMap', () => {
         result = dataConversion.convertDataPointMap(aggregatedData, {
             rangeFilter: { date: { from: { index: 1 }, to: { index: 3 }}},
             colors: [],
-            hasHighlight: true,
             settings: DEFAULT_SETTINGS
         });
         const facetsData = result.facetsData;

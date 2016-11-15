@@ -136,17 +136,13 @@ export default class FacetsVisual implements IVisual {
      * Converts the dataview into our own model
      */
     public static converter(dataView: DataView, colors: IColorInfo[], settings: any) {
-        const values = dataView.categorical.values || <powerbi.DataViewValueColumn[]>[];
-        const highlights = values[0] && values[0].highlights;
-
-        const dataPointsMap = convertDataview(dataView);
-        const aggregatedData = aggregateDataPointMap(dataPointsMap);
+        const convertedData = convertDataview(dataView);
+        const aggregatedData = aggregateDataPointMap(convertedData);
         const facetsData = convertDataPointMap(aggregatedData, {
             settings: settings,
             colors: colors,
-            hasHighlight: !!highlights,
         });
-        return _.extend({ dataPointsMap: dataPointsMap }, facetsData);
+        return _.extend({ convertedData: convertedData }, facetsData);
     }
 
     /**
@@ -326,13 +322,12 @@ export default class FacetsVisual implements IVisual {
     }
 
     private filterData(data: any) {
-        const aggregatedData = aggregateDataPointMap(data.dataPointsMap, {
+        const aggregatedData = aggregateDataPointMap(data.convertedData, {
             filters: this.keywordFilter,
             rangeFilter: this.rangeFilter,
             selectedInstances: this.selectedInstances
         });
         const result: any =  _.extend({}, data, convertDataPointMap(aggregatedData, {
-                hasHighlight: this.data.hasHighlight,
                 rangeFilter: this.rangeFilter,
                 settings: this.settings,
                 colors: this.colors,
