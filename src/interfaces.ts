@@ -69,6 +69,10 @@ interface DataPoint {
     isSelected?: boolean,
 }
 
+interface DataPointsMap {
+    [facetKey: string]: DataPoint[]
+}
+
 interface FacetGroup {
     label: string,
     key: string,
@@ -80,7 +84,7 @@ interface FacetGroup {
     collapsed: boolean,
     allFacets?: Facet[],
     isRange?: boolean,
-};
+}
 
 interface Facet {
     icon: {
@@ -92,12 +96,26 @@ interface Facet {
     value: string,
     label: string,
     segments?: { count: number, color: string}[],
-};
+}
 
 interface AggregatedData {
     rangeDataMap: any,
-    dataPointsMap: any,
+    dataPointsMap: DataPointsMap,
     hasHighlight: boolean,
+}
+
+interface DataPointsFilter {
+    contains: string,
+    between: any,
+    ignore: any,
+}
+
+interface FacetsVisualData {
+    aggregatedData: AggregatedData,
+    hasHighlight: boolean,
+    facetsData: FacetGroup[],
+    facetsSelectionData: any[],
+    selectedDataPoints: DataPoint[],
 }
 
 interface AggregateDataPointsOptions {
@@ -107,13 +125,13 @@ interface AggregateDataPointsOptions {
     ignore?: DataPoint[],
 }
 
-interface AggregateDataPointMapOptions {
+interface aggregateDataPointsMapOptions {
     rangeFilter?: any,
     filters?: any,
     selectedInstances?: DataPoint[],
 }
 
-interface ConvertDataPointMapOptions {
+interface convertToFacetsVisualDataOptions {
     colors: powerbi.IColorInfo[],
     settings: FacetKeySettings,
     hasHighlight?: boolean,

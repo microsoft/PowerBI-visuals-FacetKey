@@ -37,6 +37,9 @@ import {
 } from './utils';
 import * as _ from 'lodash';
 
+/**
+ * Returns true if the given range values are within the range of the given filter.
+ */
 function checkRangeFilter(rangeFilter: any, rangeValues: RangeValue[]) {
     if (!rangeFilter) { return true; }
     const compare = compareRangeValue;
@@ -49,6 +52,9 @@ function checkRangeFilter(rangeFilter: any, rangeValues: RangeValue[]) {
     }, true);
 }
 
+/**
+ * Returns true if facetInstance of dp contains any of the keyword from the given filter.
+ */
 function checkKeywordFilters(keywordFilters: any[], dataPoint: DataPoint) {
     if (!keywordFilters || keywordFilters.length === 0) { return true; }
     const instance = String(dataPoint.rows[0].facetInstance);
@@ -58,6 +64,10 @@ function checkKeywordFilters(keywordFilters: any[], dataPoint: DataPoint) {
     }, false);
 }
 
+/**
+ * Create a bucket on target Object and store sum of instance and highlight counts from given datapoint.
+ *
+ */
 function createBucket(targetObj: any, dp: DataPoint) {
     if (!dp.rows[0].bucket) { return; }
     const bucketName = String(dp.rows[0].bucket);
@@ -71,7 +81,7 @@ function createBucket(targetObj: any, dp: DataPoint) {
 }
 
 /**
- * Aggregate given dataPoints by facet intance.
+ * Aggregates given dataPoints by facet intance.
  */
 function aggregateDataPoints(dataPoints: DataPoint[], options: AggregateDataPointsOptions = {}) {
     const { rangeFilter, filters, forEachDataPoint, ignore } = options;
@@ -148,6 +158,13 @@ function aggregateUsingRangeFilterOnly(dataPoints: DataPoint[], options: Aggrega
     return result;
 }
 
+/**
+ * Formats given value with the provided value formatter.
+ *
+ * @param {Object} defaultFormatter - A formatter that will be used to format the value.
+ * @param {*} value - A value to be formatted.
+ * @param {*} defaultValue - A default value to be returned if provided value is invalid.
+ */
 export function formatValue(defaultFormatter: IValueFormatter, value: any, defaultValue: any = '') {
     const smallFormatter = powerbi.visuals.valueFormatter.create({format: 'O', value: 0});
     const bigFormatter = powerbi.visuals.valueFormatter.create({format: 'O', value: 1e6});
@@ -170,6 +187,12 @@ export function formatValue(defaultFormatter: IValueFormatter, value: any, defau
     }
 }
 
+/**
+ * Compares two range values (a and b) and retuns 1 if a > b, -1 if a < b, or 0 if a = b.
+ *
+ * @param {number|string|Object} a - A value represnts a date.
+ * @param {number|string|Object} b - A value represnts a date.
+ */
 export function compareRangeValue(a: any, b: any) {
     const isNumeric = (n: any) => !isNaN(parseFloat(n)) && isFinite(n);
     let aValue: any = Date.parse(a);
@@ -186,9 +209,11 @@ export function compareRangeValue(a: any, b: any) {
 }
 
 /**
- * Process the dataView and convert it's table data to the data point map such that each data points (table rows) are grouped by facet key.
+ * Converts the dataView into dataPointsMap in which each dataPoints are grouped by facet key.
+ *
+ * @param {Object} dataView A dataView object.
  */
-export function convertDataview(dataView: DataView) {
+export function convertToDataPointsMap(dataView: DataView) {
     const viz = powerbi.visuals;
     const category = dataView.categorical.categories && dataView.categorical.categories[0];
     const values = dataView.categorical.values || <powerbi.DataViewValueColumn[]>[];
@@ -269,7 +294,13 @@ export function convertDataview(dataView: DataView) {
     return { dataPointsMap, hasHighlight: !!highlights };
 }
 
-export function aggregateDataPointMap(data: { dataPointsMap: any, hasHighlight: boolean }, options: AggregateDataPointMapOptions = {}) {
+/**
+ * Converts the dataPointsMap into aggregated data.
+ *
+ * @param {Object} data - A dataPointsMap data converted from dataview.
+ * @param {Object} options - An AggregatedDataPoinMap options.
+ */
+export function aggregateDataPointsMap(data: { dataPointsMap: any, hasHighlight: boolean }, options: aggregateDataPointsMapOptions = {}) {
     const dataPointsMap = data.dataPointsMap;
     const { filters, rangeFilter, selectedInstances } = options;
     const keywordFilter = filters ? [filters] : [];
@@ -314,13 +345,19 @@ export function aggregateDataPointMap(data: { dataPointsMap: any, hasHighlight: 
     return aggregatedData;
 };
 
-export function convertDataPointMap(aggregatedData: AggregatedData, options: ConvertDataPointMapOptions) {
+/**
+ * Converts the aggregated data into facets visual data.
+ *
+ * @param {Object} aggregatedData - An aggregatedData object.
+ * @param {Object} options - A convertToFacetsVisualDataOptions object.
+ */
+export function convertToFacetsVisualData(aggregatedData: AggregatedData, options: convertToFacetsVisualDataOptions) {
     const { colors, rangeFilter, settings } = options;
     const hasHighlight = aggregatedData.hasHighlight;
     const rangeFacetState = JSON.parse(settings.facetState.rangeFacet);
     const normalFacetState = JSON.parse(settings.facetState.normalFacet);
     const colorPalette = COLOR_PALETTE.slice().concat(colors.map((color: IColorInfo) => color.value));
-    const data = {
+    const data: FacetsVisualData = {
         aggregatedData: aggregatedData,
         hasHighlight: hasHighlight,
         facetsData: <FacetGroup[]>[],

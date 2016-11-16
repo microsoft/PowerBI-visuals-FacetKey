@@ -86,7 +86,7 @@ export function convertToHSL(colorString: string) {
 }
 
 /**
- * Finds and return the the column that matches the given data role name
+ * Finds and returns the dataview column that matches the given data role name
  */
 export function findColumn(dataView: DataView, dataRoleName: string, multi?: boolean): any {
     const columns = dataView.metadata.columns;

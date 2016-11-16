@@ -36,7 +36,7 @@ import SQExprBuilder = powerbi.data.SQExprBuilder;
 import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
 import * as _ from 'lodash';
 import * as $ from 'jquery';
-import { formatValue, convertDataview, aggregateDataPointMap, compareRangeValue, convertDataPointMap } from './data';
+import { formatValue, convertToDataPointsMap, aggregateDataPointsMap, compareRangeValue, convertToFacetsVisualData } from './data';
 import { findColumn, hexToRgba, otherLabelTemplate, createSegments, HIGHLIGHT_COLOR } from './utils';
 
 const Facets = require('../lib/uncharted-facets/public/javascripts/main');
@@ -70,7 +70,7 @@ export default class FacetsVisual implements IVisual {
     private settings: FacetKeySettings;
     private colors: IColorInfo[];
     private dataView: DataView;
-    private data: any;
+    private data: FacetsVisualData;
     private retainFilters: boolean = false;
     private rangeFilter: any;
     private keywordFilter: any;
@@ -136,19 +136,19 @@ export default class FacetsVisual implements IVisual {
      * Converts the dataview into our own model
      */
     public static converter(dataView: DataView, colors: IColorInfo[], settings: any) {
-        const convertedData = convertDataview(dataView);
-        const aggregatedData = aggregateDataPointMap(convertedData);
-        const facetsData = convertDataPointMap(aggregatedData, {
+        const dataPointsMap = convertToDataPointsMap(dataView);
+        const aggregatedData = aggregateDataPointsMap(dataPointsMap);
+        const facetsData = convertToFacetsVisualData(aggregatedData, {
             settings: settings,
             colors: colors,
         });
-        return _.extend({ convertedData: convertedData }, facetsData);
+        return _.extend({ dataPointsMap: dataPointsMap }, facetsData);
     }
 
     /**
      * Notifies the IVisual of an update (data, viewmode, size change).
      */
-    public update(options: VisualUpdateOptions): void {
+    public update(options: VisualUpdateOptions) {
         if (this.suppressNextUpdate) {
             this.suppressNextUpdate = false;
             return;
@@ -178,7 +178,8 @@ export default class FacetsVisual implements IVisual {
         // Update data and the Facets
         this.data = this.hasRequiredFields(this.dataView)
             ? FacetsVisual.converter(this.dataView, this.colors, this.settings)
-            : { facetsData: [], dataPointsMap: {} };
+            : <any>{ facetsData: [], dataPointsMap: {} };
+
         this.hasFilter() && (this.data = this.filterData(this.data));
 
         // to ignore first update call seriese caused by selecting facets in highlihgted state
@@ -322,12 +323,12 @@ export default class FacetsVisual implements IVisual {
     }
 
     private filterData(data: any) {
-        const aggregatedData = aggregateDataPointMap(data.convertedData, {
+        const aggregatedData = aggregateDataPointsMap(data.dataPointsMap, {
             filters: this.keywordFilter,
             rangeFilter: this.rangeFilter,
             selectedInstances: this.selectedInstances
         });
-        const result: any =  _.extend({}, data, convertDataPointMap(aggregatedData, {
+        const result: any =  _.extend({}, data, convertToFacetsVisualData(aggregatedData, {
                 rangeFilter: this.rangeFilter,
                 settings: this.settings,
                 colors: this.colors,
