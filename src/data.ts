@@ -39,6 +39,9 @@ import * as _ from 'lodash';
 
 /**
  * Returns true if the given range values are within the range of the given filter.
+ *
+ * @param {Object} rangeFilter - A range filter.
+ * @param {Object} rangeValues = An array of range values.
  */
 function checkRangeFilter(rangeFilter: any, rangeValues: RangeValue[]) {
     if (!rangeFilter) { return true; }
@@ -55,6 +58,8 @@ function checkRangeFilter(rangeFilter: any, rangeValues: RangeValue[]) {
 /**
  * Returns true if facetInstance of dp contains provided keyword.
  *
+ * @param {string} keyword - A string keyword.
+ * @param {Object} dataPoint - A dataPoint Object.
  */
 function checkKeywordFilter(keyword: string, dataPoint: DataPoint) {
     if (!keyword) { return true; }
@@ -66,6 +71,8 @@ function checkKeywordFilter(keyword: string, dataPoint: DataPoint) {
 /**
  * Creates a bucket on the target Object and store sum of instance and highlight counts from given datapoint.
  *
+ * @param {Object} targetObj - An Object in which a bucekt will be created.
+ * @param {Object} dp - A dataPoint object.
  */
 function createBucket(targetObj: any, dp: DataPoint) {
     if (!dp.rows[0].bucket) { return; }
@@ -81,6 +88,9 @@ function createBucket(targetObj: any, dp: DataPoint) {
 
 /**
  * Aggregates given dataPoints by facet intance.
+ *
+ * @param {Object[]} dataPoints - An array of data points.
+ * @param {Object} options - An options object.
  */
 function aggregateDataPoints(dataPoints: DataPoint[], options: AggregateDataPointsOptions = {}) {
     const { forEachDataPoint, filter = {} } = options;
@@ -125,6 +135,9 @@ function aggregateDataPoints(dataPoints: DataPoint[], options: AggregateDataPoin
 
 /**
  * Aggregates datapoints by facetInstance applying rangefilter only. (used to create a list of datapoints for selected facet instances)
+ *
+ * @param {Object[]} dataPoints - An array of data points.
+ * @param {Object} options - An options object.
  */
 function aggregateUsingRangeFilterOnly(dataPoints: DataPoint[], options: AggregateDataPointsOptions = {}): DataPoint[] {
     const { forEachDataPoint, filter = {} } = options;

@@ -67,6 +67,9 @@ function toHSL(rgb) {
 
 /**
  * Converts the hex color code to the equivalent rgba color code
+ *
+ * @param {string} hex - A hex color string.
+ * @param {number} opacity - A percentage of the opacity. 
  */
 export function hexToRgba(hex: string, opacity: number = 100) {
     hex = hex.replace('#', '');
@@ -78,6 +81,8 @@ export function hexToRgba(hex: string, opacity: number = 100) {
 
 /**
  * converts hex or rgba color to hsl color
+ *
+ * @param {string} colorString - A hex or rgb(a) color string.
  */
 export function convertToHSL(colorString: string) {
     const rgba = colorString.indexOf('#') >= 0 ? hexToRgba(colorString) : colorString;
@@ -87,6 +92,10 @@ export function convertToHSL(colorString: string) {
 
 /**
  * Finds and returns the dataview column that matches the given data role name
+ *
+ * @param {Object} dataView - A Powerbi dataView object.
+ * @param {string} dataRoleName - A name of the role for the column.
+ * @param {boolean} multi - A boolean flag indicating whether to find multiple matching columns or not.
  */
 export function findColumn(dataView: DataView, dataRoleName: string, multi?: boolean): any {
     const columns = dataView.metadata.columns;
@@ -97,21 +106,35 @@ export function findColumn(dataView: DataView, dataRoleName: string, multi?: boo
 }
 
 /**
- * Returns a hsl color string based on the given color, opacity, index, total number of segments, and boolean indicating it's highlight or not
+ * Returns a hsl color string based on the given color, opacity, index, total number of segments, and boolean indicating it's highlight or not.
+ * Lightness of the color will be determined by segmentIndex and totalNumSegments where higer segmentIndex will produce lighter color while segmentIndex < totalNumSegments
+ *
+ * @param {string} baseColor - rgb or hex color string.
+ * @param {number} opacity - output color opacity, 0~100 in %.
+ * @param {number} segmentIndex - An index of the segment.
+ * @param {number} totalNumSegments - A total number of segments.
+ * @param {boolean} isHighlight - A boolean value indicating whether to generate highlight color or not.
+ * @returns {string} - A hsla color string.
  */
 export function getSegmentColor(baseColor: string, opacity: number = 100, segmentIndex: number, totalNumSegments: number, isHighlight: boolean): string {
-    const h = convertToHSL(baseColor)[0] * 360;
-    const [s, minL, maxL] = isHighlight
+    const hue = convertToHSL(baseColor)[0] * 360;
+    const [saturation, minLightness, maxLightness] = isHighlight
         ? [100, 50, 90]
         : [25, 30, 90];
-    const range = maxL - minL;
-    const n = range / totalNumSegments;
-    const l = minL + (n * segmentIndex);
-    return `hsla(${h}, ${s}%, ${l}%, ${opacity / 100})`;
+    const lightnessRange = maxLightness - minLightness;
+    const lightnessFactor = lightnessRange / totalNumSegments;
+    const lightness = minLightness + (lightnessFactor * segmentIndex);
+    return `hsla(${hue}, ${saturation}%, ${lightness}%, ${opacity / 100})`;
 }
 
 /**
- * Creates a facet bar segments data from the bucket data with given color
+ * Creates a facet bar segments data from the bucket data with given color.
+ *
+ * @param {Object} bucket - A bucket object where count data are mapped to its corresponding bucket name.
+ * @param {string} mainColor - A main color used to generate colors for the segments.
+ * @param {boolean} isHighlight - A boolean value indicating whether to generate highlight segments or not.
+ * @param {number} opacity - An opacity of the color for the segments.
+ * @param {boolean=} useHighlightColor - A boolean value indicating whether to use hilight color rgardless of isHilight parameter.
  */
 export function createSegments(bucket: any, mainColor: string, isHighlight: boolean, opacity: number = 100, useHighlightColor?: boolean) {
     const countType = isHighlight ? 'highlight' : 'instanceCount';
@@ -127,6 +150,8 @@ export function createSegments(bucket: any, mainColor: string, isHighlight: bool
 
 /**
  * Creates a label displaying remaining number of facets for a facet group.
+ *
+ * @param {number} remaining - remaining number of facets.
  */
 export function otherLabelTemplate(remaining: number) {
     return `Other (${roundToNearestTen(remaining)}${remaining < 10 || !(remaining % 10) ? '' : '+'})`;

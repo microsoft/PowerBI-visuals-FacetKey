@@ -100,7 +100,7 @@ export default class FacetsVisual implements IVisual {
     /**
      * Initializes an instance of the IVisual.
      *
-     * @param options Initialization options for the visual.
+     * @param {Object} options Initialization options for the visual.
      */
     constructor(options: VisualConstructorOptions) {
         const facetsContainer = $('<div class="facets-container"></div>');
