@@ -66,7 +66,7 @@ function toHSL(rgb) {
 
 
 /**
- * Converts the hex color code to the equivalent rgba color code
+ * Converts the hex color code to the equivalent rgba color code.
  *
  * @param {string} hex - A hex color string.
  * @param {number} opacity - A percentage of the opacity. 
@@ -134,7 +134,7 @@ export function getSegmentColor(baseColor: string, opacity: number = 100, segmen
  * @param {string} mainColor - A main color used to generate colors for the segments.
  * @param {boolean} isHighlight - A boolean value indicating whether to generate highlight segments or not.
  * @param {number} opacity - An opacity of the color for the segments.
- * @param {boolean=} useHighlightColor - A boolean value indicating whether to use hilight color rgardless of isHilight parameter.
+ * @param {boolean=} useHighlightColor - A boolean value indicating whether to use highlgiht color rgardless of ishighlgiht parameter.
  */
 export function createSegments(bucket: any, mainColor: string, isHighlight: boolean, opacity: number = 100, useHighlightColor?: boolean) {
     const countType = isHighlight ? 'highlight' : 'instanceCount';

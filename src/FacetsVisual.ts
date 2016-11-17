@@ -447,7 +447,7 @@ export default class FacetsVisual implements IVisual {
     }
 
     /**
-     * Redraw facets with current data with current highlight or selection state
+     * Redraw facets with current data and update the selection state.
      */
     private redrawFacets(): void {
         this.facets.replace(this.data.facetsData);
@@ -549,6 +549,9 @@ export default class FacetsVisual implements IVisual {
         }
     }
 
+    /*
+     * Deselects all the selected non-range facets.
+     */
     private deselectNormalFacetInstances(): void {
         this.facets._groups.forEach((group: any) => {
             group.verticalFacets.forEach((facet: any) => facet.deselect());
