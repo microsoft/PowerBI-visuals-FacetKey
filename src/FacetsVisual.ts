@@ -71,10 +71,8 @@ export default class FacetsVisual implements IVisual {
     private colors: IColorInfo[];
     private dataView: DataView;
     private data: FacetsVisualData;
+    private filter: DataPointsFilter = {};
     private retainFilters: boolean = false;
-    private rangeFilter: any;
-    private keywordFilter: any;
-    private keywordQueries: any = [];
     private previousData: any;
     private previousFreshData: any;
     private hostServices: IVisualHostServices;
@@ -309,29 +307,24 @@ export default class FacetsVisual implements IVisual {
         });
     }
 
-    private filterFacets(addQuery: boolean = false, force: boolean = false) {
+    private filterFacets(force: boolean = false) {
         const newKeyword = String(this.searchBox.val()).trim().toLowerCase();
-        const isKeywordChanged = this.keywordFilter !== newKeyword;
-        const isQueryAdded = addQuery && newKeyword && this.keywordQueries.indexOf(newKeyword) === -1;
-        this.keywordFilter = newKeyword;
-        isQueryAdded && this.keywordQueries.push(newKeyword);
-        addQuery && this.searchBox.val('');
-        if (isKeywordChanged || isQueryAdded || force) {
+        const isKeywordChanged = this.filter.contains !== newKeyword;
+        if (isKeywordChanged || force) {
+            this.filter.contains = newKeyword;
             this.data = this.filterData(this.data);
             this.redrawFacets();
         }
     }
 
     private filterData(data: any) {
-        const aggregatedData = aggregateDataPointsMap(data.dataPointsMap, {
-            filters: this.keywordFilter,
-            rangeFilter: this.rangeFilter,
-            selectedInstances: this.selectedInstances
-        });
+        // bypass filter for selected instances
+        this.filter.ignore = this.selectedInstances;
+        const aggregatedData = aggregateDataPointsMap(data.dataPointsMap, this.filter);
         const result: any =  _.extend({}, data, convertToFacetsVisualData(aggregatedData, {
-                rangeFilter: this.rangeFilter,
                 settings: this.settings,
                 colors: this.colors,
+                selectedRange: this.filter.range,
         }));
         this.selectedInstances = result.selectedDataPoints;
         return result;
@@ -354,8 +347,8 @@ export default class FacetsVisual implements IVisual {
             facetGroup.collapsed = true;
             this.saveFacetState();
             if (facetGroup.isRange) {
-                this.rangeFilter && this.rangeFilter[key] && (this.rangeFilter[key] = undefined);
-                this.filterFacets(false, true);
+                this.filter.range && this.filter.range[key] && (this.filter.range[key] = undefined);
+                this.filterFacets(true);
                 this.selectedInstances.length > 0
                     ? this.selectFacetInstances(this.selectedInstances)
                     : this.selectRanges();
@@ -383,13 +376,13 @@ export default class FacetsVisual implements IVisual {
 
         this.facets.on('facet-histogram:rangechangeduser', (e: any, key: string, range: any) => {
             const isFullRange = range.from.metadata[0].isFirst && range.to.metadata[range.to.metadata.length - 1].isLast;
-            !this.rangeFilter && (this.rangeFilter = {});
-            this.rangeFilter[key] = isFullRange ? undefined : { from: range.from, to: range.to };
+            this.filter.range = {};
+            this.filter.range[key] = isFullRange ? undefined : { from: range.from, to: range.to };
             if (this.data.hasHighlight) {
                 this.retainFilters = true;
                 this.selectRanges();
             } else {
-                this.filterFacets(false, true);
+                this.filterFacets(true);
                 this.selectedInstances.length > 0
                     ? this.selectFacetInstances(this.selectedInstances)
                     : this.selectRanges();
@@ -448,9 +441,7 @@ export default class FacetsVisual implements IVisual {
     }
 
     private clearFilters(): void {
-        this.rangeFilter = undefined;
-        this.keywordFilter = undefined;
-        this.keywordQueries = [];
+        this.filter = {};
         this.searchBox.val('');
         this.retainFilters = false;
     }
@@ -467,12 +458,12 @@ export default class FacetsVisual implements IVisual {
     }
 
     private hasFilter(): boolean {
-        return this.hasRangeFilter() || this.keywordFilter !== undefined || this.keywordQueries.length > 0;
+        return this.hasRangeFilter() || this.filter.contains !== undefined;
     }
 
     private hasRangeFilter(): boolean {
-        if (!this.rangeFilter) { return false; }
-        return Object.keys(this.rangeFilter).reduce((prev: boolean, key: any) => !!this.rangeFilter[key] || prev, false);
+        if (!this.filter.range) { return false; }
+        return Object.keys(this.filter.range).reduce((prev: boolean, key: any) => !!this.filter.range[key] || prev, false);
     }
 
     private createSQExprFromRangeFilter(rangeFilter: any) {
@@ -493,7 +484,7 @@ export default class FacetsVisual implements IVisual {
 
     private selectRanges() {
         const sqExpr: any = this.hasRangeFilter()
-            ? this.createSQExprFromRangeFilter(this.rangeFilter)
+            ? this.createSQExprFromRangeFilter(this.filter.range)
             : undefined;
         this.sendSelectionToHost(sqExpr ? [powerbi.data.createDataViewScopeIdentity(sqExpr)] : []);
     }
@@ -515,7 +506,7 @@ export default class FacetsVisual implements IVisual {
         }, undefined);
 
         if (sqExpr && this.hasRangeFilter()) {
-            const rangeExpr = this.createSQExprFromRangeFilter(this.rangeFilter);
+            const rangeExpr = this.createSQExprFromRangeFilter(this.filter.range);
             sqExpr = SQExprBuilder.and(sqExpr, rangeExpr);
         }
         this.sendSelectionToHost(sqExpr ? [powerbi.data.createDataViewScopeIdentity(sqExpr)] : []);

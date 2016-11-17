@@ -710,7 +710,7 @@ describe('.convertToFacetsVisualData', () => {
     });
     it('should set selection range based on the provided range filter', () => {
         result = dataConversion.convertToFacetsVisualData(aggregatedData, {
-            rangeFilter: { date: { from: { index: 1 }, to: { index: 3 }}},
+            selectedRange: { date: { from: { index: 1 }, to: { index: 3 } } },
             colors: [],
             settings: DEFAULT_SETTINGS
         });

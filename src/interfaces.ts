@@ -105,9 +105,9 @@ interface AggregatedData {
 }
 
 interface DataPointsFilter {
-    contains: string,
-    between: any,
-    ignore: any,
+    contains?: string,
+    range?: any,
+    ignore?: DataPoint[],
 }
 
 interface FacetsVisualData {
@@ -119,21 +119,13 @@ interface FacetsVisualData {
 }
 
 interface AggregateDataPointsOptions {
-    rangeFilter?: any,
-    filters?: any,
     forEachDataPoint?: (dp: DataPoint) => void,
-    ignore?: DataPoint[],
-}
-
-interface aggregateDataPointsMapOptions {
-    rangeFilter?: any,
-    filters?: any,
-    selectedInstances?: DataPoint[],
+    filter?: DataPointsFilter,
 }
 
 interface convertToFacetsVisualDataOptions {
     colors: powerbi.IColorInfo[],
     settings: FacetKeySettings,
     hasHighlight?: boolean,
-    rangeFilter?: any,
+    selectedRange?: any,
 }
