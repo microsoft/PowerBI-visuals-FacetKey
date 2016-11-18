@@ -129,28 +129,28 @@ export default class FacetsVisual implements IVisual {
     }
 
     /**
-     * Converts the dataview into our own model
-     * @param  {DataView}     dataView [description]
-     * @param  {IColorInfo[]} colors   [description]
-     * @param  {any}          settings [description]
-     * @return {[type]}                [description]
+     * Converts the dataview into our own model.
+     *
+     * @param  {DataView}         dataView A dataView object.
+     * @param  {IColorInfo[]}     colors   Powerbi color info array.
+     * @param  {FacetKeySettings} settings A facetkey settings object.
+     * @return {FacetsVisualData}
      */
-    public static converter(dataView: DataView, colors: IColorInfo[], settings: any) {
-        const dataPointsMap = convertToDataPointsMap(dataView);
-        const aggregatedData = aggregateDataPointsMap(dataPointsMap);
+    public static converter(dataView: DataView, colors: IColorInfo[], settings: FacetKeySettings): FacetsVisualData {
+        const dataPointsMapData = convertToDataPointsMap(dataView);
+        const aggregatedData = aggregateDataPointsMap(dataPointsMapData);
         const facetsData = convertToFacetsVisualData(aggregatedData, {
             settings: settings,
             colors: colors,
         });
-        return _.extend({ dataPointsMap: dataPointsMap }, facetsData);
+        return _.extend({ dataPointsMapData: dataPointsMapData }, facetsData);
     }
 
 
     /**
-     * [update description]
      * Notifies the IVisual of an update (data, viewmode, size change).
-     * @param  {VisualUpdateOptions} options [description]
-     * @return {[type]}                      [description]
+     *
+     * @param  {VisualUpdateOptions} options visual update options.
      */
     public update(options: VisualUpdateOptions) {
         if (this.suppressNextUpdate) {
@@ -205,10 +205,10 @@ export default class FacetsVisual implements IVisual {
     }
 
     /**
-     * [enumerateObjectInstances description]
-     * Enumerates the instances for the objects that appear in the power bi panel
-     * @param  {EnumerateVisualObjectInstancesOptions} options [description]
-     * @return {VisualObjectInstance[]}                        [description]
+     * Enumerates the instances for the objects that appear in the power bi formatting pane.
+     *
+     * @param  {EnumerateVisualObjectInstancesOptions} options An EnumerateVisualObjectInstancesOptions object.
+     * @return {VisualObjectInstance[]}
      */
     public enumerateObjectInstances(options: EnumerateVisualObjectInstancesOptions): VisualObjectInstance[] {
         let instances: VisualObjectInstance[];
@@ -227,6 +227,13 @@ export default class FacetsVisual implements IVisual {
         return instances;
     }
 
+    /**
+     * Check if dataview has all the reqruied columns.
+     * It will return true if it has all count, facetInstance, and facet columns.
+     *
+     * @param  {DataView} dataView powerbi dataView object.
+     * @return {boolean}
+     */
     private hasRequiredFields(dataView: DataView): boolean {
         const columns = dataView.metadata.columns;
         const countColumnExists = _.some(columns || [], (col: any) => col && col.roles.count);
@@ -236,17 +243,24 @@ export default class FacetsVisual implements IVisual {
         return (instanceColumnExists || facetColumnExists) && countColumnExists;
     }
 
-    private validateSettings (settings: any) {
+    /**
+     * Validates the user input for setting object from the powerbi formatting pane.
+     * It only validates for facetCount object at the momment.
+     *
+     * @param  {FacetKeySettings}    settings FacetKeySettings object.
+     * @return {FacetKeySettings}
+     */
+    private validateSettings (settings: FacetKeySettings) {
         const facetCount = settings.facetCount;
         if (facetCount) {
-            facetCount.initial = facetCount.initial < 0 ? 0 : parseInt(facetCount.initial, 10);
-            facetCount.increment = facetCount.increment < 0 ? 0 : parseInt(facetCount.increment, 10);
+            facetCount.initial = facetCount.initial < 0 ? 0 : parseInt(String(facetCount.initial), 10);
+            facetCount.increment = facetCount.increment < 0 ? 0 : parseInt(String(facetCount.increment), 10);
         }
         return settings;
     }
 
     /**
-     * Saves the facet ordering to PBI
+     * Saves the facet states to pbi object so it can be persisted.
      */
     private saveFacetState() {
         const instances: VisualObjectInstance[] = [];
@@ -270,8 +284,12 @@ export default class FacetsVisual implements IVisual {
         this.hostServices.persistProperties(objects);
     }
 
-    private updateFacets(isMoreData: boolean = false) {
-        if (isMoreData) {
+    /**
+     * Updates the facets.
+     * @param  {boolean = false} syncFacets A flag indicating syncying with the more data is needed.
+     */
+    private updateFacets(syncFacets: boolean = false) {
+        if (syncFacets) {
             return this.syncFacets();
         }
         // else, it's fresh data
@@ -280,7 +298,10 @@ export default class FacetsVisual implements IVisual {
         this.data.hasHighlight && this.facets.select(this.data.facetsSelectionData);
     }
 
-    private syncFacets(): void {
+    /**
+     * Update and render facets with current state of the data.
+     */
+    private syncFacets() {
         // update new group and Other count with more|Less buttons
         this.data.facetsData.forEach((groupData: any) => {
             const key = groupData.key;
@@ -317,6 +338,11 @@ export default class FacetsVisual implements IVisual {
         });
     }
 
+    /**
+     * Re-render facets with filtered facets data.
+     *
+     * @param  {boolean=false} force.
+     */
     private filterFacets(force: boolean = false) {
         const newKeyword = String(this.searchBox.val()).trim().toLowerCase();
         const isKeywordChanged = this.filter.contains !== newKeyword;
@@ -327,10 +353,16 @@ export default class FacetsVisual implements IVisual {
         }
     }
 
-    private filterData(data: any) {
+    /**
+     * Apply the filter to the data and return the result.
+     *
+     * @param  {FacetsVisualData} FacetsVisualData data being filtered.
+     * @return {FacetsVisualData}                  filtered data.
+     */
+    private filterData(data: FacetsVisualData) {
         // bypass filter for selected instances
         this.filter.ignore = this.selectedInstances;
-        const aggregatedData = aggregateDataPointsMap(data.dataPointsMap, this.filter);
+        const aggregatedData = aggregateDataPointsMap(data.dataPointsMapData, this.filter);
         const result: any =  _.extend({}, data, convertToFacetsVisualData(aggregatedData, {
             settings: this.settings,
             colors: this.colors,
@@ -340,11 +372,20 @@ export default class FacetsVisual implements IVisual {
         return result;
     }
 
-    private getFacetGroup(key: string) {
+    /**
+     * Get the facet group data with given key from the data.
+     *
+     * @param  {string} key A facet key.
+     * @return {FacetGroup} A facet group data.
+     */
+    private getFacetGroup(key: string): FacetGroup {
         return _.find(this.data.facetsData, (group: any) => key === group.key);
     }
 
-    private bindFacetsEventHandlers(): void {
+    /**
+     * Binds event handlers for the facets component.
+     */
+    private bindFacetsEventHandlers() {
         this.searchBox.on('input', _.debounce((e: any) => this.filterFacets(), 500));
 
         this.facets.on('facet:click', (e: any, key: string, value: string) => this.toggleFacetSelection(key, value));
@@ -401,7 +442,9 @@ export default class FacetsVisual implements IVisual {
     }
 
     /**
-     * Reset the facet group to its original state
+     * Resets the facet group with the given key to its original state.
+     *
+     * @param {string} key key of the target facet group.
      */
     private resetGroup(key: string): void {
         const facetGroup = this.getFacetGroup(key);
@@ -411,7 +454,9 @@ export default class FacetsVisual implements IVisual {
     }
 
     /**
-     * Show more facet instances
+     * Expend the facet group of given key and display more facet instances.
+     *
+     * @param {string} key A facet key.
      */
     private showMoreFacetInstances(key: string): void {
         const LIMIT = this.settings.facetCount.increment;
@@ -436,7 +481,10 @@ export default class FacetsVisual implements IVisual {
     }
 
     /**
-     * Reset Facets by unselecting facets instances or redrawing.
+     * Reset facets by unselecting all facets instances or re-rendering.
+     *
+     * @param {boolean = true}  notifyHost A flag indicating whether to notify the host to trigger update call or not.
+     * @param {boolean = false} replace    A flag indicating whether to replace facets with current data.
      */
     private resetFacets(notifyHost: boolean = true, replace: boolean = false): void {
         notifyHost && this.sendSelectionToHost([]);
@@ -450,7 +498,10 @@ export default class FacetsVisual implements IVisual {
         };
     }
 
-    private clearFilters(): void {
+    /**
+     * Clears filters.
+     */
+    private clearFilters() {
         this.filter = {};
         this.searchBox.val('');
         this.retainFilters = false;
@@ -459,23 +510,37 @@ export default class FacetsVisual implements IVisual {
     /**
      * Redraw facets with current data and update the selection state.
      */
-    private redrawFacets(): void {
+    private redrawFacets() {
         this.facets.replace(this.data.facetsData);
         this.facets._queryGroup._element.find('.facet-bar-container').append('<i class="fa fa-times query-remove" aria-hidden="true"></i>');
         this.data.hasHighlight
-        ? this.facets.select(this.data.facetsSelectionData)
-        : this.updateFacetsSelection(this.selectedInstances, false);
+            ? this.facets.select(this.data.facetsSelectionData)
+            : this.updateFacetsSelection(this.selectedInstances, false);
     }
 
+    /**
+     * Returns true if there is range or keyword filter.
+     *
+     * @return {boolean}
+     */
     private hasFilter(): boolean {
         return this.hasRangeFilter() || this.filter.contains !== undefined;
     }
 
+    /**
+     * Returns true if there is a range filter.
+     * @return {boolean} [description]
+     */
     private hasRangeFilter(): boolean {
         if (!this.filter.range) { return false; }
         return Object.keys(this.filter.range).reduce((prev: boolean, key: any) => !!this.filter.range[key] || prev, false);
     }
 
+    /**
+     * Creates a range sqExpr from given range filter.
+     * @param  {any}    rangeFilter A range filter
+     * @return {any}    A range sqExpr expression.
+     */
     private createSQExprFromRangeFilter(rangeFilter: any) {
         const rangeValueColumns = findColumn(this.dataView, 'rangeValue', true);
         let sqExpr: any;
@@ -492,6 +557,9 @@ export default class FacetsVisual implements IVisual {
         return sqExpr;
     }
 
+    /**
+     * Send range selction to the host.
+     */
     private selectRanges() {
         const sqExpr: any = this.hasRangeFilter()
         ? this.createSQExprFromRangeFilter(this.filter.range)
@@ -499,6 +567,11 @@ export default class FacetsVisual implements IVisual {
         this.sendSelectionToHost(sqExpr ? [powerbi.data.createDataViewScopeIdentity(sqExpr)] : []);
     }
 
+    /**
+     * Send facet instances selection to the host.
+     *
+     * @param  {DataPoint[]} selectedInstances Datapoints of selected facet instances.
+     */
     private selectFacetInstances(selectedInstances: DataPoint[]) {
         const facetColumn = findColumn(this.dataView, 'facet');
         const instanceColumn = findColumn(this.dataView, 'facetInstance');
@@ -522,7 +595,12 @@ export default class FacetsVisual implements IVisual {
         this.sendSelectionToHost(sqExpr ? [powerbi.data.createDataViewScopeIdentity(sqExpr)] : []);
     }
 
-    private sendSelectionToHost(identities: any[]): void {
+    /**
+     * Send a selection for given identities to the host.
+     *
+     * @param {any[]} identities An array of identities.
+     */
+    private sendSelectionToHost(identities: any[]) {
         const selectArgs = {
             data: identities.map((identity: any) => ({ data: [identity] })),
             visualObjects: [],
@@ -530,7 +608,13 @@ export default class FacetsVisual implements IVisual {
         this.hostServices.onSelect(selectArgs);
     }
 
-    private toggleFacetSelection(key: string, value: string): void {
+    /**
+     * Toggle a selection for the facet instance of given key and value.
+     *
+     * @param {string} key   A facet key.
+     * @param {string} value A facet instance value.
+     */
+    private toggleFacetSelection(key: string, value: string) {
         const dataPoint = _.find(this.data.aggregatedData.dataPointsMap[key], (dp: DataPoint) => dp.facetKey === key && dp.instanceValue === value);
         const deselected = _.remove(this.selectedInstances, (selected) => selected.facetKey === key && selected.instanceValue === value);
         deselected.length === 0 && this.selectedInstances.push(dataPoint);
@@ -538,6 +622,12 @@ export default class FacetsVisual implements IVisual {
         this.updateFacetsSelection(this.selectedInstances);
     }
 
+    /**
+     * Update facets so that it reflects current selected facet instances.
+     *
+     * @param {DataPoint[] = []}   selectedInstances An array of datapoints for selected facet instances.
+     * @param {boolean     = true} reset             Flag indicating wheter resetting facets is required or not.
+     */
     private updateFacetsSelection(selectedInstances: DataPoint[] = [], reset: boolean = true): void {
         this.facets.unhighlight();
         this.facets.highlight(selectedInstances.map((dp) => ({ key: dp.facetKey, value: dp.instanceValue, count: dp.instanceCount })));
@@ -554,15 +644,15 @@ export default class FacetsVisual implements IVisual {
         })));
         if (reset && this.selectedInstances.length === 0) {
             this.hasRangeFilter()
-            ? this.selectRanges()
-            : this.resetFacets(true, this.firstSelectionInHighlightedState);
+                ? this.selectRanges()
+                : this.resetFacets(true, this.firstSelectionInHighlightedState);
         }
     }
 
     /*
      * Deselects all the selected non-range facets.
      */
-    private deselectNormalFacetInstances(): void {
+    private deselectNormalFacetInstances() {
         this.facets._groups.forEach((group: any) => {
             group.verticalFacets.forEach((facet: any) => facet.deselect());
         });
