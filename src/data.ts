@@ -38,10 +38,10 @@ import {
 import * as _ from 'lodash';
 
 /**
- * Returns true if the given range values are within the range of the given filter.
- *
- * @param {Object} rangeFilter - A range filter.
- * @param {Object} rangeValues = An array of range values.
+ * Returns true if the given range values are within the range of the givend filter range.
+ * @param  {any}          rangeFilter A range filter.
+ * @param  {RangeValue[]} rangeValues An array of range values.
+ * @return {boolean}
  */
 function checkRangeFilter(rangeFilter: any, rangeValues: RangeValue[]) {
     if (!rangeFilter) { return true; }
@@ -58,8 +58,9 @@ function checkRangeFilter(rangeFilter: any, rangeValues: RangeValue[]) {
 /**
  * Returns true if facetInstance of dp contains provided keyword.
  *
- * @param {string} keyword - A string keyword.
- * @param {Object} dataPoint - A dataPoint Object.
+ * @param  {string}    keyword   A string keyword.
+ * @param  {DataPoint} dataPoint A dataPoint Object.
+ * @return {boolean}
  */
 function checkKeywordFilter(keyword: string, dataPoint: DataPoint) {
     if (!keyword) { return true; }
@@ -71,8 +72,8 @@ function checkKeywordFilter(keyword: string, dataPoint: DataPoint) {
 /**
  * Creates a bucket on the target Object and store sum of instance and highlight counts from given datapoint.
  *
- * @param {Object} targetObj - An Object in which a bucekt will be created.
- * @param {Object} dp - A dataPoint object.
+ * @param  {any}       targetObj An Object in which a bucekt will be created.
+ * @param  {DataPoint} dp        A dataPoint object.
  */
 function createBucket(targetObj: any, dp: DataPoint) {
     if (!dp.rows[0].bucket) { return; }
@@ -87,10 +88,11 @@ function createBucket(targetObj: any, dp: DataPoint) {
 }
 
 /**
- * Aggregates given dataPoints by facet intance.
+ * Aggregates given dataPoints on facet instance value.
  *
- * @param {Object[]} dataPoints - An array of data points.
- * @param {Object} options - An options object.
+ * @param  {DataPoint[]}                   dataPoints An array of data points.
+ * @param  {AggregateDataPointsOptions={}} options    An options object.
+ * @return {Object}                                   A result containing an array of aggregated datapoints and ignored dataPoints.
  */
 function aggregateDataPoints(dataPoints: DataPoint[], options: AggregateDataPointsOptions = {}) {
     const { forEachDataPoint, filter = {} } = options;
@@ -136,8 +138,9 @@ function aggregateDataPoints(dataPoints: DataPoint[], options: AggregateDataPoin
 /**
  * Aggregates datapoints by facetInstance applying rangefilter only. (used to create a list of datapoints for selected facet instances)
  *
- * @param {Object[]} dataPoints - An array of data points.
- * @param {Object} options - An options object.
+ * @param  {DataPoint[]}                   dataPoints An array of data points.
+ * @param  {AggregateDataPointsOptions={}} options    An options object.
+ * @return {DataPoint[]}                              An array of datapoints.
  */
 function aggregateUsingRangeFilterOnly(dataPoints: DataPoint[], options: AggregateDataPointsOptions = {}): DataPoint[] {
     const { forEachDataPoint, filter = {} } = options;
@@ -171,11 +174,12 @@ function aggregateUsingRangeFilterOnly(dataPoints: DataPoint[], options: Aggrega
 }
 
 /**
- * Formats given value with the provided value formatter.
+ * Formats the given value with the provided value formatter.
  *
- * @param {Object} defaultFormatter - A formatter that will be used to format the value.
- * @param {*} value - A value to be formatted.
- * @param {*} defaultValue - A default value to be returned if provided value is invalid.
+ * @param  {IValueFormatter} defaultFormatter A formatter that will be used to format the value.
+ * @param  {any}             value            A value to be formatted.
+ * @param  {any=''}          defaultValue     A default value to be returned if provided value is invalid.
+ * @return {string}                           A formatted value.
  */
 export function formatValue(defaultFormatter: IValueFormatter, value: any, defaultValue: any = '') {
     const smallFormatter = powerbi.visuals.valueFormatter.create({format: 'O', value: 0});
@@ -200,10 +204,11 @@ export function formatValue(defaultFormatter: IValueFormatter, value: any, defau
 }
 
 /**
- * Compares two range values (a and b) and retuns 1 if a > b, -1 if a < b, or 0 if a = b.
+ * Compares two range values (a and b) and returns 1 if a > b, -1 if a < b, or 0 if a = b.
  *
- * @param {number|string|Object} a - A value represnts a date.
- * @param {number|string|Object} b - A value represnts a date.
+ * @param  {string|number|Object}    a A value representing a date.
+ * @param  {string|number|Object}    b A value representing a date.
+ * @return {number}
  */
 export function compareRangeValue(a: any, b: any) {
     const isNumeric = (n: any) => !isNaN(parseFloat(n)) && isFinite(n);
@@ -221,11 +226,12 @@ export function compareRangeValue(a: any, b: any) {
 }
 
 /**
- * Converts the dataView into dataPointsMap in which each dataPoints are grouped by facet key.
+ * Converts the dataview into dataPointsMap in which each datapoints are grouped by faet key.
  *
- * @param {Object} dataView A dataView object.
+ * @param  {DataView}          dataView A dataView object.
+ * @return {DataPointsMapData}          Converted data.
  */
-export function convertToDataPointsMap(dataView: DataView) {
+export function convertToDataPointsMap(dataView: DataView): DataPointsMapData {
     const viz = powerbi.visuals;
     const category = dataView.categorical.categories && dataView.categorical.categories[0];
     const values = dataView.categorical.values || <powerbi.DataViewValueColumn[]>[];
@@ -307,12 +313,13 @@ export function convertToDataPointsMap(dataView: DataView) {
 }
 
 /**
- * Converts the dataPointsMap into aggregated data.
+ * Converts the dataPointsMapData to aggregated data.
  *
- * @param {Object} data - A dataPointsMap data converted from dataview.
- * @param {Object} filter - A DataPointsFilter which is used to filter the data points.
+ * @param  {DataPointsMapData}   data   A dataPointsMap data converted from dataview.
+ * @param  {DataPointsFilter={}} filter A DataPointsFilter which is used to filter the data points.
+ * @return {AggregatedData}             Data that contains aggregated datapoints map and the range data map.
  */
-export function aggregateDataPointsMap(data: { dataPointsMap: any, hasHighlight: boolean }, filter: DataPointsFilter = {}) {
+export function aggregateDataPointsMap(data: DataPointsMapData, filter: DataPointsFilter = {}): AggregatedData {
     const dataPointsMap = data.dataPointsMap;
     const aggregatedData = { dataPointsMap: {}, rangeDataMap: {}, hasHighlight: !!data.hasHighlight };
     const constructRangeFacetData = (dp: DataPoint) => {
@@ -356,10 +363,11 @@ export function aggregateDataPointsMap(data: { dataPointsMap: any, hasHighlight:
 /**
  * Converts the aggregated data into facets visual data.
  *
- * @param {Object} aggregatedData - An aggregatedData object.
- * @param {Object} options - A convertToFacetsVisualDataOptions object.
+ * @param  {AggregatedData}                   aggregatedData An aggregated data.
+ * @param  {convertToFacetsVisualDataOptions} options        A options object.
+ * @return {FacetsVisualData}                                Data to be used in this visual.
  */
-export function convertToFacetsVisualData(aggregatedData: AggregatedData, options: convertToFacetsVisualDataOptions) {
+export function convertToFacetsVisualData(aggregatedData: AggregatedData, options: convertToFacetsVisualDataOptions): FacetsVisualData {
     const { colors, selectedRange, settings } = options;
     const hasHighlight = aggregatedData.hasHighlight;
     const rangeFacetState = JSON.parse(settings.facetState.rangeFacet);

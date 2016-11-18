@@ -64,12 +64,11 @@ function toHSL(rgb) {
     return [h, s, l];
 }
 
-
 /**
- * Converts the hex color code to the equivalent rgba color code.
- *
- * @param {string} hex - A hex color string.
- * @param {number} opacity - A percentage of the opacity.
+ * Converts the hex color string to the equivalent rgba color string.
+ * @param  {string}     hex     A hex color string.
+ * @param  {number=100} opacity A percentage of the opacity.
+ * @return {string}             A rgba color string.
  */
 export function hexToRgba(hex: string, opacity: number = 100) {
     hex = hex.replace('#', '');
@@ -80,9 +79,10 @@ export function hexToRgba(hex: string, opacity: number = 100) {
 }
 
 /**
- * converts hex or rgba color to hsl color
+ * Converts hex or rgba color to hsl color.
  *
- * @param {string} colorString - A hex or rgb(a) color string.
+ * @param  {string} colorString A hex or rgb(a) color string.
+ * @return {Array}             An array representing hsl color, [h, s, l].
  */
 export function convertToHSL(colorString: string) {
     const rgba = colorString.indexOf('#') >= 0 ? hexToRgba(colorString) : colorString;
@@ -91,13 +91,14 @@ export function convertToHSL(colorString: string) {
 }
 
 /**
- * Finds and returns the dataview column that matches the given data role name
+ * Finds and returns the dataview column(s) that matches the given data role name.
  *
- * @param {Object} dataView - A Powerbi dataView object.
- * @param {string} dataRoleName - A name of the role for the column.
- * @param {boolean} multi - A boolean flag indicating whether to find multiple matching columns or not.
+ * @param  {DataView} dataView     A Powerbi dataView object.
+ * @param  {string}   dataRoleName A name of the role for the columen.
+ * @param  {boolean}  multi        A boolean flag indicating whether to find multiple matching columns or not           .
+ * @return {any}                   A dataview table column or an array of the columns.
  */
-export function findColumn(dataView: DataView, dataRoleName: string, multi?: boolean): any {
+export function findColumn(dataView: DataView, dataRoleName: string, multi?: boolean) {
     const columns = dataView.metadata.columns;
     const result = _[multi ? 'filter' : 'find'](columns || [], (col: any) => col && col.roles[dataRoleName]);
     return multi
@@ -107,14 +108,14 @@ export function findColumn(dataView: DataView, dataRoleName: string, multi?: boo
 
 /**
  * Returns a hsl color string based on the given color, opacity, index, total number of segments, and boolean indicating it's highlight or not.
- * Lightness of the color will be determined by segmentIndex and totalNumSegments where higer segmentIndex will produce lighter color while segmentIndex < totalNumSegments
+ * Lightness of the color will be determined by segmentIndex and totalNumSegments where higer segmentIndex will produce lighter color while segmentIndex < totalNumSegments.
  *
- * @param {string} baseColor - rgb or hex color string.
- * @param {number} opacity - output color opacity, 0~100 in %.
- * @param {number} segmentIndex - An index of the segment.
- * @param {number} totalNumSegments - A total number of segments.
- * @param {boolean} isHighlight - A boolean value indicating whether to generate highlight color or not.
- * @returns {string} - A hsla color string.
+ * @param  {string}     baseColor        rgb or hex color string.
+ * @param  {number=100} opacity          output color opacity, 0~100 in %.
+ * @param  {number}     segmentIndex     An index of the segment.
+ * @param  {number}     totalNumSegments A total number of segments.
+ * @param  {boolean}    isHighlight      A boolean value indicating whether to generate highlight color or not.
+ * @return {string}                      A hsla color string.
  */
 export function getSegmentColor(baseColor: string, opacity: number = 100, segmentIndex: number, totalNumSegments: number, isHighlight: boolean): string {
     const hue = convertToHSL(baseColor)[0] * 360;
@@ -128,13 +129,14 @@ export function getSegmentColor(baseColor: string, opacity: number = 100, segmen
 }
 
  /**
-  * [createSegments description]
-  * @param  {any}           bucket            A bucket object where count data are mapped to its corresponding bucket name.
-  * @param  {string}        mainColor         A main color used to generate colors for the segments.
-  * @param  {boolean}       isHighlight       A boolean value indicating whether to generate highlight segments or not.
-  * @param  {number=100}    opacity           An opacity of the color for the segments.
-  * @param  {boolean}       useHighlightColor A boolean value indicating whether to use highlgiht color rgardless of ishighlgiht parameter.
-  * @return {any[]}                           A Segment Array.
+  * Creates a facet bar segments data from the bucket data with given color.
+  *
+  * @param  {any}        bucket            A bucket object where count data are mapped to its corresponding bucket name.
+  * @param  {string}     mainColor         A main color used to generate colors for the segments.
+  * @param  {boolean}    isHighlight       A boolean value indicating whether to generate highlight segments or not.
+  * @param  {number=100} opacity           An opacity of the color for the segments.
+  * @param  {boolean}    useHighlightColor A boolean value indicating whether to use highlgiht color rgardless of ishighlgiht parameter.
+  * @return {Array}                        A Segments array.
   */
 export function createSegments(bucket: any, mainColor: string, isHighlight: boolean, opacity: number = 100, useHighlightColor?: boolean) {
     const countType = isHighlight ? 'highlight' : 'instanceCount';
@@ -150,6 +152,7 @@ export function createSegments(bucket: any, mainColor: string, isHighlight: bool
 
 /**
  * Creates a label displaying remaining number of facets for a facet group.
+ *
  * @param  {number} remaining remaining number of facets.
  * @return {string}           A label describing the remaining number of facets.
  */
