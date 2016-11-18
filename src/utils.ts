@@ -65,10 +65,10 @@ function toHSL(rgb) {
 }
 
 /**
- * Converts the hex color string to the equivalent rgba color string.
- * @param  {string}     hex     A hex color string.
- * @param  {number=100} opacity A percentage of the opacity.
- * @return {string}             A rgba color string.
+ * Converts the given hex color string to the equivalent rgba color string.
+ * @param  {string}       hex     A hex color string.
+ * @param  {number = 100} opacity A percentage of the opacity.
+ * @return {string}               A rgba color string.
  */
 export function hexToRgba(hex: string, opacity: number = 100) {
     hex = hex.replace('#', '');
@@ -107,15 +107,15 @@ export function findColumn(dataView: DataView, dataRoleName: string, multi?: boo
 }
 
 /**
- * Returns a hsl color string based on the given color, opacity, index, total number of segments, and boolean indicating it's highlight or not.
+ * Returns an hsl color string based on the given color, opacity, index, total number of segments, and a boolean indicating it's highlighted or not.
  * Lightness of the color will be determined by segmentIndex and totalNumSegments where higer segmentIndex will produce lighter color while segmentIndex < totalNumSegments.
  *
- * @param  {string}     baseColor        rgb or hex color string.
- * @param  {number=100} opacity          output color opacity, 0~100 in %.
- * @param  {number}     segmentIndex     An index of the segment.
- * @param  {number}     totalNumSegments A total number of segments.
- * @param  {boolean}    isHighlight      A boolean value indicating whether to generate highlight color or not.
- * @return {string}                      A hsla color string.
+ * @param  {string}       baseColor        rgb or hex color string.
+ * @param  {number = 100} opacity          output color opacity, 0~100 in %.
+ * @param  {number}       segmentIndex     The index of the segment.
+ * @param  {number}       totalNumSegments the total number of segments.
+ * @param  {boolean}      isHighlight      A boolean value indicating whether to generate highlight color or not.
+ * @return {string}                        An hsla color string.
  */
 export function getSegmentColor(baseColor: string, opacity: number = 100, segmentIndex: number, totalNumSegments: number, isHighlight: boolean): string {
     const hue = convertToHSL(baseColor)[0] * 360;
@@ -129,14 +129,14 @@ export function getSegmentColor(baseColor: string, opacity: number = 100, segmen
 }
 
  /**
-  * Creates a facet bar segments data from the bucket data with given color.
+  * Creates facet bar segments data from the bucket data with given color.
   *
-  * @param  {any}        bucket            A bucket object where count data are mapped to its corresponding bucket name.
-  * @param  {string}     mainColor         A main color used to generate colors for the segments.
-  * @param  {boolean}    isHighlight       A boolean value indicating whether to generate highlight segments or not.
-  * @param  {number=100} opacity           An opacity of the color for the segments.
-  * @param  {boolean}    useHighlightColor A boolean value indicating whether to use highlgiht color rgardless of ishighlgiht parameter.
-  * @return {Array}                        A Segments array.
+  * @param  {any}          bucket            An Object that maps counts to bucket names.
+  * @param  {string}       mainColor         A main color used to generate colors for the segments.
+  * @param  {boolean}      isHighlight       A boolean value indicating whether to generate highlight segments.
+  * @param  {number = 100} opacity           The opacity of the color for the segments.
+  * @param  {boolean}      useHighlightColor A boolean value indicating whether to use highlgiht color rgardless of the isHighlight parameter.
+  * @return {Array}                          A Segments array.
   */
 export function createSegments(bucket: any, mainColor: string, isHighlight: boolean, opacity: number = 100, useHighlightColor?: boolean) {
     const countType = isHighlight ? 'highlight' : 'instanceCount';
@@ -151,9 +151,9 @@ export function createSegments(bucket: any, mainColor: string, isHighlight: bool
 }
 
 /**
- * Creates a label displaying remaining number of facets for a facet group.
+ * Creates a label displaying the remaining number of facets for a facet group.
  *
- * @param  {number} remaining remaining number of facets.
+ * @param  {number} remaining The number of facets remaining.
  * @return {string}           A label describing the remaining number of facets.
  */
 export function otherLabelTemplate(remaining: number) {
