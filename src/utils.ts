@@ -69,7 +69,7 @@ function toHSL(rgb) {
  * Converts the hex color code to the equivalent rgba color code.
  *
  * @param {string} hex - A hex color string.
- * @param {number} opacity - A percentage of the opacity. 
+ * @param {number} opacity - A percentage of the opacity.
  */
 export function hexToRgba(hex: string, opacity: number = 100) {
     hex = hex.replace('#', '');
@@ -127,15 +127,15 @@ export function getSegmentColor(baseColor: string, opacity: number = 100, segmen
     return `hsla(${hue}, ${saturation}%, ${lightness}%, ${opacity / 100})`;
 }
 
-/**
- * Creates a facet bar segments data from the bucket data with given color.
- *
- * @param {Object} bucket - A bucket object where count data are mapped to its corresponding bucket name.
- * @param {string} mainColor - A main color used to generate colors for the segments.
- * @param {boolean} isHighlight - A boolean value indicating whether to generate highlight segments or not.
- * @param {number} opacity - An opacity of the color for the segments.
- * @param {boolean=} useHighlightColor - A boolean value indicating whether to use highlgiht color rgardless of ishighlgiht parameter.
- */
+ /**
+  * [createSegments description]
+  * @param  {any}           bucket            A bucket object where count data are mapped to its corresponding bucket name.
+  * @param  {string}        mainColor         A main color used to generate colors for the segments.
+  * @param  {boolean}       isHighlight       A boolean value indicating whether to generate highlight segments or not.
+  * @param  {number=100}    opacity           An opacity of the color for the segments.
+  * @param  {boolean}       useHighlightColor A boolean value indicating whether to use highlgiht color rgardless of ishighlgiht parameter.
+  * @return {any[]}                           A Segment Array.
+  */
 export function createSegments(bucket: any, mainColor: string, isHighlight: boolean, opacity: number = 100, useHighlightColor?: boolean) {
     const countType = isHighlight ? 'highlight' : 'instanceCount';
     return _.sortBy(Object.keys(bucket), (key: string) => {
@@ -150,8 +150,8 @@ export function createSegments(bucket: any, mainColor: string, isHighlight: bool
 
 /**
  * Creates a label displaying remaining number of facets for a facet group.
- *
- * @param {number} remaining - remaining number of facets.
+ * @param  {number} remaining remaining number of facets.
+ * @return {string}           A label describing the remaining number of facets.
  */
 export function otherLabelTemplate(remaining: number) {
     return `Other (${roundToNearestTen(remaining)}${remaining < 10 || !(remaining % 10) ? '' : '+'})`;
