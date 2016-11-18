@@ -128,6 +128,7 @@ interface Facet {
 }
 
 interface FacetsVisualData {
+    dataPointsMap?: DataPointsMap,
     aggregatedData: AggregatedData,
     hasHighlight: boolean,
     facetsData: FacetGroup[],
