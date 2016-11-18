@@ -38,7 +38,7 @@ import {
 import * as _ from 'lodash';
 
 /**
- * Returns true if the given range values are within the range of the givend filter range.
+ * Returns true if the given range values are within the range of the given filter range.
  * @param  {any}          rangeFilter A range filter.
  * @param  {RangeValue[]} rangeValues An array of range values.
  * @return {boolean}
@@ -364,10 +364,10 @@ export function aggregateDataPointsMap(data: DataPointsMapData, filter: DataPoin
  * Converts the aggregated data into facets visual data.
  *
  * @param  {AggregatedData}                   aggregatedData An aggregated data.
- * @param  {convertToFacetsVisualDataOptions} options        A options object.
+ * @param  {ConvertToFacetsVisualDataOptions} options        A options object.
  * @return {FacetsVisualData}                                Data to be used in this visual.
  */
-export function convertToFacetsVisualData(aggregatedData: AggregatedData, options: convertToFacetsVisualDataOptions): FacetsVisualData {
+export function convertToFacetsVisualData(aggregatedData: AggregatedData, options: ConvertToFacetsVisualDataOptions): FacetsVisualData {
     const { colors, selectedRange, settings } = options;
     const hasHighlight = aggregatedData.hasHighlight;
     const rangeFacetState = JSON.parse(settings.facetState.rangeFacet);

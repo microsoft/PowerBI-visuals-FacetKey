@@ -25,113 +25,113 @@ interface FacetKeySettings {
     facetCount: {
         initial: number,
         increment: number,
-    },
+    };
     facetState: {
         rangeFacet: string,
         normalFacet: string,
-    },
+    };
     display: {
         selectionCount: boolean,
-    }
+    };
 }
 
 interface RangeValue {
-    value: Date | string | number | boolean,
-    valueLabel: string,
-    key: string
+    value: Date | string | number | boolean;
+    valueLabel: string;
+    key: string;
 }
 
 interface RowObject {
-    index: number,
-    identity: powerbi.DataViewScopeIdentity,
-    facet?: Date | string | number | boolean,
-    facetInstance?: Date | string | number | boolean,
-    count?: number,
-    facetInstanceColor?: Date | string | number | boolean,
-    iconClass?: Date | string | number | boolean,
-    rangeValues?: RangeValue[],
-    bucket?: Date | string | number | boolean,
+    index: number;
+    identity: powerbi.DataViewScopeIdentity;
+    facet?: Date | string | number | boolean;
+    facetInstance?: Date | string | number | boolean;
+    count?: number;
+    facetInstanceColor?: Date | string | number | boolean;
+    iconClass?: Date | string | number | boolean;
+    rangeValues?: RangeValue[];
+    bucket?: Date | string | number | boolean;
 }
 
 interface DataPoint {
-    rows: RowObject[],
-    highlight: number,
-    facetKey: string,
-    facetLabel: string,
-    instanceValue: string,
-    instanceLabel: string,
-    instanceCount: number,
-    instanceCountFormatter: any,
-    instanceColor: string,
-    instanceIconClass: string,
-    bucket?: any,
-    rangeValues?: RangeValue[],
-    isSelected?: boolean,
+    rows: RowObject[];
+    highlight: number;
+    facetKey: string;
+    facetLabel: string;
+    instanceValue: string;
+    instanceLabel: string;
+    instanceCount: number;
+    instanceCountFormatter: any;
+    instanceColor: string;
+    instanceIconClass: string;
+    bucket?: any;
+    rangeValues?: RangeValue[];
+    isSelected?: boolean;
 }
 
 interface DataPointsMap {
-    [facetKey: string]: DataPoint[]
+    [facetKey: string]: DataPoint[];
 }
 
 interface DataPointsMapData {
-    dataPointsMap: DataPointsMap,
-    hasHighlight: boolean,
+    dataPointsMap: DataPointsMap;
+    hasHighlight: boolean;
 }
 
 interface AggregatedData {
-    rangeDataMap: any,
-    dataPointsMap: DataPointsMap,
-    hasHighlight: boolean,
+    rangeDataMap: any;
+    dataPointsMap: DataPointsMap;
+    hasHighlight: boolean;
 }
 
 interface DataPointsFilter {
-    contains?: string,
-    range?: any,
-    ignore?: DataPoint[],
+    contains?: string;
+    range?: any;
+    ignore?: DataPoint[];
 }
 
 interface AggregateDataPointsOptions {
-    forEachDataPoint?: (dp: DataPoint) => void,
-    filter?: DataPointsFilter,
+    forEachDataPoint?: (dp: DataPoint) => void;
+    filter?: DataPointsFilter;
 }
 
-interface convertToFacetsVisualDataOptions {
-    colors: powerbi.IColorInfo[],
-    settings: FacetKeySettings,
-    hasHighlight?: boolean,
-    selectedRange?: any,
+interface ConvertToFacetsVisualDataOptions {
+    colors: powerbi.IColorInfo[];
+    settings: FacetKeySettings;
+    hasHighlight?: boolean;
+    selectedRange?: any;
 }
 
 interface FacetGroup {
-    label: string,
-    key: string,
-    facets: Facet[],
-    total?: number,
-    more?: any,
+    label: string;
+    key: string;
+    facets: Facet[];
+    total?: number;
+    more?: any;
 
-    order: number,
-    collapsed: boolean,
-    allFacets?: Facet[],
-    isRange?: boolean,
+    order: number;
+    collapsed: boolean;
+    allFacets?: Facet[];
+    isRange?: boolean;
 }
 
 interface Facet {
     icon: {
          class: string,
          color: string,
-    },
-    count: number,
-    countLabel: string,
-    value: string,
-    label: string,
-    segments?: { count: number, color: string}[],
+    };
+    count: number;
+    countLabel: string;
+    value: string;
+    label: string;
+    segments?: { count: number; color: string}[];
 }
 
 interface FacetsVisualData {
-    dataPointsMap?: DataPointsMap,
-    aggregatedData: AggregatedData,
-    hasHighlight: boolean,
-    facetsData: FacetGroup[],
-    facetsSelectionData: any[],
-    selectedDataPoints: DataPoint[],
+    dataPointsMap?: DataPointsMap;
+    aggregatedData: AggregatedData;
+    hasHighlight: boolean;
+    facetsData: FacetGroup[];
+    facetsSelectionData: any[];
+    selectedDataPoints: DataPoint[];
 }
