@@ -38,7 +38,7 @@ import {
 import * as _ from 'lodash';
 
 /**
- * Returns true if the given range values are within the range of the given filter range.
+ * Returns true if the given range values are within the range of the given filter.
  * @param  {any}          rangeFilter A range filter.
  * @param  {RangeValue[]} rangeValues An array of range values.
  * @return {boolean}
@@ -56,7 +56,7 @@ function checkRangeFilter(rangeFilter: any, rangeValues: RangeValue[]) {
 }
 
 /**
- * Returns true if facetInstance of dp contains provided keyword.
+ * Returns true if the facet instance of the given data point contains the given keyword.
  *
  * @param  {string}    keyword   A string keyword.
  * @param  {DataPoint} dataPoint A dataPoint Object.
@@ -70,7 +70,8 @@ function checkKeywordFilter(keyword: string, dataPoint: DataPoint) {
 }
 
 /**
- * Creates a bucket on the target Object and store sum of instance and highlight counts from given datapoint.
+ * Create or update a bucket on the target Object.
+ * Add the instance and highlight counts from the given datapoint to the bucket’s corresponding sums
  *
  * @param  {any}       targetObj An Object in which a bucekt will be created.
  * @param  {DataPoint} dp        A dataPoint object.
@@ -88,11 +89,11 @@ function createBucket(targetObj: any, dp: DataPoint) {
 }
 
 /**
- * Aggregates given dataPoints on facet instance value.
+ * Aggregate the given datapoints by instance value, optionally applying a filter.
  *
- * @param  {DataPoint[]}                   dataPoints An array of data points.
- * @param  {AggregateDataPointsOptions={}} options    An options object.
- * @return {Object}                                   A result containing an array of aggregated datapoints and ignored dataPoints.
+ * @param  {DataPoint[]}                     dataPoints An array of data points.
+ * @param  {AggregateDataPointsOptions = {}} options    An object that can optionally include a DataPointsFilter.
+ * @return {Object}                                     An Object containing an array of aggregated data points and an array of ignored data points.
  */
 function aggregateDataPoints(dataPoints: DataPoint[], options: AggregateDataPointsOptions = {}) {
     const { forEachDataPoint, filter = {} } = options;
@@ -103,7 +104,8 @@ function aggregateDataPoints(dataPoints: DataPoint[], options: AggregateDataPoin
     };
     dataPoints.forEach((dp: DataPoint) => {
         const instanceLabel = dp.instanceLabel;
-        if (_.find(filter.ignore, (ignoreDp: DataPoint) => ignoreDp.instanceLabel === dp.instanceLabel && ignoreDp.facetKey === dp.facetKey)) {
+        const ignoreThisDp = _.find(filter.ignore, (ignoreDp: DataPoint) => ignoreDp.instanceLabel === dp.instanceLabel && ignoreDp.facetKey === dp.facetKey);
+        if (ignoreThisDp) {
             return result.ignoredDataPoints.push(dp);
         }
 
@@ -136,11 +138,13 @@ function aggregateDataPoints(dataPoints: DataPoint[], options: AggregateDataPoin
 }
 
 /**
- * Aggregates datapoints by facetInstance applying rangefilter only. (used to create a list of datapoints for selected facet instances)
+ * Aggregate data points by face instance, applying only the (optional) range filter from the given options object. 
+ * It is used to create a list of the data points for the selected facet instances which bypass the keyword filter 
+ * and can have zero for the instance or highlight count.  
  *
- * @param  {DataPoint[]}                   dataPoints An array of data points.
- * @param  {AggregateDataPointsOptions={}} options    An options object.
- * @return {DataPoint[]}                              An array of datapoints.
+ * @param  {DataPoint[]}                     dataPoints An array of data points.
+ * @param  {AggregateDataPointsOptions = {}} options    An options object.
+ * @return {DataPoint[]}                                An array of datapoints.
  */
 function aggregateUsingRangeFilterOnly(dataPoints: DataPoint[], options: AggregateDataPointsOptions = {}): DataPoint[] {
     const { forEachDataPoint, filter = {} } = options;
@@ -226,7 +230,7 @@ export function compareRangeValue(a: any, b: any) {
 }
 
 /**
- * Converts the dataview into dataPointsMap in which each datapoints are grouped by faet key.
+ * Convert the given dataview into a data points map in which data points are grouped by facet key.
  *
  * @param  {DataView}          dataView A dataView object.
  * @return {DataPointsMapData}          Converted data.
@@ -313,7 +317,7 @@ export function convertToDataPointsMap(dataView: DataView): DataPointsMapData {
 }
 
 /**
- * Converts the dataPointsMapData to aggregated data.
+ * Convert the given DataPointsMapData to aggregated data, optionally applying the given filter
  *
  * @param  {DataPointsMapData}   data   A dataPointsMap data converted from dataview.
  * @param  {DataPointsFilter={}} filter A DataPointsFilter which is used to filter the data points.
@@ -361,7 +365,7 @@ export function aggregateDataPointsMap(data: DataPointsMapData, filter: DataPoin
 };
 
 /**
- * Converts the aggregated data into facets visual data.
+ * Converts the given aggregated data into facets visual data.
  *
  * @param  {AggregatedData}                   aggregatedData An aggregated data.
  * @param  {ConvertToFacetsVisualDataOptions} options        A options object.
