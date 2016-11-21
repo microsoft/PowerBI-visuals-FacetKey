@@ -182,7 +182,7 @@ function aggregateUsingRangeFilterOnly(dataPoints: DataPoint[], options: Aggrega
  *
  * @param  {IValueFormatter} defaultFormatter A formatter that will be used to format the value.
  * @param  {any}             value            A value to be formatted.
- * @param  {any=''}          defaultValue     A default value to be returned if provided value is invalid.
+ * @param  {any = ''}          defaultValue     A default value to be returned if provided value is invalid.
  * @return {string}                           A formatted value.
  */
 export function formatValue(defaultFormatter: IValueFormatter, value: any, defaultValue: any = '') {

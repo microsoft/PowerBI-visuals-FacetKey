@@ -34,6 +34,7 @@ import IVisualHostServices = powerbi.IVisualHostServices;
 import EnumerateVisualObjectInstancesOptions = powerbi.EnumerateVisualObjectInstancesOptions;
 import SQExprBuilder = powerbi.data.SQExprBuilder;
 import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
+import DataViewScopeIdentity = powerbi.DataViewScopeIdentity;
 import * as _ from 'lodash';
 import * as $ from 'jquery';
 import { formatValue, convertToDataPointsMap, aggregateDataPointsMap, compareRangeValue, convertToFacetsVisualData } from './data';
@@ -228,8 +229,7 @@ export default class FacetsVisual implements IVisual {
     }
 
     /**
-     * Check if dataview has all the reqruied columns.
-     * It will return true if it has all count, facetInstance, and facet columns.
+     * It will return true if the given DataView has the count column and either the facet or facetInstance column populated.
      *
      * @param  {DataView} dataView powerbi dataView object.
      * @return {boolean}
@@ -239,13 +239,12 @@ export default class FacetsVisual implements IVisual {
         const countColumnExists = _.some(columns || [], (col: any) => col && col.roles.count);
         const instanceColumnExists = _.some(columns || [], (col: any) => col && col.roles.facetInstance);
         const facetColumnExists = _.some(columns || [], (col: any) => col && col.roles.facet);
-        // return true if either instance column or faceet column AND count column is populated.
         return (instanceColumnExists || facetColumnExists) && countColumnExists;
     }
 
     /**
-     * Validates the user input for setting object from the powerbi formatting pane.
-     * It only validates for facetCount object at the momment.
+     * Validates the user input for the setting object from the powerbi formatting pane.
+     * At the moment, it only validates the facetCount object.
      *
      * @param  {FacetKeySettings}    settings FacetKeySettings object.
      * @return {FacetKeySettings}
@@ -260,7 +259,7 @@ export default class FacetsVisual implements IVisual {
     }
 
     /**
-     * Saves the facet states to pbi object so it can be persisted.
+     * Saves the facets’ state to a pbi object and persists it.
      */
     private saveFacetState() {
         const instances: VisualObjectInstance[] = [];
@@ -373,7 +372,7 @@ export default class FacetsVisual implements IVisual {
     }
 
     /**
-     * Get the facet group data with given key from the data.
+     * Get the facet group data with the given key from the data.
      *
      * @param  {string} key A facet key.
      * @return {FacetGroup} A facet group data.
@@ -454,7 +453,7 @@ export default class FacetsVisual implements IVisual {
     }
 
     /**
-     * Expend the facet group of given key and display more facet instances.
+     * Expend the facet group with the given key and display more facet instances.
      *
      * @param {string} key A facet key.
      */
@@ -481,9 +480,9 @@ export default class FacetsVisual implements IVisual {
     }
 
     /**
-     * Reset facets by unselecting all facets instances or re-rendering.
+     * Reset facets by unselecting all facets instances.
      *
-     * @param {boolean = true}  notifyHost A flag indicating whether to notify the host to trigger update call or not.
+     * @param {boolean = true}  notifyHost A flag indicating whether to notify the host to trigger update call.
      * @param {boolean = false} replace    A flag indicating whether to replace facets with current data.
      */
     private resetFacets(notifyHost: boolean = true, replace: boolean = false): void {
@@ -519,7 +518,7 @@ export default class FacetsVisual implements IVisual {
     }
 
     /**
-     * Returns true if there is range or keyword filter.
+     * Returns true if there is a range or keyword filter.
      *
      * @return {boolean}
      */
@@ -529,6 +528,7 @@ export default class FacetsVisual implements IVisual {
 
     /**
      * Returns true if there is a range filter.
+     *
      * @return {boolean} [description]
      */
     private hasRangeFilter(): boolean {
@@ -537,7 +537,8 @@ export default class FacetsVisual implements IVisual {
     }
 
     /**
-     * Creates a range sqExpr from given range filter.
+     * Creates a semantic query expression from the given range filter.
+     *
      * @param  {any}    rangeFilter A range filter
      * @return {any}    A range sqExpr expression.
      */
@@ -558,7 +559,7 @@ export default class FacetsVisual implements IVisual {
     }
 
     /**
-     * Send range selction to the host.
+     * Send the range selection to the host.
      */
     private selectRanges() {
         const sqExpr: any = this.hasRangeFilter()
@@ -568,9 +569,9 @@ export default class FacetsVisual implements IVisual {
     }
 
     /**
-     * Send facet instances selection to the host.
+     * Send the given selection of facet instances to the host.
      *
-     * @param  {DataPoint[]} selectedInstances Datapoints of selected facet instances.
+     * @param  {DataPoint[]} selectedInstances The data points of the selected facet instances. 
      */
     private selectFacetInstances(selectedInstances: DataPoint[]) {
         const facetColumn = findColumn(this.dataView, 'facet');
@@ -596,21 +597,21 @@ export default class FacetsVisual implements IVisual {
     }
 
     /**
-     * Send a selection for given identities to the host.
+     * Send a selection for the given data view scope identities to the host.
      *
-     * @param {any[]} identities An array of identities.
+     * @param {DataViewScopeIdentity[]} identities An array of powerbi DataViewScopeIdentities.
      */
-    private sendSelectionToHost(identities: any[]) {
+    private sendSelectionToHost(identities: DataViewScopeIdentity[]) {
         const selectArgs = {
-            data: identities.map((identity: any) => ({ data: [identity] })),
+            data: identities.map((identity: DataViewScopeIdentity) => ({ data: [identity] })),
             visualObjects: [],
         };
         this.hostServices.onSelect(selectArgs);
     }
 
     /**
-     * Toggle a selection for the facet instance of given key and value.
-     *
+     * Toggle selection for the facet instance with the given key and value
+     * 
      * @param {string} key   A facet key.
      * @param {string} value A facet instance value.
      */
@@ -623,10 +624,10 @@ export default class FacetsVisual implements IVisual {
     }
 
     /**
-     * Update facets so that it reflects current selected facet instances.
+     * Update the facets component so that it reflects the given selected facet instances
      *
-     * @param {DataPoint[] = []}   selectedInstances An array of datapoints for selected facet instances.
-     * @param {boolean     = true} reset             Flag indicating wheter resetting facets is required or not.
+     * @param {DataPoint[] = []}   selectedInstances An array of datapoints for the selected facet instances.
+     * @param {boolean     = true} reset             Flag indicating whether to reset the facets components.
      */
     private updateFacetsSelection(selectedInstances: DataPoint[] = [], reset: boolean = true): void {
         this.facets.unhighlight();
