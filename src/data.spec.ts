@@ -600,7 +600,10 @@ describe('.convertToFacetsVisualData', () => {
         const selectionLocGroup = <any>getFacetGroup(selectionData, 'location');
 
         expect(locGroup.facets[0].segments).to.deep.equal('fakeSeg:{"level1":{"instanceCount":10,"highlight":6}}:rgba(0, 0, 0, 1):100');
-        expect(selectionLocGroup.facets[0].selected.segments).to.deep.equal('fakeHighlightSeg:{"level1":{"instanceCount":10,"highlight":6}}:#00c6e1:undefined');
+        expect(selectionLocGroup.facets[0].selected.segments).to.deep.equal('fakeHighlightSeg:{"level1":{"instanceCount":10,"highlight":6}}:rgba(0, 0, 0, 1):100');
+        // expect(selectionLocGroup.facets[0].selected.segments).to.deep.equal('fakeHighlightSeg:{"level1":{"instanceCount":10,"highlight":6}}:#00c6e1:undefined');
+        expect(result.aggregatedData.dataPointsMap['location'][0].selectionColor.color).to.equal('rgba(0, 0, 0, 1)');
+        expect(result.aggregatedData.dataPointsMap['location'][0].selectionColor.opacity).to.equal(100);
         stub.restore();
     });
     it('should assign colors with diffrent opacities to segments and icon', () => {

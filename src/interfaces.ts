@@ -67,6 +67,7 @@ interface DataPoint {
     bucket?: any;
     rangeValues?: RangeValue[];
     isSelected?: boolean;
+    selectionColor?: { color: string, opacity: number };
 }
 
 interface DataPointsMap {

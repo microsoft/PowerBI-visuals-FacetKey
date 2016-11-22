@@ -571,7 +571,7 @@ export default class FacetsVisual implements IVisual {
     /**
      * Send the given selection of facet instances to the host.
      *
-     * @param  {DataPoint[]} selectedInstances The data points of the selected facet instances. 
+     * @param  {DataPoint[]} selectedInstances The data points of the selected facet instances.
      */
     private selectFacetInstances(selectedInstances: DataPoint[]) {
         const facetColumn = findColumn(this.dataView, 'facet');
@@ -611,7 +611,7 @@ export default class FacetsVisual implements IVisual {
 
     /**
      * Toggle selection for the facet instance with the given key and value
-     * 
+     *
      * @param {string} key   A facet key.
      * @param {string} value A facet instance value.
      */
@@ -639,7 +639,7 @@ export default class FacetsVisual implements IVisual {
                 value: selected.instanceValue,
                 selected: selected.bucket ? {
                     count: selected.instanceCount,
-                    segments: createSegments(selected.bucket, HIGHLIGHT_COLOR, false, 100, true)
+                    segments: createSegments(selected.bucket, selected.selectionColor.color, false, selected.selectionColor.opacity, true)
                 } : selected.instanceCount,
             }],
         })));

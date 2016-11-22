@@ -453,9 +453,15 @@ export function convertToFacetsVisualData(aggregatedData: AggregatedData, option
             // add segments if there is bucket
             if (bucket) {
                 const opacity = instanceColor ? 100 : nextColorOpacity;
-                selectionSpec.selected['segments'] = createSegments(bucket, HIGHLIGHT_COLOR, true);
+
+                /* Default blue for highlight/selection color. */
+                // selectionSpec.selected['segments'] = createSegments(bucket, HIGHLIGHT_COLOR, true);
+                // dp.selectionColor = { color: HIGHLIGHT_COLOR, opacity: 100 };
+
+                selectionSpec.selected['segments'] = createSegments(bucket, facetColor, true, opacity || 0);
                 facet['segments'] = createSegments(bucket, facetColor, false, opacity || 0);
                 opacity && (facet.icon.color = getSegmentColor(facetColor, opacity, 0, 1, false));
+                dp.selectionColor = { color: facetColor, opacity: opacity || 0 };
             }
 
             !!highlight && selectionGroup.facets.push(selectionSpec);
