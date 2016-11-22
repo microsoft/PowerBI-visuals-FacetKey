@@ -77,7 +77,7 @@ function checkKeywordFilter(keyword: string, dataPoint: DataPoint) {
  * @param  {DataPoint} dp        A dataPoint object.
  */
 function createBucket(targetObj: any, dp: DataPoint) {
-    if (!dp.rows[0].bucket) { return; }
+    if (!('bucket' in dp.rows[0])) { return; }
     const bucketName = String(dp.rows[0].bucket);
     !targetObj.bucket && (targetObj.bucket = {});
     if (!targetObj.bucket[bucketName]) {
@@ -138,9 +138,9 @@ function aggregateDataPoints(dataPoints: DataPoint[], options: AggregateDataPoin
 }
 
 /**
- * Aggregate data points by face instance, applying only the (optional) range filter from the given options object. 
- * It is used to create a list of the data points for the selected facet instances which bypass the keyword filter 
- * and can have zero for the instance or highlight count.  
+ * Aggregate data points by face instance, applying only the (optional) range filter from the given options object.
+ * It is used to create a list of the data points for the selected facet instances which bypass the keyword filter
+ * and can have zero for the instance or highlight count.
  *
  * @param  {DataPoint[]}                     dataPoints An array of data points.
  * @param  {AggregateDataPointsOptions = {}} options    An options object.
