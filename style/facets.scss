@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
- 
+
 @import "./font-awesome/font-awesome";
 @import "../lib/uncharted-facets/public/sass/main";
 
@@ -114,19 +114,6 @@ body.visual-sandbox {
   background: #222;
   color: #ddd;
 }
-
-// facets bar
-.render-segments .facets-facet-vertical .facet-block .facet-bar-container .facet-bar-background {
-  background: hsl(187, 0%, 95%) !important;
-}
-.render-segments .facets-facet-vertical .facet-block .facet-bar-container .facet-bar-segments-container {
-  overflow: hidden;
-}
-.facets-facet-vertical .facet-block .facet-bar-container .facet-bar-segments-container .facet-bar-segment {
-  background: hsl(187, 0%, 95%);
-  border-color: hsl(187, 0%, 95%);
-}
-// facets bar end
 
 //=========== Loader ==============
 .facets-loader:before,
@@ -239,21 +226,6 @@ body.visual-sandbox {
   transition: none;
 }
 
-// Query Group
-.facets-root-container > .facets-group {
-  .facets-facet-vertical {
-    transition: none;
-  }
-  .query-remove {
-    position: absolute;
-    right: -10px;
-    top: 5px;
-  }
-  .query-remove:hover {
-    color: grey;
-  }
-}
-
 .facets-root-container {
   padding-bottom: 20px;
   a {
@@ -263,9 +235,6 @@ body.visual-sandbox {
   .facet-icon .default {
     font-size: 7.5px;
     padding-top: 1.5px;
-  }
-  .facets-facet-vertical .facet-block .facet-bar-container .facet-bar-base {
-    transition: width 0.25s ease, background-color 0.25s ease, opacity 0.5s ease;
   }
   .group-facet-container-outer .group-more-container .group-other-block .group-other-label-container {
     height: 12px;
@@ -279,5 +248,30 @@ body.visual-sandbox {
   }
   .group-facet-container-outer .group-more-container .group-other-block .group-other-label-container .group-other-label-show-more .other {
     float: left
+  }
+}
+
+// facets bar
+.facets-facet-vertical .facet-block .facet-bar-container .facet-bar-base {
+  // -webkit-print-color-adjust:exact; 	/* Chrome */
+  // color-adjust:exact;					/* Firefox */
+  transition: width 0.25s ease, background-color 0.25s ease, opacity 0.5s ease;
+}
+.render-segments .facets-facet-vertical .facet-block .facet-bar-container .facet-bar-background {
+  background: hsl(187, 0%, 95%) !important;
+}
+.render-segments .facets-facet-vertical .facet-block .facet-bar-container .facet-bar-segments-container {
+  overflow: hidden;
+}
+.facets-facet-vertical .facet-block .facet-bar-container .facet-bar-segments-container .facet-bar-segment {
+  background: hsl(187, 0%, 95%);
+  border-color: hsl(187, 0%, 95%);
+}
+// facets bar end
+
+@media print {
+  body.visual-sandbox {
+    -webkit-print-color-adjust: exact; /* Chrome */
+    color-adjust:exact;					/* Firefox */
   }
 }
