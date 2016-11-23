@@ -98,8 +98,8 @@
 					opacity $facet_abbreviation_animation_duration ease;
 				}
 
-				.facet-bar-segment.zero-width,
-				.facet-bar-segment:last-child {
+				.facet-bar-segment:last-child,
+				.facet-bar-segment.zero-width {
 					border: none;
 				}
 			}
@@ -114,10 +114,6 @@
 
 			.facet-bar-selected {
 				background-color: #00c6e1 !important;
-
-				.facet-bar-segment {
-					border: none;
-				}
 			}
 		}
 
