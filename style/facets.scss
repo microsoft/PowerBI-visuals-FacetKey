@@ -21,6 +21,8 @@
  * SOFTWARE.
  */
 
+$facet_bar_width_animation_duration: 0.25s;
+
 @import "./font-awesome/font-awesome";
 @import "../lib/uncharted-facets/public/sass/main";
 
@@ -252,26 +254,13 @@ body.visual-sandbox {
 }
 
 // facets bar
-.facets-facet-vertical .facet-block .facet-bar-container .facet-bar-base {
-  // -webkit-print-color-adjust:exact; 	/* Chrome */
-  // color-adjust:exact;					/* Firefox */
-  transition: width 0.25s ease, background-color 0.25s ease, opacity 0.5s ease;
-}
 .render-segments .facets-facet-vertical .facet-block .facet-bar-container .facet-bar-background {
-  background: hsl(187, 0%, 95%) !important;
+  box-shadow: inset 0 0 0 1000px hsl(187, 0%, 95%) !important;
 }
 .render-segments .facets-facet-vertical .facet-block .facet-bar-container .facet-bar-segments-container {
   overflow: hidden;
 }
 .facets-facet-vertical .facet-block .facet-bar-container .facet-bar-segments-container .facet-bar-segment {
-  background: hsl(187, 0%, 95%);
+  box-shadow: inset 0 0 0 1000px hsl(187, 0%, 95%);
   border-color: hsl(187, 0%, 95%);
-}
-// facets bar end
-
-@media print {
-  body.visual-sandbox {
-    -webkit-print-color-adjust: exact; /* Chrome */
-    color-adjust:exact;					/* Firefox */
-  }
 }

@@ -76,14 +76,12 @@
 
 			.facet-bar-base {
 				transition: width $facet_bar_width_animation_duration ease,
-							background-color $facet_bar_width_animation_duration ease,
-							opacity $facet_abbreviation_animation_duration ease;
+										box-shadow $facet_bar_width_animation_duration ease,
+										opacity $facet_abbreviation_animation_duration ease;
 				left: 0;
 				position: absolute;
 				height: 4px;
 				box-sizing: content-box;
-				-webkit-print-color-adjust:exact; 	/* Chrome */
-				color-adjust:exact;					/* Firefox */
 			}
 
 			.facet-bar-segments-container {
@@ -94,8 +92,8 @@
 					border-right: 1px solid #ddd;
 					position: initial;
 					transition: width $facet_bar_width_animation_duration ease,
-					background-color $facet_bar_width_animation_duration ease,
-					opacity $facet_abbreviation_animation_duration ease;
+											box-shadow $facet_bar_width_animation_duration ease,
+											opacity $facet_abbreviation_animation_duration ease;
 				}
 
 				.facet-bar-segment:last-child,
@@ -105,15 +103,15 @@
 			}
 
 			.facet-bar-background {
-				background: #ddd !important;
+				box-shadow: inset 0 0 0 1000px $facet_bar_background_color;
 			}
 
 			.facet-bar-default {
-				background-color: #aaa !important;
+				box-shadow: inset 0 0 0 1000px $facet_bar_default_color;
 			}
 
 			.facet-bar-selected {
-				background-color: #00c6e1 !important;
+				box-shadow: inset 0 0 0 1000px $facet_bar_selected_color;
 			}
 		}
 
@@ -280,19 +278,19 @@
 			height: 100%;
 
 			.facet-histogram-bar {
-				fill: #ddd;
+				fill: $facet_histogram_bar_color;
 			}
 
 			.facet-histogram-bar:hover {
-				fill: #bbb;
+				fill: $facet_histogram_bar_hover_color;
 			}
 
 			.facet-histogram-bar-highlighted {
-				fill: #00c6e1;
+				fill: $facet_histogram_bar_highlighted_color;
 			}
 
 			.facet-histogram-bar-highlighted:hover {
-				fill: #0089a4;
+				fill: $facet_histogram_bar_highlighted_hover_color;
 			}
 
 			.facet-histogram-bar-transform {
@@ -309,7 +307,7 @@
 			border: 1px solid #666;
 			border-top: none;
 			border-bottom: none;
-			background-color: rgba(0, 198, 225, 0.15);
+			box-shadow: inset 0 0 0 1000px $facet_range_filter_background_color;
 			pointer-events: none;
 			transition: opacity $facet_range_filter_fade_animation_duration ease;
 
