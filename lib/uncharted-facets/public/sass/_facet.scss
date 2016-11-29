@@ -80,7 +80,7 @@
 	.facet-bar-base {
 		transition: width $facet_bar_width_animation_duration ease,
 	  			box-shadow $facet_bar_width_animation_duration ease,
-		      opacity $facet_abbreviation_animation_duration ease;
+					opacity $facet_abbreviation_animation_duration ease;
 		left: 0;
 		position: absolute;
 		height: 4px;

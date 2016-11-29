@@ -396,6 +396,7 @@ describe('.convertToFacetsVisualData', () => {
     it('should assign facests default colors of 3 diffrent opacities and grey default color', () => {
         sinon.stub(utils, 'getSegmentColor', (baseColor) => baseColor);
         const locationDps = aggregatedData.dataPointsMap.location;
+        locationDps.forEach((dp) => { delete dp.bucket; });
         locationDps.push(...(_.cloneDeep(locationDps)));
         locationDps.map((dp: DataPoint) => (dp.instanceColor = undefined) && dp);
 
@@ -418,6 +419,7 @@ describe('.convertToFacetsVisualData', () => {
     it('should choose colors from provided colors when the default color palette has no more color', () => {
         sinon.stub(utils, 'getSegmentColor', (baseColor) => baseColor);
         const locationDps = aggregatedData.dataPointsMap.location;
+        locationDps.forEach((dp) => { delete dp.bucket; });
         locationDps.map((dp: DataPoint) => (dp.instanceColor = undefined) && dp);
         replaceVariable(utils, 'COLOR_PALETTE', []);
 
@@ -586,9 +588,9 @@ describe('.convertToFacetsVisualData', () => {
         expect(locGroup.facets[1].value).to.equal('prepend1');
     });
     it('should create segments data for each facet when there is bucket data', () => {
-        const stub = sinon.stub(utils, 'createSegments', (bucket, color, isHighlight, opacity) => {
+        const stub = sinon.stub(utils, 'createSegments', (bucket, color, isHighlight) => {
             const seg = isHighlight ? 'fakeHighlightSeg' : 'fakeSeg';
-            return `${seg}:${JSON.stringify(bucket)}:${color}:${opacity}`;
+            return `${seg}:${JSON.stringify(bucket)}:${color}`;
         });
         result = dataConversion.convertToFacetsVisualData(aggregatedData, {
             colors: [],
@@ -599,15 +601,15 @@ describe('.convertToFacetsVisualData', () => {
         const locGroup = <FacetGroup>getFacetGroup(facetsData, 'location');
         const selectionLocGroup = <any>getFacetGroup(selectionData, 'location');
 
-        expect(locGroup.facets[0].segments).to.deep.equal('fakeSeg:{"level1":{"instanceCount":10,"highlight":6}}:rgba(0, 0, 0, 1):100');
-        expect(selectionLocGroup.facets[0].selected.segments).to.deep.equal('fakeHighlightSeg:{"level1":{"instanceCount":10,"highlight":6}}:rgba(0, 0, 0, 1):100');
+        expect(locGroup.facets[0].segments).to.deep.equal('fakeSeg:{"level1":{"instanceCount":10,"highlight":6}}:rgba(0, 0, 0, 1)');
+        expect(selectionLocGroup.facets[0].selected.segments).to.deep.equal('fakeHighlightSeg:{"level1":{"instanceCount":10,"highlight":6}}:rgba(0, 0, 0, 1)');
         // expect(selectionLocGroup.facets[0].selected.segments).to.deep.equal('fakeHighlightSeg:{"level1":{"instanceCount":10,"highlight":6}}:#00c6e1:undefined');
         expect(result.aggregatedData.dataPointsMap['location'][0].selectionColor.color).to.equal('rgba(0, 0, 0, 1)');
         expect(result.aggregatedData.dataPointsMap['location'][0].selectionColor.opacity).to.equal(100);
         stub.restore();
     });
-    it('should assign colors with diffrent opacities to segments and icon', () => {
-        sinon.stub(utils, 'createSegments', (bucket, color, isHighlight, opacity) => 'opacity:' + opacity);
+    it('should assign default colors to segments and icon', () => {
+        sinon.stub(utils, 'createSegments', (bucket, color, isHighlight, opacity) => 'color:' + color);
         sinon.stub(utils, 'getSegmentColor', (arg1, arg2, arg3, arg4, arg5) => '' + arg1 + arg2 + arg3 + arg4 + arg5);
 
         const locationDps = aggregatedData.dataPointsMap.location;
@@ -615,6 +617,7 @@ describe('.convertToFacetsVisualData', () => {
         locationDps.forEach(dp => delete dp.instanceColor);
         delete aggregatedData.dataPointsMap.organization;
 
+        replaceVariable(utils, 'COLOR_PALETTE', ['#000000', '#000000']);
         result = dataConversion.convertToFacetsVisualData(aggregatedData, {
             colors: [],
             settings: DEFAULT_SETTINGS,
@@ -623,16 +626,11 @@ describe('.convertToFacetsVisualData', () => {
         const selectionData = result.facetsSelectionData;
         const locGroup = <FacetGroup>getFacetGroup(facetsData, 'location');
 
-        expect(locGroup.facets[0].segments).to.equal('opacity:100');
-        expect(locGroup.facets[1].segments).to.equal('opacity:60');
-        expect(locGroup.facets[2].segments).to.equal('opacity:35');
-        expect(locGroup.facets[3].segments).to.equal('opacity:0');
+        expect(locGroup.facets[0].segments).to.equal('color:rgba(0, 0, 0, 1)');
+        expect(locGroup.facets[3].segments).to.equal('color:rgba(0, 0, 0, 1)');
 
-        expect(utils.getSegmentColor).to.be.calledThrice;
-        expect(locGroup.facets[0].icon.color).to.equal('rgba(255, 0, 31, 1)10001false');
-        expect(locGroup.facets[1].icon.color).to.equal('rgba(255, 0, 31, 0.6)6001false');
-        expect(locGroup.facets[2].icon.color).to.equal('rgba(255, 0, 31, 0.35)3501false');
-        expect(locGroup.facets[3].icon.color).to.equal('#DDDDDD');
+        expect(locGroup.facets[0].icon.color).to.equal('rgba(0, 0, 0, 1)10001false');
+        expect(locGroup.facets[3].icon.color).to.equal('rgba(0, 0, 0, 1)10001false');
 
         utils.getSegmentColor['restore']();
         utils.createSegments['restore']();
