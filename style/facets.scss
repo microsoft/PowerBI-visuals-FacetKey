@@ -35,12 +35,6 @@ $facet_bar_width_animation_duration: 0.25s;
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
 }
 
-// fixed padding set by pbi
-.reportContainerContent i.fa {
-  padding-left: 0;
-}
-
-// ---- Container Height and scrollbar
 html, body {
   height: 100%;
 }
@@ -49,28 +43,9 @@ body.visual-sandbox {
   overflow: auto;
 }
 
-// right padding added due to the ie scrollbar being too fat
-.facets-group {
-  .group-header {
-    padding-right: 16px;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-    .group-expander {
-      padding-left: 8px;
-    }
-  }
+.reportContainerContent i.fa {
+  padding-left: 0;
 }
-
-.facets-group .group-facet-container-outer .group-more-container .group-other-block {
-  margin-right: 8px;
-}
-
-.facets-group .group-facet-container-outer .group-more-container .group-other-block .group-other-label-container .group-other-label-show-more {
-  right: 0px;
-}
-
-// --- Container Height and scrollbar end ---
 
 .facets-container {
   height: 100%;
@@ -81,16 +56,24 @@ body.visual-sandbox {
   min-width: 150px;
 }
 
+.facets-root-container {
+  padding-bottom: 20px;
+
+  a {
+    color: #337ab7;
+    text-decoration: none;
+  }
+}
+
 .facets-header {
   background: #fdfdfd;
   padding: 8px 18px 8px 8px;
   box-shadow: 0 -1px 0 #e5e5e5, 0 0 2px rgba(0,0,0,.12), 0 2px 4px rgba(0,0,0,.24);
   position: relative;
-  line-height: 1.428571;
-  font-size: 0.9286em;
-}
+  line-height: 1.43;
+  font-size: 0.93em;
 
-.facets-header .search-box {
+  .search-box {
     font: inherit;
     color: inherit;
     font-family: inherit;
@@ -100,67 +83,67 @@ body.visual-sandbox {
     border-radius: 3px;
     padding: 2px 4px;
     border: 1px solid #ddd;
-}
-
-.facets-header .facet-menu-anchor {
-  display: none;
-  position: absolute;
-  right: 0px;
-  top: 0px;
-  bottom: 0px;
-  color: #aaa;
-  cursor: pointer;
-  padding: 12px;
-}
-
-.facets-header .facet-menu-anchor.selected {
-  background: #222;
-  color: #ddd;
-}
-
-
-// Disable histogram animations
-.facets-facet-horizontal .facet-range .facet-range-filter,
-.facets-facet-horizontal .facet-range .facet-histogram .facet-histogram-bar-transform,
-.facets-facet-horizontal .facet-range-controls .facet-range-current,
-.facets-facet-horizontal .facet-range-controls .facet-range-current-hidden
-{
-  transition: none;
-}
-
-.facets-root-container {
-  padding-bottom: 20px;
-  a {
-    color: #337ab7;
-    text-decoration: none;
   }
+}
+
+.facets-group {
+  .group-header {
+    padding-right: 16px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .group-expander {
+    padding-left: 8px;
+  }
+
+  .group-other-block {
+    margin-right: 8px;
+  }
+
+  .group-other-label-container {
+    height: 12px;
+  }
+
+  .group-other-label-show-more {
+    top: 0;
+    right: 0;
+    width: 100%;
+
+    .other {
+      float: left;
+    }
+  }
+}
+
+.facets-facet-vertical {
+
   .facet-icon .default {
     font-size: 7.5px;
     padding-top: 1.5px;
   }
-  .group-facet-container-outer .group-more-container .group-other-block .group-other-label-container {
-    height: 12px;
+
+  .facet-bar-background {
+    box-shadow: inset 0 0 0 1000px hsl(187, 0%, 95%) !important;
   }
-  .group-facet-container-outer .group-more-container .group-other-block .group-other-label-container {
-    height: 12px;
+
+  .facet-bar-segments-container {
+    overflow: hidden;
   }
-  .group-facet-container-outer .group-more-container .group-other-block .group-other-label-container .group-other-label-show-more {
-    width: 100%;
-    top: 0;
-  }
-  .group-facet-container-outer .group-more-container .group-other-block .group-other-label-container .group-other-label-show-more .other {
-    float: left
+
+  .facet-bar-segment {
+    box-shadow: inset 0 0 0 1000px hsl(187, 0%, 95%);
+    border-color: hsl(187, 0%, 95%);
   }
 }
 
-// facets bar
-.render-segments .facets-facet-vertical .facet-block .facet-bar-container .facet-bar-background {
-  box-shadow: inset 0 0 0 1000px hsl(187, 0%, 95%) !important;
-}
-.render-segments .facets-facet-vertical .facet-block .facet-bar-container .facet-bar-segments-container {
-  overflow: hidden;
-}
-.facets-facet-vertical .facet-block .facet-bar-container .facet-bar-segments-container .facet-bar-segment {
-  box-shadow: inset 0 0 0 1000px hsl(187, 0%, 95%);
-  border-color: hsl(187, 0%, 95%);
+.facets-facet-horizontal {
+  .facet-range-filter,
+  .facet-histogram-bar-transform,
+  .facet-range-current,
+  .facet-range-current-hidden
+  {
+    transition: none;
+  }
 }

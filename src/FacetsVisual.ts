@@ -114,9 +114,6 @@ export default class FacetsVisual implements IVisual {
         this.element.find('.facets-container').prepend(`
             <div class="facets-global-loading"><div class="loader"><div class="facets-loader"></div></div></div>
             <div class="facets-header">
-                <div class="facet-menu-anchor">
-                    <i class="fa fa-ellipsis-h"></i>
-                </div>
                 <input class="search-box" placeholder="Search">
             </div>
         `);
