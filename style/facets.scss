@@ -49,7 +49,8 @@ body.visual-sandbox {
 
 .facets-container {
   height: 100%;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   padding-top: 3px;
   padding-left: 2px;
   padding-right: 2px;
