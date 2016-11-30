@@ -387,7 +387,7 @@ export default class FacetsVisual implements IVisual {
         this.facets.on('facet:click', (e: any, key: string, value: string) => this.toggleFacetSelection(key, value));
 
         this.facets.on('facet-group:more', (e: any, key: string, index: number) =>
-        e.currentTarget.classList.contains('more') ? this.showMoreFacetInstances(key) : this.resetGroup(key));
+        e.currentTarget.classList.contains('more') ? this.showMoreFacetInstances(key) : this.shrinkFacetGroup(key));
 
         this.facets.on('facet-group:collapse', (e: any, key: string) => {
             const facetGroup = this.getFacetGroup(key);
@@ -397,8 +397,8 @@ export default class FacetsVisual implements IVisual {
                 this.filter.range && this.filter.range[key] && (this.filter.range[key] = undefined);
                 this.filterFacets(true);
                 this.selectedInstances.length > 0
-                ? this.selectFacetInstances(this.selectedInstances)
-                : this.selectRanges();
+                    ? this.selectFacetInstances(this.selectedInstances)
+                    : this.selectRanges();
                 return;
             }
             const deselected = _.remove(this.selectedInstances, (selected) => selected.facetKey === key);
@@ -445,8 +445,17 @@ export default class FacetsVisual implements IVisual {
     private resetGroup(key: string): void {
         const facetGroup = this.getFacetGroup(key);
         this.facets.replaceGroup(facetGroup);
-        this.facets.highlight(this.selectedInstances.map(dp => ({ key: dp.facetKey, value: dp.instanceValue, count: dp.instanceCount })));
         this.data.hasHighlight && this.facets.select(this.data.facetsSelectionData);
+    }
+
+    private shrinkFacetGroup(key: string) {
+        const facets = this.getFacetGroup(key).facets;
+        this.resetGroup(key);
+        if (!this.data.hasHighlight) {
+            _.remove(this.selectedInstances, (selected) => selected.facetKey === key && !_.find(facets, {'value': selected.instanceValue}));
+            this.selectFacetInstances(this.selectedInstances);
+            this.updateFacetsSelection(this.selectedInstances);
+        }
     }
 
     /**
