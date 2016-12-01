@@ -63,7 +63,7 @@ const DEFAULT_SETTINGS: FacetKeySettings = {
 
 export default class FacetsVisual implements IVisual {
 
-    private element: JQuery;
+    private facetsContainer: JQuery;
     private suppressNextUpdate: boolean;
     private loader: JQuery;
     private searchBox: JQuery;
@@ -102,28 +102,27 @@ export default class FacetsVisual implements IVisual {
      * @param  {VisualConstructorOptions} options Initialization options for the visual.
      */
     constructor(options: VisualConstructorOptions) {
-        const facetsContainer = $('<div class="facets-container"></div>');
+        this.facetsContainer = $('<div class="facets-container"></div>').appendTo($(options.element));
 
         this.settings = DEFAULT_SETTINGS;
-        this.element = $(options.element).append(facetsContainer);
 
         this.hostServices = options.host.createSelectionManager()['hostServices'];
         this.colors = options.host.colors;
 
-        this.facets = new Facets(facetsContainer, []);
-        this.element.find('.facets-container').prepend(`
+        this.facets = new Facets(this.facetsContainer, []);
+        this.facetsContainer.prepend(`
             <div class="facets-global-loading"><div class="loader"><div class="facets-loader"></div></div></div>
             <div class="facets-header">
                 <input class="search-box" placeholder="Search">
             </div>
         `);
-        this.searchBox = this.element.find('.search-box');
-        this.loader = this.element.find('.facets-global-loading');
+        this.searchBox = this.facetsContainer.find('.search-box');
+        this.loader = this.facetsContainer.find('.facets-global-loading');
 
         this.bindFacetsEventHandlers();
 
         // Stop propagating theses events to visual parent elements
-        this.element.find('.search-box').on('mousedown mouseup click focus blur input pointerdown pointerup touchstart touchdown', (e) => e.stopPropagation());
+        this.facetsContainer.find('.search-box').on('mousedown mouseup click focus blur input pointerdown pointerup touchstart touchdown', (e) => e.stopPropagation());
     }
 
     /**
@@ -171,7 +170,7 @@ export default class FacetsVisual implements IVisual {
         const bucketColumn = findColumn(this.dataView, 'bucket');
         const loadAllDataBeforeRender = Boolean(rangeValueColumn) || Boolean(bucketColumn);
 
-        this.element.toggleClass('render-segments', Boolean(bucketColumn));
+        this.facetsContainer.toggleClass('render-segments', Boolean(bucketColumn));
 
         this.previousFreshData = isFreshData ? (this.data || {}) : this.previousFreshData;
         this.retainFilters = this.previousFreshData.hasHighlight && this.retainFilters;
@@ -454,7 +453,7 @@ export default class FacetsVisual implements IVisual {
         if (!this.data.hasHighlight) {
             _.remove(this.selectedInstances, (selected) => selected.facetKey === key && !_.find(facets, {'value': selected.instanceValue}));
             this.selectFacetInstances(this.selectedInstances);
-            this.updateFacetsSelection(this.selectedInstances);
+            this.runWithNoAnimation(this.updateFacetsSelection, this, this.selectedInstances);
         }
     }
 
@@ -482,7 +481,34 @@ export default class FacetsVisual implements IVisual {
             more: more,
             facets: moreFacets,
         }]);
-        this.data.hasHighlight && this.facets.select(this.data.facetsSelectionData);
+
+        this.data.hasHighlight
+            ? this.facets.select(this.data.facetsSelectionData)
+            : this.runWithNoAnimation(this.updateFacetsSelection, this, this.selectedInstances);
+    }
+
+    /**
+     * Run provided function while facets animation is disabled.
+     *
+     * @param  {any}    fun     A function to be executed.
+     * @param  {any}    thisArg The value of `this` prvided for the call to the given function.
+     * @param  {any[]}  ...args The arguments provided for the call to the given function.
+     */
+    private runWithNoAnimation(fun: any, thisArg: any, ...args: any[]) {
+        this.facetsContainer.toggleClass('no-animation', true);
+        fun.call(thisArg, ...args);
+        /* Trigger a reflow, flushing the CSS changes. Following line is needed for this to work. */
+        this.facetsContainer[0].offsetHeight;
+        this.facetsContainer.toggleClass('no-animation', false);
+    }
+
+    /**
+     * Clears filters.
+     */
+    private clearFilters() {
+        this.filter = {};
+        this.searchBox.val('');
+        this.retainFilters = false;
     }
 
     /**
@@ -499,29 +525,21 @@ export default class FacetsVisual implements IVisual {
         if (replace) {
             !this.retainFilters && this.clearFilters();
             this.firstSelectionInHighlightedState = false;
-            this.facets.replace(this.data.facetsData);
+            this.runWithNoAnimation(this.facets.replace, this.facets, this.data.facetsData);
         };
-    }
-
-    /**
-     * Clears filters.
-     */
-    private clearFilters() {
-        this.filter = {};
-        this.searchBox.val('');
-        this.retainFilters = false;
     }
 
     /**
      * Redraw facets with current data and update the selection state.
      */
     private redrawFacets() {
-        this.facets.replace(this.data.facetsData);
+        this.runWithNoAnimation(this.facets.replace, this.facets, this.data.facetsData);
         this.facets._queryGroup._element.find('.facet-bar-container').append('<i class="fa fa-times query-remove" aria-hidden="true"></i>');
         this.data.hasHighlight
             ? this.facets.select(this.data.facetsSelectionData)
             : this.updateFacetsSelection(this.selectedInstances, false);
     }
+
 
     /**
      * Returns true if there is a range or keyword filter.
@@ -633,7 +651,7 @@ export default class FacetsVisual implements IVisual {
      * Update the facets component so that it reflects the given selected facet instances
      *
      * @param {DataPoint[] = []}   selectedInstances An array of datapoints for the selected facet instances.
-     * @param {boolean     = true} reset             Flag indicating whether to reset the facets components.
+     * @param {boolean     = true} reset             Flag indicating whether to reset the facets components when there's no selected facets.
      */
     private updateFacetsSelection(selectedInstances: DataPoint[] = [], reset: boolean = true): void {
         this.facets.unhighlight();
