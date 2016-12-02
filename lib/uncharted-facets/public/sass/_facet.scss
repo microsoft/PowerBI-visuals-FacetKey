@@ -442,17 +442,8 @@
 
 	.facet-histogram-bar {
 		fill: $facet_histogram_abbreviated_bar_color;
-		&:hover {
-			fill: $facet_histogram_abbreviated_bar_color;
-		}
 	}
 
-	.facet-histogram-bar-highlighted {
-		fill: $facet_histogram_abbreviated_bar_color;
-		&:hover {
-			fill: $facet_histogram_abbreviated_bar_color;
-		}
-	}
 
 	.facet-range-labels {
 		transform: translate(0, -15px);
