@@ -381,6 +381,9 @@ export default class FacetsVisual implements IVisual {
      * Binds event handlers for the facets component.
      */
     private bindFacetsEventHandlers() {
+        // If mouse leaves the container while dragging, cancel it by triggering mouseup event.
+        this.facetsContainer.on('mouseleave', (evt: Event) => this.facetsContainer.trigger('mouseup'));
+
         this.searchBox.on('input', _.debounce((e: any) => this.filterFacets(), 500));
 
         this.facets.on('facet:click', (e: any, key: string, value: string) => this.toggleFacetSelection(key, value));
