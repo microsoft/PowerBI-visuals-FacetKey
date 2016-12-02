@@ -33,7 +33,7 @@
     {
       "name": "bucket",
       "kind": 0,
-      "displayName": "Bucket"
+      "displayName": "Segmented By"
     },
     {
       "name": "facetInstanceColor",
