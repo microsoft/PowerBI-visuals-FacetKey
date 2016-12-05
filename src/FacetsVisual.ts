@@ -161,7 +161,7 @@ export default class FacetsVisual implements IVisual {
 
         this.previousData = this.data || {};
         this.dataView = options.dataViews[0];
-        this.settings = this.validateSettings($.extend(true, {}, this.settings, this.dataView.metadata.objects));
+        this.settings = this.validateSettings($.extend(true, {}, this.settings, DEFAULT_SETTINGS, this.dataView.metadata.objects));
 
         const isFreshData = (options['operationKind'] === VisualDataChangeOperationKind.Create);
         const isMoreData = !isFreshData;
