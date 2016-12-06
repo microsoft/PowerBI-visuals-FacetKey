@@ -122,7 +122,7 @@ export default class FacetsVisual implements IVisual {
         this.bindFacetsEventHandlers();
 
         // Stop propagating theses events to visual parent elements
-        this.facetsContainer.find('.search-box').on('mousedown mouseup click focus blur input pointerdown pointerup touchstart touchdown', (e) => e.stopPropagation());
+        this.facetsContainer.on('mousedown click pointerdown touchstart touchdown', (e: Event) => e.stopPropagation());
     }
 
     /**
