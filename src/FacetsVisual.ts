@@ -178,15 +178,15 @@ export default class FacetsVisual implements IVisual {
 
         // Update data and the Facets
         this.data = this.hasRequiredFields(this.dataView)
-        ? FacetsVisual.converter(this.dataView, this.colors, this.settings)
-        : <any>{ facetsData: [], dataPointsMap: {} };
+            ? FacetsVisual.converter(this.dataView, this.colors, this.settings)
+            : <any>{ facetsData: [], dataPointsMap: {} };
 
         this.hasFilter() && (this.data = this.filterData(this.data));
 
         // to ignore first update call seriese caused by selecting facets in highlihgted state
         this.firstSelectionInHighlightedState = isFreshData
-        ? (this.previousFreshData.hasHighlight && this.selectedInstances.length > 0)
-        : this.firstSelectionInHighlightedState;
+            ? (this.previousFreshData.hasHighlight && this.selectedInstances.length > 0)
+            : this.firstSelectionInHighlightedState;
 
         !loadAllDataBeforeRender && !this.firstSelectionInHighlightedState && this.updateFacets(isMoreData);
 
@@ -197,8 +197,8 @@ export default class FacetsVisual implements IVisual {
         };
         this.loadMoreCount = isFreshData ? 0 : ++this.loadMoreCount;
         hasMoreData && this.loadMoreCount < MAX_DATA_LOADS
-        ? loadMoreData()
-        : loadAllDataBeforeRender && !this.firstSelectionInHighlightedState && this.updateFacets();
+            ? loadMoreData()
+            : loadAllDataBeforeRender && !this.firstSelectionInHighlightedState && this.updateFacets();
     }
 
     /**
@@ -305,8 +305,8 @@ export default class FacetsVisual implements IVisual {
                 const numVisibleFacets = group.facets.length;
                 const allFacets = this.getFacetGroup(key).allFacets;
                 const moreInitialFacets = numVisibleFacets < this.settings.facetCount.initial
-                ? allFacets.slice(numVisibleFacets, this.settings.facetCount.initial)
-                : [];
+                    ? allFacets.slice(numVisibleFacets, this.settings.facetCount.initial)
+                    : [];
                 const newNumVisibleFacets = numVisibleFacets + moreInitialFacets.length;
                 const remaining = Math.max(allFacets.length - newNumVisibleFacets, 0);
                 const hasMoreThanInitial = newNumVisibleFacets > this.settings.facetCount.initial;
@@ -315,11 +315,11 @@ export default class FacetsVisual implements IVisual {
                     { label: 'More', class: 'more', clickable: true },
                 ];
                 hasMoreThanInitial && more
-                ? more.splice(1, 0,
-                    { label: 'Less', class: 'less', clickable: true },
-                    { label: '|', class: 'seperator', clickable: false }
-                )
-                : [{ label: 'Less', class: 'less', clickable: true }];
+                    ? more.splice(1, 0,
+                        { label: 'Less', class: 'less', clickable: true },
+                        { label: '|', class: 'seperator', clickable: false }
+                    )
+                    : [{ label: 'Less', class: 'less', clickable: true }];
                 this.facets.append([{
                     key: key,
                     facets: moreInitialFacets,
@@ -433,8 +433,8 @@ export default class FacetsVisual implements IVisual {
             } else {
                 this.filterFacets(true);
                 this.selectedInstances.length > 0
-                ? this.selectFacetInstances(this.selectedInstances)
-                : this.selectRanges();
+                    ? this.selectFacetInstances(this.selectedInstances)
+                    : this.selectRanges();
             }
         });
     }
@@ -590,8 +590,8 @@ export default class FacetsVisual implements IVisual {
      */
     private selectRanges() {
         const sqExpr: any = this.hasRangeFilter()
-        ? this.createSQExprFromRangeFilter(this.filter.range)
-        : undefined;
+            ? this.createSQExprFromRangeFilter(this.filter.range)
+            : undefined;
         this.sendSelectionToHost(sqExpr ? [powerbi.data.createDataViewScopeIdentity(sqExpr)] : []);
     }
 
@@ -608,11 +608,11 @@ export default class FacetsVisual implements IVisual {
             if (!selected.rows[0]) { return prevExpr; }
             const { facet, facetInstance } = selected.rows[0];
             let expr: any = instanceColumn
-            ? SQExprBuilder.equal(instanceColumn.expr, SQExprBuilder.typedConstant(facetInstance, instanceColumn.type))
-            : undefined;
+                ? SQExprBuilder.equal(instanceColumn.expr, SQExprBuilder.typedConstant(facetInstance, instanceColumn.type))
+                : undefined;
             expr = facetColumn
-            ? SQExprBuilder.and(expr, SQExprBuilder.equal(facetColumn.expr, SQExprBuilder.typedConstant(facet, facetColumn.type)))
-            : expr;
+                ? SQExprBuilder.and(expr, SQExprBuilder.equal(facetColumn.expr, SQExprBuilder.typedConstant(facet, facetColumn.type)))
+                : expr;
             return prevExpr ? SQExprBuilder.or(prevExpr, expr) : expr;
         }, undefined);
 
