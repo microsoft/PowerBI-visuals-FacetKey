@@ -38,9 +38,9 @@ import {
 import * as _ from 'lodash';
 
 /**
- * Maximum number of facet group to be rendered.
+ * Maximum number of facet groups to be rendered.
  */
-const MAX_FACET_GROUP = 100;
+const MAX_NUM_FACET_GROUPS = 100;
 
 /**
  * Returns true if the given range values are within the range of the given filter.
@@ -529,7 +529,7 @@ export function convertToFacetsVisualData(aggregatedData: AggregatedData, option
         group.facets.push(facet);
         data.facetsData.unshift(group);
     });
-    data.facetsData = data.facetsData.sort((a: any, b: any) => a.order - b.order).slice(0, MAX_FACET_GROUP);
+    data.facetsData = data.facetsData.sort((a: any, b: any) => a.order - b.order).slice(0, MAX_NUM_FACET_GROUPS);
 
     return data;
 };

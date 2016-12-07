@@ -160,7 +160,7 @@ export default class FacetsVisual implements IVisual {
 
         this.previousData = this.data || {};
         this.dataView = options.dataViews[0];
-        this.settings = this.validateSettings($.extend(true, {}, this.settings, DEFAULT_SETTINGS, this.dataView.metadata.objects));
+        this.settings = this.validateSettings($.extend(true, {}, DEFAULT_SETTINGS, this.dataView.metadata.objects));
 
         const isFreshData = (options['operationKind'] === VisualDataChangeOperationKind.Create);
         const isMoreData = !isFreshData;
@@ -379,7 +379,7 @@ export default class FacetsVisual implements IVisual {
      * Binds event handlers for the facets component.
      */
     private bindFacetsEventHandlers() {
-        // If mouse leaves the container while dragging, cancel it by triggering mouseup event.
+        // If the mouse leaves the container while dragging, cancel it by triggering a mouseup event.
         this.facetsContainer.on('mouseleave', (evt: Event) => this.facetsContainer.trigger('mouseup'));
 
         this.searchBox.on('input', _.debounce((e: any) => this.filterFacets(), 500));
@@ -489,7 +489,7 @@ export default class FacetsVisual implements IVisual {
     }
 
     /**
-     * Run provided function while facets animation is disabled.
+     * Run the provided function while facets animation is disabled.
      *
      * @param  {any}    fun     A function to be executed.
      * @param  {any}    thisArg The value of `this` prvided for the call to the given function.
