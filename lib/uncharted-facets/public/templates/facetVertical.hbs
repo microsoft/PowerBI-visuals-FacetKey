@@ -18,6 +18,15 @@
 					{{count}}
 				{{/if}}
 			</span>
+			<span class="facet-query-close">
+	        {{> facetVertical_queryClose}}
+	    </span>
+			<span class="facet-search-container">
+				{{> facetVertical_search}}
+			</span>
+			<span class="facet-links">
+			 {{> facetVertical_links}}
+		 </span>
 			<span class="facet-label">
 				{{#if displayValue}}
 					{{{displayValue}}}
@@ -27,15 +36,6 @@
 					{{{value}}}
 				{{/if}}
 			</span>
-        </div>
+      </div>
     </div>
-	<div class="facet-links">
-		{{> facetVertical_links}}
-    </div>
-    <div class="facet-query-close">
-        {{> facetVertical_queryClose}}
-    </div>
-	<div class="facet-search-container">
-		{{> facetVertical_search}}
-	</div>
 </div>

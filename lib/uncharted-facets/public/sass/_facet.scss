@@ -64,7 +64,6 @@
 
 	.facet-block {
 		margin-left: 21px;
-		margin-right: 21px;
 		position: relative;
 	}
 
@@ -130,7 +129,6 @@
 		font-size: 12px;
 		font-family: Oswald;
 		font-weight: bold;
-		display: inline-block;
 		padding-right: 2px;
 		float: left;
 		height: 100%;
@@ -151,50 +149,39 @@
 	.facet-links {
 		transition: height $facet_abbreviation_animation_duration ease,
 					opacity $facet_abbreviation_animation_duration ease;
-		position: absolute;
-		font-size: 0.8em;
+		font-size: $facet_button_size;
+		text-align: center;
 		float:right;
-		color: #9B857A;
-		right: 10px;
-		margin-top: -8px;
+		color: $facet_button_color;
 		white-space: nowrap;
 		overflow-y: hidden;
-		text-align: right;
 		height: 100%;
 	}
 
 	.facet-query-close {
 		transition: height $facet_abbreviation_animation_duration ease,
 		opacity $facet_abbreviation_animation_duration ease;
-		position: absolute;
-		font-size: 1em;
+		font-size: $facet_button_size;
 		float:right;
-		color: #9B857A;
-		right: 13px;
-		margin-top: -20px;
+		color: $facet_button_color;
 		white-space: nowrap;
 		overflow-y: hidden;
-		text-align: right;
 		height: 100%;
 	}
 
 	.facet-search-container {
 		transition: height $facet_abbreviation_animation_duration ease,
 					opacity $facet_abbreviation_animation_duration ease;
-		width: 20px;
-		top: 0;
-		bottom: 6px;
-		right: 8px;
-		position: absolute;
 		float: right;
 		white-space: nowrap;
 		overflow-y: hidden;
-		height: auto;
+		height: 100%;
+		margin-left: 6px;
 	}
+
 	.facet-search {
-		text-align: center;
-		font-size: 0.8em;
-		color: #9B857A;
+		font-size: $facet_button_size;
+		color: $facet_button_color;
 	}
 
 	.facet-search-container:empty {
@@ -365,7 +352,7 @@
 		font-size: 11px;
 		position: relative;
 		margin: 10px 9px 5px 9px;
-		height: 14px;
+		height: 16px;
 		overflow-y: hidden;
 	}
 
@@ -447,6 +434,12 @@
 		}
 	}
 
+	.facet-histogram-bar-highlighted {
+		fill: $facet_histogram_abbreviated_bar_color;
+		&:hover {
+			fill: $facet_histogram_abbreviated_bar_color;
+		}
+	}
 
 	.facet-range-labels {
 		transform: translate(0, -15px);

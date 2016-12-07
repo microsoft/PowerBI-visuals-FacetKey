@@ -3,6 +3,7 @@ $oswald700Font: url(data:application/font-woff;charset=utf-8;base64,d09GRgABAAAA
 $font_family : Helvetica !default;
 
 $facet_icon_size : 16px !default;
+$facet_button_size : 11px !default;
 $facet_vertical_height : 25px !default;
 $facet_vertical_height_abbreviated : 8px !default;
 $facet_horizontal_height : 55px !default;
@@ -36,5 +37,7 @@ $facet_histogram_bar_highlighted_color: #00c6e1 !default;
 $facet_histogram_bar_highlighted_hover_color: #0089a4 !default;
 $facet_range_filter_background_color: rgba(0, 198, 225, 0.15) !default;
 $facet_histogram_abbreviated_bar_color: #ddd !default;
+
+$facet_button_color: #9B857A !default;
 
 $facet_group_enable_box_shadow: true !default;
