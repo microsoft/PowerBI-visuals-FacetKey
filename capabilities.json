@@ -30,13 +30,13 @@
       "name": "rangeValue",
       "kind": 2,
       "displayName": "Range Value",
-      "description": "Value to be used as horizontal axis of the histogram with the count as vertical axis.",
+      "description": "Value to be used as horizontal axis of the histogram with the count as vertical axis."
     },
     {
       "name": "bucket",
       "kind": 0,
       "displayName": "Segmented By",
-      "description": "Each facet instance is segmented by this field.",
+      "description": "Each facet instance is segmented by this field."
     },
     {
       "name": "facetInstanceColor",
