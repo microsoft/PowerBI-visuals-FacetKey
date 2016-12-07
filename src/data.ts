@@ -38,6 +38,11 @@ import {
 import * as _ from 'lodash';
 
 /**
+ * Maximum number of facet group to be rendered.
+ */
+const MAX_FACET_GROUP = 100;
+
+/**
  * Returns true if the given range values are within the range of the given filter.
  * @param  {any}          rangeFilter A range filter.
  * @param  {RangeValue[]} rangeValues An array of range values.
@@ -524,7 +529,7 @@ export function convertToFacetsVisualData(aggregatedData: AggregatedData, option
         group.facets.push(facet);
         data.facetsData.unshift(group);
     });
-    data.facetsData.sort((a: any, b: any) => a.order - b.order);
+    data.facetsData = data.facetsData.sort((a: any, b: any) => a.order - b.order).slice(0, MAX_FACET_GROUP);
 
     return data;
 };
