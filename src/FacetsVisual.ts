@@ -164,7 +164,7 @@ export default class FacetsVisual implements IVisual {
 
         const isFreshData = (options['operationKind'] === VisualDataChangeOperationKind.Create);
         const isMoreData = !isFreshData;
-        const hasMoreData = !!this.dataView.metadata.segment;
+        const hasMoreData = !!this.dataView.metadata.segment && this.hasRequiredFields(this.dataView);
         const rangeValueColumn = findColumn(this.dataView, 'rangeValue');
         const bucketColumn = findColumn(this.dataView, 'bucket');
         const loadAllDataBeforeRender = Boolean(rangeValueColumn) || Boolean(bucketColumn);
@@ -233,8 +233,7 @@ export default class FacetsVisual implements IVisual {
         const columns = dataView.metadata.columns;
         const countColumnExists = _.some(columns || [], (col: any) => col && col.roles.count);
         const instanceColumnExists = _.some(columns || [], (col: any) => col && col.roles.facetInstance);
-        const facetColumnExists = _.some(columns || [], (col: any) => col && col.roles.facet);
-        return (instanceColumnExists || facetColumnExists) && countColumnExists;
+        return instanceColumnExists && countColumnExists;
     }
 
     /**
