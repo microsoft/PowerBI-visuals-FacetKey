@@ -1,6 +1,6 @@
 {
   "name": "essex.widget.facetkey",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "PowerBI custom visual.",
   "main": "src/index.js",
   "typings": "src/index.d.ts",
@@ -29,7 +29,7 @@
   "author": "Uncharted Software Inc.",
   "license": "MIT",
   "privateSubmodules": {
-    "uncharted-facets": "2.4.7"
+    "uncharted-facets": "2.4.12"
   },
   "devDependencies": {
     "@types/jquery": "^2.0.33",

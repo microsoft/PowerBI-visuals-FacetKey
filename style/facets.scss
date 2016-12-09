@@ -25,6 +25,7 @@ $facet_bar_width_animation_duration: 0.25s;
 
 @import "./font-awesome/font-awesome";
 @import "../lib/uncharted-facets/public/sass/main";
+@import "facets-loader";
 
 @font-face{
   font-family:"Oswald";
@@ -34,12 +35,6 @@ $facet_bar_width_animation_duration: 0.25s;
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
 }
 
-// fixed padding set by pbi
-.reportContainerContent i.fa {
-  padding-left: 0;
-}
-
-// ---- Container Height and scrollbar
 html, body {
   height: 100%;
 }
@@ -48,48 +43,49 @@ body.visual-sandbox {
   overflow: auto;
 }
 
-// right padding added due to the ie scrollbar being too fat
-.facets-group {
-  .group-header {
-    padding-right: 16px;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-    .group-expander {
-      padding-left: 8px;
-    }
-  }
+.reportContainerContent i.fa {
+  padding-left: 0;
 }
-
-.facets-group .group-facet-container-outer .group-more-container .group-other-block {
-  margin-right: 8px;
-}
-
-.facets-group .group-facet-container-outer .group-more-container .group-other-block .group-other-label-container .group-other-label-show-more {
-  right: 0px;
-}
-
-// --- Container Height and scrollbar end ---
 
 .facets-container {
   height: 100%;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   padding-top: 3px;
   padding-left: 2px;
   padding-right: 2px;
   min-width: 150px;
+
+  &.no-animation {
+    * {
+      /**
+       * Setting `transition: none;` even disabled the animation in somecases even before this class is added.
+       * Using transition delay and duration seems to be working fine.
+       */
+      transition-delay: 0s !important;
+      transition-duration: 0s !important;
+    }
+  }
+}
+
+.facets-root-container {
+  padding-bottom: 20px;
+
+  a {
+    color: #337ab7;
+    text-decoration: none;
+  }
 }
 
 .facets-header {
   background: #fdfdfd;
   padding: 8px 18px 8px 8px;
-  box-shadow: 0 -1px 0 #e5e5e5,0 0 2px rgba(0,0,0,.12), 0 2px 4px rgba(0,0,0,.24);
+  box-shadow: 0 -1px 0 #e5e5e5, 0 0 2px rgba(0,0,0,.12), 0 2px 4px rgba(0,0,0,.24);
   position: relative;
-  line-height: 1.428571;
-  font-size: 0.9286em;
-}
+  line-height: 1.43;
+  font-size: 0.93em;
 
-.facets-header .search-box {
+  .search-box {
     font: inherit;
     color: inherit;
     font-family: inherit;
@@ -99,168 +95,57 @@ body.visual-sandbox {
     border-radius: 3px;
     padding: 2px 4px;
     border: 1px solid #ddd;
-}
-
-.facets-header .facet-menu-anchor {
-  display: none;
-  position: absolute;
-  right: 0px;
-  top: 0px;
-  bottom: 0px;
-  color: #aaa;
-  cursor: pointer;
-  padding: 12px;
-}
-
-.facets-header .facet-menu-anchor.selected {
-  background: #222;
-  color: #ddd;
-}
-
-//=========== Loader ==============
-.facets-loader:before,
-.facets-loader:after,
-.facets-loader {
-  border-radius: 50%;
-  width: 2.5em;
-  height: 2.5em;
-  -webkit-animation-fill-mode: both;
-  animation-fill-mode: both;
-  -webkit-animation: load7 1.8s infinite ease-in-out;
-  animation: load7 1.8s infinite ease-in-out;
-}
-.facets-loader {
-  color: #ffffff;
-  font-size: 5px;
-  margin: 30px auto;
-  position: relative;
-  text-indent: -9999em;
-  -webkit-transform: translateZ(0);
-  -ms-transform: translateZ(0);
-  transform: translateZ(0);
-  -webkit-animation-delay: -0.16s;
-  animation-delay: -0.16s;
-}
-.facets-loader:before {
-  left: -3.5em;
-  -webkit-animation-delay: -0.32s;
-  animation-delay: -0.32s;
-}
-.facets-loader:after {
-  left: 3.5em;
-}
-.facets-loader:before,
-.facets-loader:after {
-  content: '';
-  position: absolute;
-  top: 0;
-}
-@-webkit-keyframes load7 {
-  0%,
-  80%,
-  100% {
-    box-shadow: 0 2.5em 0 -1.3em;
-  }
-  40% {
-    box-shadow: 0 2.5em 0 0;
-  }
-}
-@keyframes load7 {
-  0%,
-  80%,
-  100% {
-    box-shadow: 0 2.5em 0 -1.3em;
-  }
-  40% {
-    box-shadow: 0 2.5em 0 0;
   }
 }
 
-.facets-global-loading {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 10;
-  cursor: auto;
-  display: none;
-  background-color: #000;
-  opacity: 0.4;
-  z-index: 1000;
-}
-
-@-webkit-keyframes fadeIn {
-    from { opacity: 0; }
-      to { opacity: 0.4; }
-}
-@keyframes fadeIn {
-    from { opacity: 0; }
-      to { opacity: 0.4; }
-}
-
-.facets-global-loading.show {
-  display: block;
-  -webkit-animation: fadeIn 0.3s;
-  animation: fadeIn 0.3s;
-}
-
-.facets-global-loading .loader{
-  position: absolute;
-  margin: auto;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  width: 100px;
-  height: 100px;
-  text-align: center;
-  border-radius: 30px;
-}
-//=========== Loader End ===========
-
-// Disable histogram animations
-.facets-facet-horizontal .facet-range .facet-range-filter,
-.facets-facet-horizontal .facet-range .facet-histogram .facet-histogram-bar-transform,
-.facets-facet-horizontal .facet-range-controls .facet-range-current,
-.facets-facet-horizontal .facet-range-controls .facet-range-current-hidden
-{
-  transition: none;
-}
-
-.facets-root-container {
-  padding-bottom: 20px;
-  a {
-    color: #337ab7;
-    text-decoration: none;
+.facets-group {
+  .group-header {
+    padding-right: 16px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
   }
+
+  .group-expander {
+    padding-left: 8px;
+  }
+
+  .group-other-block {
+    margin-right: 8px;
+  }
+
+  .group-other-label-container {
+    height: 12px;
+  }
+
+  .group-other-label-show-more {
+    top: 0;
+    right: 0;
+    width: 100%;
+
+    .other {
+      float: left;
+    }
+  }
+}
+
+.facets-facet-vertical {
+
   .facet-icon .default {
     font-size: 7.5px;
     padding-top: 1.5px;
   }
-  .group-facet-container-outer .group-more-container .group-other-block .group-other-label-container {
-    height: 12px;
-  }
-  .group-facet-container-outer .group-more-container .group-other-block .group-other-label-container {
-    height: 12px;
-  }
-  .group-facet-container-outer .group-more-container .group-other-block .group-other-label-container .group-other-label-show-more {
-    width: 100%;
-    top: 0;
-  }
-  .group-facet-container-outer .group-more-container .group-other-block .group-other-label-container .group-other-label-show-more .other {
-    float: left
-  }
-}
 
-// facets bar
-.render-segments .facets-facet-vertical .facet-block .facet-bar-container .facet-bar-background {
-  box-shadow: inset 0 0 0 1000px hsl(187, 0%, 95%) !important;
-}
-.render-segments .facets-facet-vertical .facet-block .facet-bar-container .facet-bar-segments-container {
-  overflow: hidden;
-}
-.facets-facet-vertical .facet-block .facet-bar-container .facet-bar-segments-container .facet-bar-segment {
-  box-shadow: inset 0 0 0 1000px hsl(187, 0%, 95%);
-  border-color: hsl(187, 0%, 95%);
+  .render-segments & .facet-bar-background {
+    box-shadow: inset 0 0 0 1000px hsl(187, 0%, 95%);
+  }
+
+  .facet-bar-segments-container {
+    overflow: hidden;
+  }
+
+  .facet-bar-segment {
+    box-shadow: inset 0 0 0 1000px hsl(187, 0%, 95%);
+    border-color: hsl(187, 0%, 95%);
+  }
 }

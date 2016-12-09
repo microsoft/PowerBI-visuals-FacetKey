@@ -4,18 +4,19 @@
       "name": "facet",
       "kind": 0,
       "displayName": "Facet",
-      "description": ""
+      "description": "Facet instances are grouped by this field."
     },
     {
       "name": "facetInstance",
       "kind": 0,
       "displayName": "Instance",
-      "description": ""
+      "description": "Facet instance."
     },
     {
       "name": "count",
       "kind": 1,
       "displayName": "Count",
+      "description": "Count of the facet instance.",
       "requiredTypes": [
         {
           "numeric": true
@@ -28,24 +29,26 @@
     {
       "name": "rangeValue",
       "kind": 2,
-      "displayName": "Range Value"
+      "displayName": "Range Value",
+      "description": "Value to be used as the horizontal axis of the histogram with Count as the vertical axis."
     },
     {
       "name": "bucket",
       "kind": 0,
-      "displayName": "Bucket"
+      "displayName": "Segmented By",
+      "description": "Each facet instance is segmented by this field."
     },
     {
       "name": "facetInstanceColor",
       "kind": 0,
       "displayName": "Color",
-      "description": ""
+      "description": "Color of each facet instance."
     },
     {
       "name": "iconClass",
       "kind": 0,
       "displayName": "Icon Class",
-      "description": ""
+      "description": "CSS Class for each facet instance icon."
     }
   ],
 

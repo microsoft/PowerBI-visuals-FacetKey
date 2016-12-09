@@ -98,12 +98,12 @@ export function convertToHSL(colorString: string) {
  * @param  {boolean}  multi        A boolean flag indicating whether to find multiple matching columns or not           .
  * @return {any}                   A dataview table column or an array of the columns.
  */
-export function findColumn(dataView: DataView, dataRoleName: string, multi?: boolean) {
+export function findColumn(dataView: DataView, dataRoleName: string, multi?: boolean): any {
     const columns = dataView.metadata.columns;
-    const result = _[multi ? 'filter' : 'find'](columns || [], (col: any) => col && col.roles[dataRoleName]);
+    const result =  _.filter(columns || [], (col: any) => col && col.roles[dataRoleName]);
     return multi
-        ? (result.length > 0 ? result : undefined)
-        : result;
+        ? (result[0] && result)
+        : result[0];
 }
 
 /**

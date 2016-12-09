@@ -63,7 +63,7 @@ const DEFAULT_SETTINGS: FacetKeySettings = {
 
 export default class FacetsVisual implements IVisual {
 
-    private element: JQuery;
+    private facetsContainer: JQuery;
     private suppressNextUpdate: boolean;
     private loader: JQuery;
     private searchBox: JQuery;
@@ -102,31 +102,26 @@ export default class FacetsVisual implements IVisual {
      * @param  {VisualConstructorOptions} options Initialization options for the visual.
      */
     constructor(options: VisualConstructorOptions) {
-        const facetsContainer = $('<div class="facets-container"></div>');
+        this.facetsContainer = $('<div class="facets-container"></div>').appendTo($(options.element));
 
         this.settings = DEFAULT_SETTINGS;
-        this.element = $(options.element).append(facetsContainer);
 
         this.hostServices = options.host.createSelectionManager()['hostServices'];
         this.colors = options.host.colors;
 
-        this.facets = new Facets(facetsContainer, []);
-        this.element.find('.facets-container').prepend(`
+        this.facets = new Facets(this.facetsContainer, []);
+        this.facetsContainer.prepend(`
             <div class="facets-global-loading"><div class="loader"><div class="facets-loader"></div></div></div>
             <div class="facets-header">
-                <div class="facet-menu-anchor">
-                    <i class="fa fa-ellipsis-h"></i>
-                </div>
                 <input class="search-box" placeholder="Search">
             </div>
         `);
-        this.searchBox = this.element.find('.search-box');
-        this.loader = this.element.find('.facets-global-loading');
+        this.searchBox = this.facetsContainer.find('.search-box');
+        this.loader = this.facetsContainer.find('.facets-global-loading');
 
         this.bindFacetsEventHandlers();
 
-        // Stop propagating theses events to visual parent elements
-        this.element.find('.search-box').on('mousedown mouseup click focus blur input pointerdown pointerup touchstart touchdown', (e) => e.stopPropagation());
+        this.facetsContainer.on('mousedown pointerdown', (e: Event) => e.stopPropagation());
     }
 
     /**
@@ -165,16 +160,16 @@ export default class FacetsVisual implements IVisual {
 
         this.previousData = this.data || {};
         this.dataView = options.dataViews[0];
-        this.settings = this.validateSettings($.extend(true, {}, this.settings, this.dataView.metadata.objects));
+        this.settings = this.validateSettings($.extend(true, {}, DEFAULT_SETTINGS, this.dataView.metadata.objects));
 
         const isFreshData = (options['operationKind'] === VisualDataChangeOperationKind.Create);
         const isMoreData = !isFreshData;
-        const hasMoreData = !!this.dataView.metadata.segment;
+        const hasMoreData = !!this.dataView.metadata.segment && this.hasRequiredFields(this.dataView);
         const rangeValueColumn = findColumn(this.dataView, 'rangeValue');
         const bucketColumn = findColumn(this.dataView, 'bucket');
         const loadAllDataBeforeRender = Boolean(rangeValueColumn) || Boolean(bucketColumn);
 
-        this.element.toggleClass('render-segments', Boolean(bucketColumn));
+        this.facetsContainer.toggleClass('render-segments', Boolean(bucketColumn));
 
         this.previousFreshData = isFreshData ? (this.data || {}) : this.previousFreshData;
         this.retainFilters = this.previousFreshData.hasHighlight && this.retainFilters;
@@ -182,15 +177,15 @@ export default class FacetsVisual implements IVisual {
 
         // Update data and the Facets
         this.data = this.hasRequiredFields(this.dataView)
-        ? FacetsVisual.converter(this.dataView, this.colors, this.settings)
-        : <any>{ facetsData: [], dataPointsMap: {} };
+            ? FacetsVisual.converter(this.dataView, this.colors, this.settings)
+            : <any>{ facetsData: [], dataPointsMap: {} };
 
         this.hasFilter() && (this.data = this.filterData(this.data));
 
         // to ignore first update call seriese caused by selecting facets in highlihgted state
         this.firstSelectionInHighlightedState = isFreshData
-        ? (this.previousFreshData.hasHighlight && this.selectedInstances.length > 0)
-        : this.firstSelectionInHighlightedState;
+            ? (this.previousFreshData.hasHighlight && this.selectedInstances.length > 0)
+            : this.firstSelectionInHighlightedState;
 
         !loadAllDataBeforeRender && !this.firstSelectionInHighlightedState && this.updateFacets(isMoreData);
 
@@ -201,8 +196,8 @@ export default class FacetsVisual implements IVisual {
         };
         this.loadMoreCount = isFreshData ? 0 : ++this.loadMoreCount;
         hasMoreData && this.loadMoreCount < MAX_DATA_LOADS
-        ? loadMoreData()
-        : loadAllDataBeforeRender && !this.firstSelectionInHighlightedState && this.updateFacets();
+            ? loadMoreData()
+            : loadAllDataBeforeRender && !this.firstSelectionInHighlightedState && this.updateFacets();
     }
 
     /**
@@ -238,8 +233,7 @@ export default class FacetsVisual implements IVisual {
         const columns = dataView.metadata.columns;
         const countColumnExists = _.some(columns || [], (col: any) => col && col.roles.count);
         const instanceColumnExists = _.some(columns || [], (col: any) => col && col.roles.facetInstance);
-        const facetColumnExists = _.some(columns || [], (col: any) => col && col.roles.facet);
-        return (instanceColumnExists || facetColumnExists) && countColumnExists;
+        return instanceColumnExists && countColumnExists;
     }
 
     /**
@@ -309,8 +303,8 @@ export default class FacetsVisual implements IVisual {
                 const numVisibleFacets = group.facets.length;
                 const allFacets = this.getFacetGroup(key).allFacets;
                 const moreInitialFacets = numVisibleFacets < this.settings.facetCount.initial
-                ? allFacets.slice(numVisibleFacets, this.settings.facetCount.initial)
-                : [];
+                    ? allFacets.slice(numVisibleFacets, this.settings.facetCount.initial)
+                    : [];
                 const newNumVisibleFacets = numVisibleFacets + moreInitialFacets.length;
                 const remaining = Math.max(allFacets.length - newNumVisibleFacets, 0);
                 const hasMoreThanInitial = newNumVisibleFacets > this.settings.facetCount.initial;
@@ -319,11 +313,11 @@ export default class FacetsVisual implements IVisual {
                     { label: 'More', class: 'more', clickable: true },
                 ];
                 hasMoreThanInitial && more
-                ? more.splice(1, 0,
-                    { label: 'Less', class: 'less', clickable: true },
-                    { label: '|', class: 'seperator', clickable: false }
-                )
-                : [{ label: 'Less', class: 'less', clickable: true }];
+                    ? more.splice(1, 0,
+                        { label: 'Less', class: 'less', clickable: true },
+                        { label: '|', class: 'seperator', clickable: false }
+                    )
+                    : [{ label: 'Less', class: 'less', clickable: true }];
                 this.facets.append([{
                     key: key,
                     facets: moreInitialFacets,
@@ -385,12 +379,15 @@ export default class FacetsVisual implements IVisual {
      * Binds event handlers for the facets component.
      */
     private bindFacetsEventHandlers() {
+        // If the mouse leaves the container while dragging, cancel it by triggering a mouseup event.
+        this.facetsContainer.on('mouseleave', (evt: Event) => this.facetsContainer.trigger('mouseup'));
+
         this.searchBox.on('input', _.debounce((e: any) => this.filterFacets(), 500));
 
         this.facets.on('facet:click', (e: any, key: string, value: string) => this.toggleFacetSelection(key, value));
 
         this.facets.on('facet-group:more', (e: any, key: string, index: number) =>
-        e.currentTarget.classList.contains('more') ? this.showMoreFacetInstances(key) : this.resetGroup(key));
+        e.currentTarget.classList.contains('more') ? this.showMoreFacetInstances(key) : this.shrinkFacetGroup(key));
 
         this.facets.on('facet-group:collapse', (e: any, key: string) => {
             const facetGroup = this.getFacetGroup(key);
@@ -400,8 +397,8 @@ export default class FacetsVisual implements IVisual {
                 this.filter.range && this.filter.range[key] && (this.filter.range[key] = undefined);
                 this.filterFacets(true);
                 this.selectedInstances.length > 0
-                ? this.selectFacetInstances(this.selectedInstances)
-                : this.selectRanges();
+                    ? this.selectFacetInstances(this.selectedInstances)
+                    : this.selectRanges();
                 return;
             }
             const deselected = _.remove(this.selectedInstances, (selected) => selected.facetKey === key);
@@ -434,8 +431,8 @@ export default class FacetsVisual implements IVisual {
             } else {
                 this.filterFacets(true);
                 this.selectedInstances.length > 0
-                ? this.selectFacetInstances(this.selectedInstances)
-                : this.selectRanges();
+                    ? this.selectFacetInstances(this.selectedInstances)
+                    : this.selectRanges();
             }
         });
     }
@@ -448,8 +445,17 @@ export default class FacetsVisual implements IVisual {
     private resetGroup(key: string): void {
         const facetGroup = this.getFacetGroup(key);
         this.facets.replaceGroup(facetGroup);
-        this.facets.highlight(this.selectedInstances.map(dp => ({ key: dp.facetKey, value: dp.instanceValue, count: dp.instanceCount })));
         this.data.hasHighlight && this.facets.select(this.data.facetsSelectionData);
+    }
+
+    private shrinkFacetGroup(key: string) {
+        const facets = this.getFacetGroup(key).facets;
+        this.resetGroup(key);
+        if (!this.data.hasHighlight) {
+            _.remove(this.selectedInstances, (selected) => selected.facetKey === key && !_.find(facets, {'value': selected.instanceValue}));
+            this.selectFacetInstances(this.selectedInstances);
+            this.runWithNoAnimation(this.updateFacetsSelection, this, this.selectedInstances);
+        }
     }
 
     /**
@@ -476,7 +482,34 @@ export default class FacetsVisual implements IVisual {
             more: more,
             facets: moreFacets,
         }]);
-        this.data.hasHighlight && this.facets.select(this.data.facetsSelectionData);
+
+        this.data.hasHighlight
+            ? this.facets.select(this.data.facetsSelectionData)
+            : this.runWithNoAnimation(this.updateFacetsSelection, this, this.selectedInstances);
+    }
+
+    /**
+     * Run the provided function while facets animation is disabled.
+     *
+     * @param  {any}    fun     A function to be executed.
+     * @param  {any}    thisArg The value of `this` prvided for the call to the given function.
+     * @param  {any[]}  ...args The arguments provided for the call to the given function.
+     */
+    private runWithNoAnimation(fun: any, thisArg: any, ...args: any[]) {
+        this.facetsContainer.toggleClass('no-animation', true);
+        fun.call(thisArg, ...args);
+        /* Trigger a reflow, flushing the CSS changes. Following line is needed for this to work. */
+        this.facetsContainer[0].offsetHeight;
+        this.facetsContainer.toggleClass('no-animation', false);
+    }
+
+    /**
+     * Clears filters.
+     */
+    private clearFilters() {
+        this.filter = {};
+        this.searchBox.val('');
+        this.retainFilters = false;
     }
 
     /**
@@ -493,29 +526,21 @@ export default class FacetsVisual implements IVisual {
         if (replace) {
             !this.retainFilters && this.clearFilters();
             this.firstSelectionInHighlightedState = false;
-            this.facets.replace(this.data.facetsData);
+            this.runWithNoAnimation(this.facets.replace, this.facets, this.data.facetsData);
         };
-    }
-
-    /**
-     * Clears filters.
-     */
-    private clearFilters() {
-        this.filter = {};
-        this.searchBox.val('');
-        this.retainFilters = false;
     }
 
     /**
      * Redraw facets with current data and update the selection state.
      */
     private redrawFacets() {
-        this.facets.replace(this.data.facetsData);
+        this.runWithNoAnimation(this.facets.replace, this.facets, this.data.facetsData);
         this.facets._queryGroup._element.find('.facet-bar-container').append('<i class="fa fa-times query-remove" aria-hidden="true"></i>');
         this.data.hasHighlight
             ? this.facets.select(this.data.facetsSelectionData)
             : this.updateFacetsSelection(this.selectedInstances, false);
     }
+
 
     /**
      * Returns true if there is a range or keyword filter.
@@ -563,8 +588,8 @@ export default class FacetsVisual implements IVisual {
      */
     private selectRanges() {
         const sqExpr: any = this.hasRangeFilter()
-        ? this.createSQExprFromRangeFilter(this.filter.range)
-        : undefined;
+            ? this.createSQExprFromRangeFilter(this.filter.range)
+            : undefined;
         this.sendSelectionToHost(sqExpr ? [powerbi.data.createDataViewScopeIdentity(sqExpr)] : []);
     }
 
@@ -581,11 +606,11 @@ export default class FacetsVisual implements IVisual {
             if (!selected.rows[0]) { return prevExpr; }
             const { facet, facetInstance } = selected.rows[0];
             let expr: any = instanceColumn
-            ? SQExprBuilder.equal(instanceColumn.expr, SQExprBuilder.typedConstant(facetInstance, instanceColumn.type))
-            : undefined;
+                ? SQExprBuilder.equal(instanceColumn.expr, SQExprBuilder.typedConstant(facetInstance, instanceColumn.type))
+                : undefined;
             expr = facetColumn
-            ? SQExprBuilder.and(expr, SQExprBuilder.equal(facetColumn.expr, SQExprBuilder.typedConstant(facet, facetColumn.type)))
-            : expr;
+                ? SQExprBuilder.and(expr, SQExprBuilder.equal(facetColumn.expr, SQExprBuilder.typedConstant(facet, facetColumn.type)))
+                : expr;
             return prevExpr ? SQExprBuilder.or(prevExpr, expr) : expr;
         }, undefined);
 
@@ -627,7 +652,7 @@ export default class FacetsVisual implements IVisual {
      * Update the facets component so that it reflects the given selected facet instances
      *
      * @param {DataPoint[] = []}   selectedInstances An array of datapoints for the selected facet instances.
-     * @param {boolean     = true} reset             Flag indicating whether to reset the facets components.
+     * @param {boolean     = true} reset             Flag indicating whether to reset the facets components when there's no selected facets.
      */
     private updateFacetsSelection(selectedInstances: DataPoint[] = [], reset: boolean = true): void {
         this.facets.unhighlight();
