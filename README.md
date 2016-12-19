@@ -1,5 +1,4 @@
-[![CircleCI](https://circleci.com/gh/Microsoft/PowerBI-visuals-FacetKey.svg?style=svg&circle-token=50ca692517c570ea73645e5aa5c38a783b72627f)](https://circleci.com/gh/Microsoft/PowerBI-visuals-FacetKey)
-
+[![CircleCI](https://circleci.com/gh/Microsoft/PowerBI-visuals-FacetKey.svg?style=svg)](https://circleci.com/gh/Microsoft/PowerBI-visuals-FacetKey)
 #Facet Key Powerbi Custom Visual
 Facet Key Powerbi Custom Visual
 

@@ -1,6 +1,9 @@
 machine:
   node:
     version: 6
+compile:
+  override:
+    - npm run package
 test:
-    override:
-        - npm test
+  override:
+    - npm test

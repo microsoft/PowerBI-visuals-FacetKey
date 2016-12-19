@@ -33,7 +33,7 @@ module.exports = {
     externals: [
         {
             jquery: "jQuery",
-            "lodash": "_"
+            lodash: "_"
         },
     ]
 };
