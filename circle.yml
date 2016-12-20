@@ -3,4 +3,4 @@ machine:
     version: 6
 compile:
   override:
-    - npm test && npm run package 
+    - npm test

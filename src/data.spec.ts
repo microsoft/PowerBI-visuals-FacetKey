@@ -59,6 +59,7 @@ describe('.convertToDataPointsMap', () => {
         const data = dataConversion.convertToDataPointsMap(<any>dataView).dataPointsMap;
         expect(data['organization']).to.be.an('array').length(2);
         expect(data['location']).to.be.an('array').length(1);
+        throw('error');
     });
     it('should return boolean indicating data has highlights or not', () => {
         let hasHighlight = dataConversion.convertToDataPointsMap(<any>dataView).hasHighlight;
