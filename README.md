@@ -16,4 +16,4 @@
 
 ## Testing
 
-* Run `npm test``
+* Run `npm test`
