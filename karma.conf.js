@@ -8,6 +8,9 @@ module.exports = function(config) {
     config.set({
         basePath: '',
         frameworks: ['mocha', 'sinon-chai'],
+        mime: {
+            'text/x-typescript': ['ts']
+        },
         files: [
             'node_modules/jquery/dist/jquery.min.js',
             'src/**/*.spec.ts'
@@ -40,6 +43,10 @@ module.exports = function(config) {
                 test: /\.(ts|js)($|\?)/i // process .js and .ts files only
               })
             ]
+        },
+        webpackMiddleware: {
+            // suppress webpack errors
+            stats: 'none'
         },
         reporters: ['mocha'],
         port: 9876,

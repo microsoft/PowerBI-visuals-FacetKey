@@ -8,7 +8,7 @@
     "preinstall:prereq": "npm install tar.gz mv --save-dev",
     "preinstall:submodules": "node bin/downloadPrivateSubmodules",
     "preinstall:dependencies": "node bin/installSubmoduleDeps",
-    "preinstall": "npm run clean && npm run preinstall:prereq && npm run preinstall:submodules && npm run preinstall:dependencies",
+    "preinstall": "npm run preinstall:prereq && npm run preinstall:submodules && npm run preinstall:dependencies",
     "install-certificate": "node bin/openCert",
     "start": "npm run compiletemplates && npm-run-all --parallel dev watch:templates",
     "tdd": "npm-run-all --parallel start test:tdd",
@@ -16,8 +16,8 @@
     "watch:templates": "onchange 'lib/uncharted-facets/public/templates/**/*' -- npm run compiletemplates",
     "compiletemplates": "node bin/compileHandlebars",
     "package": "npm run compiletemplates && node bin/packageVisual",
-    "test": "karma start --color | node bin/filterErrors",
-    "test:tdd": "karma start --color --tdd | node bin/filterErrors",
+    "test": "karma start",
+    "test:tdd": "karma start --tdd",
     "lint": "tslint src/**/*.ts",
     "clean": "rm -rf node_modules .tmp"
   },
@@ -26,7 +26,7 @@
     "tmpProd": "./.tmp/prod"
   },
   "keywords": [],
-  "author": "Uncharted Software Inc.",
+  "author": "Microsoft (experimental)",
   "license": "MIT",
   "privateSubmodules": {
     "uncharted-facets": "2.4.12"

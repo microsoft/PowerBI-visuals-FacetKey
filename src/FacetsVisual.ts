@@ -567,6 +567,7 @@ export default class FacetsVisual implements IVisual {
      * @param  {any}    rangeFilter A range filter
      * @return {any}    A range sqExpr expression.
      */
+
     private createSQExprFromRangeFilter(rangeFilter: any) {
         const rangeValueColumns = findColumn(this.dataView, 'rangeValue', true);
         let sqExpr: any;

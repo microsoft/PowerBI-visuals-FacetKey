@@ -93,7 +93,7 @@ describe('.convertToDataPointsMap', () => {
         expect(dataPoint.rangeValues[0].valueLabel).to.equal('fa fa-sitemap');
         expect(dataPoint.rangeValues[0].key).to.equal('class');
         expect(dataPoint.rangeValues[1].value['getTime']()).to.equal(new Date('2016/01/02').getTime());
-        expect(dataPoint.rangeValues[1].valueLabel).to.equal('Sat Jan 02 2016 00:00:00 GMT-0500 (EST)');
+        expect(dataPoint.rangeValues[1].valueLabel.slice(0, 15)).to.equal('Sat Jan 02 2016');
         expect(dataPoint.rangeValues[1].key).to.equal('date');
     });
     it('should return the result with correct data values', () => {
