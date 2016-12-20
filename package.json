@@ -16,7 +16,7 @@
     "watch:templates": "onchange 'lib/uncharted-facets/public/templates/**/*' -- npm run compiletemplates",
     "compiletemplates": "node bin/compileHandlebars",
     "package": "npm run compiletemplates && node bin/packageVisual",
-    "test": "karma start --color | node bin/filterErrors",
+    "test": "karma start --color",
     "test:tdd": "karma start --color --tdd | node bin/filterErrors",
     "lint": "tslint src/**/*.ts",
     "clean": "rm -rf node_modules .tmp"
