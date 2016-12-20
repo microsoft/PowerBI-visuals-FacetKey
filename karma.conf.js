@@ -8,6 +8,9 @@ module.exports = function(config) {
     config.set({
         basePath: '',
         frameworks: ['mocha', 'sinon-chai'],
+        mime: {
+            'text/x-typescript': ['ts']
+        },
         files: [
             'node_modules/jquery/dist/jquery.min.js',
             'src/**/*.spec.ts'
