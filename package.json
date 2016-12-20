@@ -17,7 +17,7 @@
     "compiletemplates": "node bin/compileHandlebars",
     "package": "npm run compiletemplates && node bin/packageVisual",
     "test": "karma start",
-    "test:tdd": "karma start --color --tdd | node bin/filterErrors",
+    "test:tdd": "karma start --tdd",
     "lint": "tslint src/**/*.ts",
     "clean": "rm -rf node_modules .tmp"
   },
