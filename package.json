@@ -3,7 +3,13 @@
   "version": "0.3.1",
   "description": "PowerBI custom visual.",
   "main": "src/index.js",
-  "typings": "src/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Microsoft/PowerBI-visuals-FacetKey"
+  },
+  "bugs": {
+    "url": "https://github.com/Microsoft/PowerBI-visuals-FacetKey/issues"
+  },
   "scripts": {
     "preinstall:prereq": "npm install tar.gz mv --save-dev",
     "preinstall:submodules": "node bin/downloadPrivateSubmodules",
