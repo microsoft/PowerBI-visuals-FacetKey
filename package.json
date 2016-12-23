@@ -1,6 +1,6 @@
 {
   "name": "essex.widget.facetkey",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "PowerBI custom visual.",
   "main": "src/index.js",
   "repository": {
@@ -19,7 +19,7 @@
     "start": "npm run compiletemplates && npm-run-all --parallel dev watch:templates",
     "tdd": "npm-run-all --parallel start test:tdd",
     "dev": "node bin/startDev",
-    "watch:templates": "onchange 'lib/uncharted-facets/public/templates/**/*' -- npm run compiletemplates",
+    "watch:templates": "onchange 'lib/@uncharted/facets/public/templates/**/*' -- npm run compiletemplates",
     "compiletemplates": "node bin/compileHandlebars",
     "package": "npm run compiletemplates && node bin/packageVisual",
     "test": "karma start",
@@ -35,7 +35,7 @@
   "author": "Microsoft (experimental)",
   "license": "MIT",
   "privateSubmodules": {
-    "uncharted-facets": "2.4.12"
+    "@uncharted/facets": "2.4.14"
   },
   "devDependencies": {
     "@types/jquery": "^2.0.33",
