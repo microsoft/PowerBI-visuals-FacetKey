@@ -40,7 +40,7 @@ import * as $ from 'jquery';
 import { formatValue, convertToDataPointsMap, aggregateDataPointsMap, compareRangeValue, convertToFacetsVisualData } from './data';
 import { findColumn, hexToRgba, otherLabelTemplate, createSegments, HIGHLIGHT_COLOR } from './utils';
 
-const Facets = require('../lib/uncharted-facets/public/javascripts/main');
+const Facets = require('../lib/@uncharted/facets/public/javascripts/main');
 
 const MAX_DATA_LOADS = 5;
 

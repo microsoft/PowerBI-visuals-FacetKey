@@ -22,13 +22,13 @@ Then configure the uncharted npm repository for jspm. Do NOT configure credentia
 Now you can install it in your project:
 
 	```
-	jspm install npm:uncharted-facets
+	jspm install npm:@uncharted/facets
 	```
 
 To consume it in your project, use:
 
   ```
-  import Facets from 'uncharted-facets';
+  import Facets from '@uncharted/facets';
   ```
 
 ## Development
@@ -50,7 +50,7 @@ From root of project:
 Facets auto-links via JSPM on build/watch. This means you can use your local linked copy in other projects for quick iteration. To do so, run this in your other project:
 
   ```
-  jspm install --link npm:uncharted-facets
+  jspm install --link npm:@uncharted/facets
   ```
 
 This will connect that project to your local development version of facets. Be aware that this is version sensitive so if your local version of facets doesn't match the version being consumed by your project this may not have the desired effect.
@@ -58,10 +58,10 @@ This will connect that project to your local development version of facets. Be a
 To unlink the project and go back to the version from npm, run:
 
   ```
-  jspm install --unlink npm:uncharted-facets
+  jspm install --unlink npm:@uncharted/facets
   ```
 
-JSPM remembers linkages so if you're unsure of what version your project is using, run the following and look at the output for npm:uncharted-facets for linkage state:
+JSPM remembers linkages so if you're unsure of what version your project is using, run the following and look at the output for npm:@uncharted/facets for linkage state:
 
   ```
   jspm inspect
@@ -101,4 +101,4 @@ After the PR is approved and merged to `master`, tag and publish based on versio
 	npm publish
 	```
 
-Verify the publish succeeded by checking that the expected version of `uncharted-facets` is available on [Uncharted's private npm registry](https://nexus.uncharted.software/#browse/browse/assets:npm).
+Verify the publish succeeded by checking that the expected version of `@uncharted/facets` is available on [Uncharted's private npm registry](https://nexus.uncharted.software/#browse/browse/assets:npm).
