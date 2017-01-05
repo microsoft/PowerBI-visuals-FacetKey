@@ -258,9 +258,69 @@ describe('.aggregateDataPointsMap', () => {
             const dp = result.dataPointsMap['organization'][0];
             expect(dp.bucket).to.be.undefined;
         });
-        it('should apply keyword filter');
-        it('should apply range filter');
-        it('should handle correctly with selected instances');
+        it('should apply case insensitive keyword filter', () => {
+            result = dataConversion.aggregateDataPointsMap(data, {contains: 'new'});
+            const dp = result.dataPointsMap['location'][0];
+
+            expect(Object.keys(result.dataPointsMap)).to.deep.equal(['location']);
+            expect(result.dataPointsMap.location).to.have.length(1);
+            expect(dp.instanceLabel).to.equal('New York');
+            expect(dp.instanceCount).to.equal(10);
+        });
+        it('should apply a range filter', () => {
+            result = dataConversion.aggregateDataPointsMap(data, {
+                range: {
+                    date: { from: '2016-01-01', to: '2016-01-01' },
+                    class: { from: 'fa fa-sitemap', to: 'fa fa-sitemap' }
+               }
+            });
+            const dp = result.dataPointsMap['organization'][0];
+
+            expect(Object.keys(result.dataPointsMap)).to.deep.equal(['organization']);
+            expect(result.dataPointsMap.organization).to.have.length(1);
+            expect(dp.instanceLabel).to.equal('Wand');
+            expect(dp.instanceCount).to.equal(4);
+        });
+        it('should apply both range and keyword filters', () => {
+            result = dataConversion.aggregateDataPointsMap(data, {
+                contains: 'new york',
+                range: {
+                    date: { from: '2016-01-02', to: '2016-01-03' },
+               }
+            });
+            const dp = result.dataPointsMap['location'][0];
+
+            expect(Object.keys(result.dataPointsMap)).to.deep.equal(['location']);
+            expect(result.dataPointsMap.location).to.have.length(1);
+            expect(dp.instanceLabel).to.equal('New York');
+            expect(dp.instanceCount).to.equal(8);
+        });
+        it('should bypass keyword filter with selected data points', () => {
+            result = dataConversion.aggregateDataPointsMap(data, {
+                contains: 'new york',
+                range: {
+                    date: { from: '2016-01-02', to: '2016-01-03' },
+               },
+               selectedDps: [<DataPoint>{ instanceLabel: 'Wand', facetKey: 'organization' }],
+            });
+            const dp = result.dataPointsMap['organization'][0];
+
+            expect(Object.keys(result.dataPointsMap)).to.deep.equal(['organization', 'location']);
+            expect(dp.instanceLabel).to.equal('Wand');
+            expect(dp.instanceCount).to.equal(3);
+        });
+        it('should keep selected data point even it has 0 instance count after range filter', () => {
+            result = dataConversion.aggregateDataPointsMap(data, {
+                contains: 'new york',
+                range: {
+                    date: { from: '2016-01-04', to: '2016-01-08' },
+               },
+               selectedDps: [<DataPoint>{ instanceLabel: 'Wand', facetKey: 'organization' }],
+            });
+            const dp = result.dataPointsMap['organization'][0];
+            expect(dp.instanceLabel).to.equal('Wand');
+            expect(dp.instanceCount).to.equal(0);
+        });
     });
     describe('for rangeDataMap result', () => {
         it('should unwind and aggregate dp by its range values and group them by range value key ', () => {

@@ -337,7 +337,7 @@ export default class FacetsVisual implements IVisual {
      * @param  {boolean=false} force.
      */
     private filterFacets(force: boolean = false) {
-        const newKeyword = String(this.searchBox.val()).trim().toLowerCase();
+        const newKeyword = String(this.searchBox.val()).trim();
         const isKeywordChanged = this.filter.contains !== newKeyword;
         if (isKeywordChanged || force) {
             this.filter.contains = newKeyword;
@@ -353,8 +353,7 @@ export default class FacetsVisual implements IVisual {
      * @return {FacetsVisualData}                  filtered data.
      */
     private filterData(data: FacetsVisualData) {
-        // bypass filter for selected instances
-        this.filter.ignore = this.selectedInstances;
+        this.filter.selectedDps = this.selectedInstances;
         const aggregatedData = aggregateDataPointsMap(data.dataPointsMapData, this.filter);
         const result: any =  _.extend({}, data, convertToFacetsVisualData(aggregatedData, {
             settings: this.settings,
@@ -423,7 +422,7 @@ export default class FacetsVisual implements IVisual {
 
         this.facets.on('facet-histogram:rangechangeduser', (e: any, key: string, range: any) => {
             const isFullRange = range.from.metadata[0].isFirst && range.to.metadata[range.to.metadata.length - 1].isLast;
-            this.filter.range = {};
+            !this.filter.range && (this.filter.range = {});
             this.filter.range[key] = isFullRange ? undefined : { from: range.from, to: range.to };
             if (this.data.hasHighlight) {
                 this.retainFilters = true;

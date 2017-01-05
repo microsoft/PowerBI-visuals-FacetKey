@@ -48,7 +48,7 @@ const MAX_NUM_FACET_GROUPS = 100;
  * @param  {RangeValue[]} rangeValues An array of range values.
  * @return {boolean}
  */
-function checkRangeFilter(rangeFilter: any, rangeValues: RangeValue[]) {
+function checkRangeFilter(rangeFilter: RangeFilter, rangeValues: RangeValue[]) {
     if (!rangeFilter) { return true; }
     const compare = compareRangeValue;
     return rangeValues.reduce((prev: boolean, rangeValue: RangeValue) => {
@@ -70,7 +70,7 @@ function checkRangeFilter(rangeFilter: any, rangeValues: RangeValue[]) {
 function checkKeywordFilter(keyword: string, dataPoint: DataPoint) {
     if (!keyword) { return true; }
     const facetInstanceValue = String(dataPoint.rows[0].facetInstance);
-    const isMatch = facetInstanceValue.toLowerCase().indexOf(keyword) >= 0;
+    const isMatch = facetInstanceValue.toLowerCase().indexOf(keyword.toLowerCase()) >= 0;
     return isMatch;
 }
 
@@ -109,7 +109,7 @@ function aggregateDataPoints(dataPoints: DataPoint[], options: AggregateDataPoin
     };
     dataPoints.forEach((dp: DataPoint) => {
         const instanceLabel = dp.instanceLabel;
-        const ignoreThisDp = _.find(filter.ignore, (ignoreDp: DataPoint) => ignoreDp.instanceLabel === dp.instanceLabel && ignoreDp.facetKey === dp.facetKey);
+        const ignoreThisDp = _.find(filter.selectedDps, (selectedDp: DataPoint) => selectedDp.instanceLabel === dp.instanceLabel && selectedDp.facetKey === dp.facetKey);
         if (ignoreThisDp) {
             return result.ignoredDataPoints.push(dp);
         }
@@ -144,7 +144,7 @@ function aggregateDataPoints(dataPoints: DataPoint[], options: AggregateDataPoin
 
 /**
  * Aggregate data points by face instance, applying only the (optional) range filter from the given options object.
- * It is used to create a list of the data points for the selected facet instances which bypass the keyword filter
+ * It is used to create a list of the data points for the selected facet instances which bypasses the keyword filter
  * and can have zero for the instance or highlight count.
  *
  * @param  {DataPoint[]}                     dataPoints An array of data points.

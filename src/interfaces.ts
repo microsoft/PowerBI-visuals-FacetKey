@@ -85,10 +85,17 @@ interface AggregatedData {
     hasHighlight: boolean;
 }
 
+interface RangeFilter {
+    [rangeKey: string]: {
+        from: Date | number | string,
+        to: Date | number | string,
+     };
+}
+
 interface DataPointsFilter {
     contains?: string;
-    range?: any;
-    ignore?: DataPoint[];
+    range?: RangeFilter;
+    selectedDps?: DataPoint[];
 }
 
 interface AggregateDataPointsOptions {
