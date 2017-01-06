@@ -46,9 +46,8 @@ const MAX_NUM_FACET_GROUPS = 100;
  * Returns true if the given range values are within the range of the given filter.
  * @param  {any}          rangeFilter A range filter.
  * @param  {RangeValue[]} rangeValues An array of range values.
- * @return {boolean}
  */
-function checkRangeFilter(rangeFilter: RangeFilter, rangeValues: RangeValue[]) {
+function checkRangeFilter(rangeFilter: any, rangeValues: RangeValue[]) {
     if (!rangeFilter) { return true; }
     const compare = compareRangeValue;
     return rangeValues.reduce((prev: boolean, rangeValue: RangeValue) => {

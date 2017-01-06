@@ -85,10 +85,18 @@ interface AggregatedData {
     hasHighlight: boolean;
 }
 
+interface RangeMetadata {
+    rangeValue: Date | string | number | boolean;
+}
+
+interface RangeCollection {
+    metadata: RangeMetadata[];
+}
+
 interface RangeFilter {
     [rangeKey: string]: {
-        from: Date | number | string,
-        to: Date | number | string,
+        from: Date | number | string | RangeCollection,
+        to: Date | number | string | RangeCollection,
      };
 }
 
