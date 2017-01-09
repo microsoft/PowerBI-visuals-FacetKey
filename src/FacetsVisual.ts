@@ -420,10 +420,10 @@ export default class FacetsVisual implements IVisual {
             this.saveFacetState();
         });
 
-        this.facets.on('facet-histogram:rangechangeduser', (e: any, key: string, range: any) => {
+        this.facets.on('facet-histogram:rangechangeduser', (e: any, key: string, range: FacetRangeObject) => {
             const isFullRange = range.from.metadata[0].isFirst && range.to.metadata[range.to.metadata.length - 1].isLast;
             !this.filter.range && (this.filter.range = {});
-            this.filter.range[key] = isFullRange ? undefined : { from: range.from, to: range.to };
+            this.filter.range[key] = isFullRange ? undefined : range;
             if (this.data.hasHighlight) {
                 this.retainFilters = true;
                 this.selectRanges();

@@ -47,7 +47,7 @@ import mockAggregatedData from './test_data/mockAggregatedData';
 import DataViewObjects = powerbi.DataViewObjects;
 
 const buildRangeObj = (fromRangeValue, toRangeValue) => {
-    return {
+    return <FacetRangeObject>{
         from: { metadata: [{ rangeValue: fromRangeValue }] },
         to: { metadata: [{ rangeValue: toRangeValue }] },
     };
@@ -851,7 +851,7 @@ describe('.convertToFacetsVisualData', () => {
     });
     it('should set selection range based on the provided range filter', () => {
         result = dataConversion.convertToFacetsVisualData(aggregatedData, {
-            selectedRange: { date: { from: { index: 1 }, to: { index: 3 } } },
+            selectedRange: { date: <FacetRangeObject>{ from: { index: 1 }, to: { index: 3 } } },
             colors: [],
             settings: DEFAULT_SETTINGS
         });

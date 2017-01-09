@@ -85,11 +85,25 @@ interface AggregatedData {
     hasHighlight: boolean;
 }
 
-interface RangeFilter {
-    [rangeKey: string]: {
-        from: any,
-        to: any,
+interface RangeMetadata {
+    rangeValue: Date | string | number | boolean;
+    isFirst: boolean;
+    isLast: boolean;
+}
+
+interface FacetRangeObject {
+    from: {
+        index: number,
+        metadata: RangeMetadata[],
     };
+    to: {
+        index: number,
+        metadata: RangeMetadata[],
+    };
+}
+
+interface RangeFilter {
+    [rangeKey: string]: FacetRangeObject
 }
 
 interface DataPointsFilter {
@@ -107,7 +121,7 @@ interface ConvertToFacetsVisualDataOptions {
     colors: powerbi.IColorInfo[];
     settings: FacetKeySettings;
     hasHighlight?: boolean;
-    selectedRange?: any;
+    selectedRange?: RangeFilter;
 }
 
 interface FacetGroup {
