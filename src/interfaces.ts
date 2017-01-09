@@ -66,7 +66,6 @@ interface DataPoint {
     instanceIconClass: string;
     bucket?: any;
     rangeValues?: RangeValue[];
-    isSelected?: boolean;
     selectionColor?: { color: string, opacity: number };
 }
 
@@ -82,20 +81,21 @@ interface DataPointsMapData {
 interface AggregatedData {
     rangeDataMap: any;
     dataPointsMap: DataPointsMap;
+    selectedDataPoints: DataPoint[];
     hasHighlight: boolean;
 }
 
 interface RangeFilter {
     [rangeKey: string]: {
-        from: Date | number | string,
-        to: Date | number | string,
-     };
+        from: any,
+        to: any,
+    };
 }
 
 interface DataPointsFilter {
     contains?: string;
     range?: RangeFilter;
-    selectedDps?: DataPoint[];
+    selectedDataPoints?: DataPoint[];
 }
 
 interface AggregateDataPointsOptions {

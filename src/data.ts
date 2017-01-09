@@ -75,6 +75,17 @@ function checkKeywordFilter(keyword: string, dataPoint: DataPoint) {
 }
 
 /**
+ * Returns true if given dataPoint is in the selected data points array.
+ *
+ * @param  {DataPoint}   dataPoint          A dataPoint Object.
+ * @param  {DataPoint[]} selectedDataPoints An Array of selected data points.
+ * @return {boolean}
+ */
+function isInSelectedDataPoints(dataPoint: DataPoint, selectedDataPoints: DataPoint[]) {
+    return Boolean(_.find(selectedDataPoints, (selectedDp: DataPoint) => selectedDp.instanceLabel === dataPoint.instanceLabel && selectedDp.facetKey === dataPoint.facetKey));
+}
+
+/**
  * Create or update a bucket on the target Object.
  * Add the instance and highlight counts from the given datapoint to the bucket’s corresponding sums
  *
@@ -109,7 +120,7 @@ function aggregateDataPoints(dataPoints: DataPoint[], options: AggregateDataPoin
     };
     dataPoints.forEach((dp: DataPoint) => {
         const instanceLabel = dp.instanceLabel;
-        const ignoreThisDp = _.find(filter.selectedDps, (selectedDp: DataPoint) => selectedDp.instanceLabel === dp.instanceLabel && selectedDp.facetKey === dp.facetKey);
+        const ignoreThisDp = isInSelectedDataPoints(dp, filter.selectedDataPoints);
         if (ignoreThisDp) {
             return result.ignoredDataPoints.push(dp);
         }
@@ -157,7 +168,6 @@ function aggregateUsingRangeFilterOnly(dataPoints: DataPoint[], options: Aggrega
     const result: DataPoint[] = [];
     dataPoints.forEach((dp: DataPoint) => {
         const instanceLabel = dp.instanceLabel;
-        dp.isSelected = true;
         forEachDataPoint && forEachDataPoint(dp);
         !instanceMap[instanceLabel] && result.push(instanceMap[instanceLabel] = {
             rows: [],
@@ -170,7 +180,6 @@ function aggregateUsingRangeFilterOnly(dataPoints: DataPoint[], options: Aggrega
             instanceCountFormatter: dp.instanceCountFormatter,
             instanceColor: dp.instanceColor,
             instanceIconClass: dp.instanceIconClass,
-            isSelected: true,
         });
         if (!checkRangeFilter(filter.range, dp.rangeValues)) { return; }
         instanceMap[instanceLabel].highlight += dp.highlight;
@@ -330,7 +339,12 @@ export function convertToDataPointsMap(dataView: DataView): DataPointsMapData {
  */
 export function aggregateDataPointsMap(data: DataPointsMapData, filter: DataPointsFilter = {}): AggregatedData {
     const dataPointsMap = data.dataPointsMap;
-    const aggregatedData = { dataPointsMap: {}, rangeDataMap: {}, hasHighlight: !!data.hasHighlight };
+    const aggregatedData = {
+        dataPointsMap: {},
+        rangeDataMap: {},
+        selectedDataPoints: filter.selectedDataPoints,
+        hasHighlight: !!data.hasHighlight
+    };
     const constructRangeFacetData = (dp: DataPoint) => {
         if (!dp.rangeValues) { return; }
         dp.rangeValues.forEach((rangeValue: RangeValue) => {
@@ -350,7 +364,7 @@ export function aggregateDataPointsMap(data: DataPointsMapData, filter: DataPoin
             rangeDataMap[rangeValue.valueLabel].rows.push(...dp.rows);
             rangeDataMap[rangeValue.valueLabel].count += dp.instanceCount;
             rangeDataMap[rangeValue.valueLabel].highlight += dp.highlight;
-            const passFilter = dp.isSelected || (checkKeywordFilter(filter.contains, dp) && checkRangeFilter(filter.range, dp.rangeValues));
+            const passFilter = (isInSelectedDataPoints(dp, filter.selectedDataPoints) || checkKeywordFilter(filter.contains, dp)) && checkRangeFilter(filter.range, dp.rangeValues);
             if (passFilter) {
                 rangeDataMap[rangeValue.valueLabel].subSelection += dp.instanceCount;
             }
@@ -387,7 +401,7 @@ export function convertToFacetsVisualData(aggregatedData: AggregatedData, option
         hasHighlight: hasHighlight,
         facetsData: <FacetGroup[]>[],
         facetsSelectionData: <any>[],
-        selectedDataPoints: <DataPoint[]>[],
+        selectedDataPoints: aggregatedData.selectedDataPoints,
     };
     let maxFacetInstanceCount = 0;
 
@@ -467,8 +481,8 @@ export function convertToFacetsVisualData(aggregatedData: AggregatedData, option
             }
 
             !!highlight && selectionGroup.facets.push(selectionSpec);
-            dp.isSelected
-                ? data.selectedDataPoints.push(dp) && prependedSelectedFacets.push(facet)
+            isInSelectedDataPoints(dp, aggregatedData.selectedDataPoints)
+                ? prependedSelectedFacets.push(facet)
                 : useDataPoint && facets.push(facet);
 
             maxFacetInstanceCount = Math.max(maxFacetInstanceCount, instanceCount);

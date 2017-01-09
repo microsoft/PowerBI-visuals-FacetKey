@@ -353,7 +353,7 @@ export default class FacetsVisual implements IVisual {
      * @return {FacetsVisualData}                  filtered data.
      */
     private filterData(data: FacetsVisualData) {
-        this.filter.selectedDps = this.selectedInstances;
+        this.filter.selectedDataPoints = this.selectedInstances;
         const aggregatedData = aggregateDataPointsMap(data.dataPointsMapData, this.filter);
         const result: any =  _.extend({}, data, convertToFacetsVisualData(aggregatedData, {
             settings: this.settings,

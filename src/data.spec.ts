@@ -46,6 +46,13 @@ import mockDataPointsMap from './test_data/mockDataPointsMap';
 import mockAggregatedData from './test_data/mockAggregatedData';
 import DataViewObjects = powerbi.DataViewObjects;
 
+const buildRangeObj = (fromRangeValue, toRangeValue) => {
+    return {
+        from: { metadata: [{ rangeValue: fromRangeValue }] },
+        to: { metadata: [{ rangeValue: toRangeValue }] },
+    };
+};
+
 describe('Data Conversion Functions', () => {
 
 describe('.convertToDataPointsMap', () => {
@@ -195,6 +202,12 @@ describe('.aggregateDataPointsMap', () => {
         result = dataConversion.aggregateDataPointsMap(data);
         expect(result.hasHighlight).to.be.true;
     });
+    it('should return selected dps', () => {
+        result = dataConversion.aggregateDataPointsMap(data);
+        expect(result.selectedDataPoints).to.be.undefined;
+        result = dataConversion.aggregateDataPointsMap(data, { selectedDataPoints: [<any>'dummyDp'] });
+        expect(result.selectedDataPoints).to.be.deep.equal(['dummyDp']);
+    });
 
     describe('for dataPointsMap result', () => {
         it('should return datapoints map with correct values', () => {
@@ -270,8 +283,8 @@ describe('.aggregateDataPointsMap', () => {
         it('should apply a range filter', () => {
             result = dataConversion.aggregateDataPointsMap(data, {
                 range: {
-                    date: { from: '2016-01-01', to: '2016-01-01' },
-                    class: { from: 'fa fa-sitemap', to: 'fa fa-sitemap' }
+                    date: buildRangeObj('2016-01-01', '2016-01-01'),
+                    class: buildRangeObj('fa fa-sitemap', 'fa fa-sitemap'),
                }
             });
             const dp = result.dataPointsMap['organization'][0];
@@ -285,7 +298,7 @@ describe('.aggregateDataPointsMap', () => {
             result = dataConversion.aggregateDataPointsMap(data, {
                 contains: 'new york',
                 range: {
-                    date: { from: '2016-01-02', to: '2016-01-03' },
+                    date: buildRangeObj('2016-01-02', '2016-01-03'),
                }
             });
             const dp = result.dataPointsMap['location'][0];
@@ -299,9 +312,9 @@ describe('.aggregateDataPointsMap', () => {
             result = dataConversion.aggregateDataPointsMap(data, {
                 contains: 'new york',
                 range: {
-                    date: { from: '2016-01-02', to: '2016-01-03' },
+                    date: buildRangeObj('2016-01-02', '2016-01-03'),
                },
-               selectedDps: [<DataPoint>{ instanceLabel: 'Wand', facetKey: 'organization' }],
+               selectedDataPoints: [<DataPoint>{ instanceLabel: 'Wand', facetKey: 'organization' }],
             });
             const dp = result.dataPointsMap['organization'][0];
 
@@ -313,9 +326,9 @@ describe('.aggregateDataPointsMap', () => {
             result = dataConversion.aggregateDataPointsMap(data, {
                 contains: 'new york',
                 range: {
-                    date: { from: '2016-01-04', to: '2016-01-08' },
+                    date: buildRangeObj('2016-01-04', '2016-01-08'),
                },
-               selectedDps: [<DataPoint>{ instanceLabel: 'Wand', facetKey: 'organization' }],
+               selectedDataPoints: [<DataPoint>{ instanceLabel: 'Wand', facetKey: 'organization' }],
             });
             const dp = result.dataPointsMap['organization'][0];
             expect(dp.instanceLabel).to.equal('Wand');
@@ -362,9 +375,80 @@ describe('.aggregateDataPointsMap', () => {
                 }
             });
         });
-        it('should apply keyword filter');
-        it('should apply range filter');
-        it('should handle correctly with selected instances');
+        it('should apply case insensitive keyword filter', () => {
+            result = dataConversion.aggregateDataPointsMap(data, {contains: 'new'});
+            const classData = result.rangeDataMap['class']; //['fa fa-globe'];
+            const datesData = result.rangeDataMap['date'];
+            expect(classData['fa fa-globe'].count).to.equal(13);
+            expect(classData['fa fa-globe'].subSelection).to.equal(10);
+
+            expect(classData['fa fa-sitemap'].count).to.equal(7);
+            expect(classData['fa fa-sitemap'].subSelection).to.equal(0);
+
+
+            expect(datesData['2016-01-01'].count).to.equal(7);
+            expect(datesData['2016-01-01'].subSelection).to.equal(0);
+
+            expect(datesData['2016-01-02'].count).to.equal(11);
+            expect(datesData['2016-01-02'].subSelection).to.equal(8);
+
+            expect(datesData['2016-01-04'].count).to.equal(2);
+            expect(datesData['2016-01-04'].subSelection).to.equal(2);
+        });
+        it('should apply a range filter', () => {
+            result = dataConversion.aggregateDataPointsMap(data, {
+                range: {
+                    date: buildRangeObj('2016-01-01', '2016-01-02'),
+                    class: buildRangeObj('fa fa-globe', 'fa fa-globe'),
+               }
+            });
+            const classData = result.rangeDataMap['class'];
+            const datesData = result.rangeDataMap['date'];
+
+            expect(classData['fa fa-globe'].subSelection).to.equal(11);
+            expect(classData['fa fa-sitemap'].subSelection).to.equal(0);
+
+            expect(datesData['2016-01-01'].subSelection).to.equal(3);
+            expect(datesData['2016-01-02'].subSelection).to.equal(8);
+            expect(datesData['2016-01-04'].subSelection).to.equal(0);
+        });
+        it('should apply both range and keyword filter', () => {
+            result = dataConversion.aggregateDataPointsMap(data, {
+                contains: 'new york',
+                range: {
+                    date: buildRangeObj('2016-01-01', '2016-01-02'),
+                    class: buildRangeObj('fa fa-globe', 'fa fa-globe'),
+               }
+            });
+            const classData = result.rangeDataMap['class'];
+            const datesData = result.rangeDataMap['date'];
+
+            expect(classData['fa fa-globe'].subSelection).to.equal(8);
+            expect(classData['fa fa-sitemap'].subSelection).to.equal(0);
+
+            expect(datesData['2016-01-01'].subSelection).to.equal(0);
+            expect(datesData['2016-01-02'].subSelection).to.equal(8);
+            expect(datesData['2016-01-04'].subSelection).to.equal(0);
+
+        });
+        it('should bypass keyword filter with selected data points', () => {
+            result = dataConversion.aggregateDataPointsMap(data, {
+                contains: 'new york',
+                range: {
+                    date: buildRangeObj('2016-01-02', '2016-01-03'),
+               },
+               selectedDataPoints: [<DataPoint>{ instanceLabel: 'Wand', facetKey: 'organization' }],
+            });
+            const classData = result.rangeDataMap['class'];
+            const datesData = result.rangeDataMap['date'];
+
+            expect(classData['fa fa-globe'].subSelection).to.equal(8);
+            expect(classData['fa fa-sitemap'].subSelection).to.equal(3);
+
+            expect(datesData['2016-01-01'].subSelection).to.equal(0);
+            expect(datesData['2016-01-02'].subSelection).to.equal(11);
+            expect(datesData['2016-01-04'].subSelection).to.equal(0);
+        });
     });
 });
 
@@ -612,36 +696,32 @@ describe('.convertToFacetsVisualData', () => {
         expect(locGroup.facets).to.have.length(1);
     });
     it('should return selected data points', () => {
-        const locationDps = aggregatedData.dataPointsMap.location;
-        locationDps.push(...(_.cloneDeep(locationDps)));
-        locationDps[2].isSelected = true;
-        locationDps[2].instanceValue = 'selected1';
-        locationDps[3].isSelected = true;
-        locationDps[3].instanceValue = 'selected2';
+        aggregatedData.selectedDataPoints = [<any>'dummyDp1', <any>'dummyDp2'];
         result = dataConversion.convertToFacetsVisualData(aggregatedData, {
             colors: [],
             settings: DEFAULT_SETTINGS
         });
         expect(result.selectedDataPoints).to.have.length(2);
-        expect(result.selectedDataPoints[0].instanceValue).to.equal('selected2');
-        expect(result.selectedDataPoints[1].instanceValue).to.equal('selected1');
+        expect(result.selectedDataPoints[0]).to.equal('dummyDp1');
     });
     it('should convert selected datapoints to facets data and prepend them to facets list in descending order', () => {
         const locationDps = aggregatedData.dataPointsMap.location;
         locationDps.push(...(_.cloneDeep(locationDps)));
-        locationDps[2].isSelected = true;
         locationDps[2].instanceValue = 'prepend1';
+        locationDps[2].instanceLabel = 'prepend1';
         locationDps[2].instanceCount = 10;
-        locationDps[3].isSelected = true;
         locationDps[3].instanceValue = 'prepend2';
+        locationDps[3].instanceLabel = 'prepend2';
         locationDps[3].instanceCount = 11;
+        aggregatedData.selectedDataPoints = [locationDps[2], locationDps[3]];
+
         result = dataConversion.convertToFacetsVisualData(aggregatedData, {
             colors: [],
             settings: _.assign({}, DEFAULT_SETTINGS, { facetCount: {initial: 1, increment: 50}})
         });
         const facetsData = result.facetsData;
         const locGroup = <FacetGroup>getFacetGroup(facetsData, 'location');
-        // prepended facets should not be limitied by inital count
+        // prepended facets should not be limited by initial count
         expect(locGroup.facets).to.be.length(2);
         expect(locGroup.allFacets).to.be.length(4);
         expect(locGroup.facets[0].value).to.equal('prepend2');
