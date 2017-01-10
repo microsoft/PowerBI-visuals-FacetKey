@@ -23,7 +23,7 @@
 
 export default {
     hasHighlight: false,
-    selectedDps: [],
+    selectedDataPoints: [],
     dataPointsMap: {
         organization: [
             {

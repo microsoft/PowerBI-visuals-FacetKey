@@ -386,7 +386,7 @@ export default class FacetsVisual implements IVisual {
         this.facets.on('facet:click', (e: any, key: string, value: string) => this.toggleFacetSelection(key, value));
 
         this.facets.on('facet-group:more', (e: any, key: string, index: number) =>
-        e.currentTarget.classList.contains('more') ? this.showMoreFacetInstances(key) : this.shrinkFacetGroup(key));
+            e.currentTarget.classList.contains('more') ? this.showMoreFacetInstances(key) : this.shrinkFacetGroup(key));
 
         this.facets.on('facet-group:collapse', (e: any, key: string) => {
             const facetGroup = this.getFacetGroup(key);
