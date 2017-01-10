@@ -87,9 +87,9 @@ function isInSelectedDataPoints(dataPoint: DataPoint, selectedDataPoints: DataPo
 
 /**
  * Create or update a bucket on the target Object.
- * Add the instance and highlight counts from the given datapoint to the bucket’s corresponding sums
+ * Add the instance and highlight counts from the given data point to the bucket’s corresponding sums
  *
- * @param  {any}       targetObj An Object in which a bucekt will be created.
+ * @param  {any}       targetObj An Object in which a bucket will be created.
  * @param  {DataPoint} dp        A dataPoint object.
  */
 function createBucket(targetObj: any, dp: DataPoint) {
@@ -105,88 +105,64 @@ function createBucket(targetObj: any, dp: DataPoint) {
 }
 
 /**
- * Aggregate the given datapoints by instance value, optionally applying a filter.
+ * Aggregate the given data points by instance value, optionally applying a filter.
  *
- * @param  {DataPoint[]}                     dataPoints An array of data points.
- * @param  {AggregateDataPointsOptions = {}} options    An object that can optionally include a DataPointsFilter.
- * @return {Object}                                     An Object containing an array of aggregated data points and an array of ignored data points.
+ * @param  {DataPoint[]}           dataPoints An array of data points.
+ * @param  {DataPointsFilter = {}} filter     A DataPointsFilter.
+ * @return {Object}                           An Object containing an array of aggregated data points and an array of ignored data points.
  */
-function aggregateDataPoints(dataPoints: DataPoint[], options: AggregateDataPointsOptions = {}) {
-    const { forEachDataPoint, filter = {} } = options;
+function aggregateDataPoints(dataPoints: DataPoint[], filter: DataPointsFilter = {}) {
     const instanceMap = {};
-    const result = {
-        aggregatedDataPoints: [],
-        ignoredDataPoints: []
-    };
+    const result = [];
     dataPoints.forEach((dp: DataPoint) => {
         const instanceLabel = dp.instanceLabel;
-        const ignoreThisDp = isInSelectedDataPoints(dp, filter.selectedDataPoints);
-        if (ignoreThisDp) {
-            return result.ignoredDataPoints.push(dp);
-        }
-
-        forEachDataPoint && forEachDataPoint(dp);
-        if (!checkRangeFilter(filter.range, dp.rangeValues) || !checkKeywordFilter(filter.contains, dp)) {
-            return;
-        }
-        if (!instanceMap[instanceLabel]) {
-            result.aggregatedDataPoints.push(instanceMap[instanceLabel] = {
-                rows: dp.rows,
+        const handleDp = () => {
+            if (!checkRangeFilter(filter.range, dp.rangeValues) || !checkKeywordFilter(filter.contains, dp)) {
+                return;
+            }
+            if (!instanceMap[instanceLabel]) {
+                result.push(instanceMap[instanceLabel] = {
+                    rows: dp.rows,
+                    facetKey: dp.facetKey,
+                    highlight: dp.highlight,
+                    facetLabel: dp.facetLabel,
+                    instanceValue: dp.instanceValue,
+                    instanceLabel: dp.instanceLabel,
+                    instanceCount: dp.instanceCount,
+                    instanceCountFormatter: dp.instanceCountFormatter,
+                    instanceColor: dp.instanceColor,
+                    instanceIconClass: dp.instanceIconClass,
+                });
+                createBucket(instanceMap[instanceLabel], dp);
+            } else {
+                instanceMap[instanceLabel].highlight += dp.highlight;
+                instanceMap[instanceLabel].instanceCount += dp.instanceCount;
+                instanceMap[instanceLabel].rows.push(...dp.rows);
+                createBucket(instanceMap[instanceLabel], dp);
+            }
+        };
+        const handleSelectedDp = () => {
+            // keyword filter is not applied to the selected data points
+            !instanceMap[instanceLabel] && result.push(instanceMap[instanceLabel] = {
+                rows: [],
                 facetKey: dp.facetKey,
-                highlight: dp.highlight,
+                highlight: 0,
                 facetLabel: dp.facetLabel,
                 instanceValue: dp.instanceValue,
                 instanceLabel: dp.instanceLabel,
-                instanceCount: dp.instanceCount,
+                instanceCount: 0,
                 instanceCountFormatter: dp.instanceCountFormatter,
                 instanceColor: dp.instanceColor,
                 instanceIconClass: dp.instanceIconClass,
             });
-            createBucket(instanceMap[instanceLabel], dp);
-        } else {
-            instanceMap[instanceLabel].highlight += dp.highlight;
-            instanceMap[instanceLabel].instanceCount += dp.instanceCount;
-            instanceMap[instanceLabel].rows.push(...dp.rows);
-            createBucket(instanceMap[instanceLabel], dp);
-        }
-    });
-    return result;
-}
-
-/**
- * Aggregate data points by face instance, applying only the (optional) range filter from the given options object.
- * It is used to create a list of the data points for the selected facet instances which bypasses the keyword filter
- * and can have zero for the instance or highlight count.
- *
- * @param  {DataPoint[]}                     dataPoints An array of data points.
- * @param  {AggregateDataPointsOptions = {}} options    An options object.
- * @return {DataPoint[]}                                An array of datapoints.
- */
-function aggregateUsingRangeFilterOnly(dataPoints: DataPoint[], options: AggregateDataPointsOptions = {}): DataPoint[] {
-    const { forEachDataPoint, filter = {} } = options;
-    const instanceMap = {};
-    const result: DataPoint[] = [];
-    dataPoints.forEach((dp: DataPoint) => {
-        const instanceLabel = dp.instanceLabel;
-        forEachDataPoint && forEachDataPoint(dp);
-        !instanceMap[instanceLabel] && result.push(instanceMap[instanceLabel] = {
-            rows: [],
-            facetKey: dp.facetKey,
-            highlight: 0,
-            facetLabel: dp.facetLabel,
-            instanceValue: dp.instanceValue,
-            instanceLabel: dp.instanceLabel,
-            instanceCount: 0,
-            instanceCountFormatter: dp.instanceCountFormatter,
-            instanceColor: dp.instanceColor,
-            instanceIconClass: dp.instanceIconClass,
-        });
-        if (!checkRangeFilter(filter.range, dp.rangeValues)) { return; }
-        instanceMap[instanceLabel].highlight += dp.highlight;
-        instanceMap[instanceLabel].instanceCount += dp.instanceCount;
-        instanceMap[instanceLabel].rows.push(...dp.rows);
-        // TODO: need test
-        createBucket(instanceMap[instanceLabel], dp);
+            if (checkRangeFilter(filter.range, dp.rangeValues)) {
+                instanceMap[instanceLabel].highlight += dp.highlight;
+                instanceMap[instanceLabel].instanceCount += dp.instanceCount;
+                instanceMap[instanceLabel].rows.push(...dp.rows);
+                createBucket(instanceMap[instanceLabel], dp);
+            }
+        };
+        isInSelectedDataPoints(dp, filter.selectedDataPoints) ? handleSelectedDp() : handleDp();
     });
     return result;
 }
@@ -333,9 +309,9 @@ export function convertToDataPointsMap(dataView: DataView): DataPointsMapData {
 /**
  * Convert the given DataPointsMapData to aggregated data, optionally applying the given filter
  *
- * @param  {DataPointsMapData}   data   A dataPointsMap data converted from dataview.
+ * @param  {DataPointsMapData}   data   A dataPointsMap data converted from data view.
  * @param  {DataPointsFilter={}} filter A DataPointsFilter which is used to filter the data points.
- * @return {AggregatedData}             Data that contains aggregated datapoints map and the range data map.
+ * @return {AggregatedData}             Data that contains aggregated data points map and the range data map.
  */
 export function aggregateDataPointsMap(data: DataPointsMapData, filter: DataPointsFilter = {}): AggregatedData {
     const dataPointsMap = data.dataPointsMap;
@@ -370,14 +346,9 @@ export function aggregateDataPointsMap(data: DataPointsMapData, filter: DataPoin
             }
         });
     };
-    const opt = {
-        forEachDataPoint: constructRangeFacetData,
-        filter: filter,
-    };
     Object.keys(dataPointsMap).forEach((key: string) => {
-        const aggregateResult = aggregateDataPoints(dataPointsMap[key], opt);
-        const dataPoints: DataPoint[] = aggregateResult.aggregatedDataPoints
-            .concat(aggregateUsingRangeFilterOnly(aggregateResult.ignoredDataPoints, opt));
+        dataPointsMap[key].forEach(constructRangeFacetData);
+        const dataPoints: DataPoint[] = aggregateDataPoints(dataPointsMap[key], filter);
         dataPoints.length > 0 && (aggregatedData.dataPointsMap[key] = dataPoints);
     });
     return aggregatedData;

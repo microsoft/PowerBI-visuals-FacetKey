@@ -46,13 +46,6 @@ import mockDataPointsMap from './test_data/mockDataPointsMap';
 import mockAggregatedData from './test_data/mockAggregatedData';
 import DataViewObjects = powerbi.DataViewObjects;
 
-const buildRangeObj = (fromRangeValue, toRangeValue) => {
-    return <FacetRangeObject>{
-        from: { metadata: [{ rangeValue: fromRangeValue }] },
-        to: { metadata: [{ rangeValue: toRangeValue }] },
-    };
-};
-
 describe('Data Conversion Functions', () => {
 
 describe('.convertToDataPointsMap', () => {
@@ -188,8 +181,16 @@ describe('.convertToDataPointsMap', () => {
 });
 
 describe('.aggregateDataPointsMap', () => {
+
     let data;
     let result;
+
+    const buildRangeObj = (fromRangeValue, toRangeValue) => {
+        return <FacetRangeObject>{
+            from: { metadata: [{ rangeValue: fromRangeValue }] },
+            to: { metadata: [{ rangeValue: toRangeValue }] },
+        };
+    };
 
     beforeEach(() => {
         data = { dataPointsMap: _.cloneDeep(mockDataPointsMap) }

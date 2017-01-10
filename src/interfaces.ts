@@ -112,11 +112,6 @@ interface DataPointsFilter {
     selectedDataPoints?: DataPoint[];
 }
 
-interface AggregateDataPointsOptions {
-    forEachDataPoint?: (dp: DataPoint) => void;
-    filter?: DataPointsFilter;
-}
-
 interface ConvertToFacetsVisualDataOptions {
     colors: powerbi.IColorInfo[];
     settings: FacetKeySettings;
