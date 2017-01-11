@@ -48,7 +48,7 @@ const MAX_NUM_FACET_GROUPS = 100;
  * @param  {RangeValue[]} rangeValues An array of range values.
  * @return {boolean}
  */
-function checkRangeFilter(rangeFilter: any, rangeValues: RangeValue[]) {
+function checkRangeFilter(rangeFilter: RangeFilter, rangeValues: RangeValue[]) {
     if (!rangeFilter) { return true; }
     const compare = compareRangeValue;
     return rangeValues.reduce((prev: boolean, rangeValue: RangeValue) => {
@@ -70,15 +70,26 @@ function checkRangeFilter(rangeFilter: any, rangeValues: RangeValue[]) {
 function checkKeywordFilter(keyword: string, dataPoint: DataPoint) {
     if (!keyword) { return true; }
     const facetInstanceValue = String(dataPoint.rows[0].facetInstance);
-    const isMatch = facetInstanceValue.toLowerCase().indexOf(keyword) >= 0;
+    const isMatch = facetInstanceValue.toLowerCase().indexOf(keyword.toLowerCase()) >= 0;
     return isMatch;
 }
 
 /**
- * Create or update a bucket on the target Object.
- * Add the instance and highlight counts from the given datapoint to the bucket’s corresponding sums
+ * Returns true if given dataPoint is in the selected data points array.
  *
- * @param  {any}       targetObj An Object in which a bucekt will be created.
+ * @param  {DataPoint}   dataPoint          A dataPoint Object.
+ * @param  {DataPoint[]} selectedDataPoints An Array of selected data points.
+ * @return {boolean}
+ */
+function isInSelectedDataPoints(dataPoint: DataPoint, selectedDataPoints: DataPoint[]) {
+    return Boolean(_.find(selectedDataPoints, (selectedDp: DataPoint) => selectedDp.instanceLabel === dataPoint.instanceLabel && selectedDp.facetKey === dataPoint.facetKey));
+}
+
+/**
+ * Create or update a bucket on the target Object.
+ * Add the instance and highlight counts from the given data point to the bucket’s corresponding sums
+ *
+ * @param  {any}       targetObj An Object in which a bucket will be created.
  * @param  {DataPoint} dp        A dataPoint object.
  */
 function createBucket(targetObj: any, dp: DataPoint) {
@@ -94,90 +105,64 @@ function createBucket(targetObj: any, dp: DataPoint) {
 }
 
 /**
- * Aggregate the given datapoints by instance value, optionally applying a filter.
+ * Aggregate the given data points by instance value, optionally applying a filter.
  *
- * @param  {DataPoint[]}                     dataPoints An array of data points.
- * @param  {AggregateDataPointsOptions = {}} options    An object that can optionally include a DataPointsFilter.
- * @return {Object}                                     An Object containing an array of aggregated data points and an array of ignored data points.
+ * @param  {DataPoint[]}           dataPoints An array of data points.
+ * @param  {DataPointsFilter = {}} filter     A DataPointsFilter.
+ * @return {Object}                           An Object containing an array of aggregated data points and an array of ignored data points.
  */
-function aggregateDataPoints(dataPoints: DataPoint[], options: AggregateDataPointsOptions = {}) {
-    const { forEachDataPoint, filter = {} } = options;
+function aggregateDataPoints(dataPoints: DataPoint[], filter: DataPointsFilter = {}) {
     const instanceMap = {};
-    const result = {
-        aggregatedDataPoints: [],
-        ignoredDataPoints: []
-    };
+    const result = [];
     dataPoints.forEach((dp: DataPoint) => {
         const instanceLabel = dp.instanceLabel;
-        const ignoreThisDp = _.find(filter.ignore, (ignoreDp: DataPoint) => ignoreDp.instanceLabel === dp.instanceLabel && ignoreDp.facetKey === dp.facetKey);
-        if (ignoreThisDp) {
-            return result.ignoredDataPoints.push(dp);
-        }
-
-        forEachDataPoint && forEachDataPoint(dp);
-        if (!checkRangeFilter(filter.range, dp.rangeValues) || !checkKeywordFilter(filter.contains, dp)) {
-            return;
-        }
-        if (!instanceMap[instanceLabel]) {
-            result.aggregatedDataPoints.push(instanceMap[instanceLabel] = {
-                rows: dp.rows,
+        const handleDp = () => {
+            if (!checkRangeFilter(filter.range, dp.rangeValues) || !checkKeywordFilter(filter.contains, dp)) {
+                return;
+            }
+            if (!instanceMap[instanceLabel]) {
+                result.push(instanceMap[instanceLabel] = {
+                    rows: dp.rows,
+                    facetKey: dp.facetKey,
+                    highlight: dp.highlight,
+                    facetLabel: dp.facetLabel,
+                    instanceValue: dp.instanceValue,
+                    instanceLabel: dp.instanceLabel,
+                    instanceCount: dp.instanceCount,
+                    instanceCountFormatter: dp.instanceCountFormatter,
+                    instanceColor: dp.instanceColor,
+                    instanceIconClass: dp.instanceIconClass,
+                });
+                createBucket(instanceMap[instanceLabel], dp);
+            } else {
+                instanceMap[instanceLabel].highlight += dp.highlight;
+                instanceMap[instanceLabel].instanceCount += dp.instanceCount;
+                instanceMap[instanceLabel].rows.push(...dp.rows);
+                createBucket(instanceMap[instanceLabel], dp);
+            }
+        };
+        const handleSelectedDp = () => {
+            // keyword filter is not applied to the selected data points
+            !instanceMap[instanceLabel] && result.push(instanceMap[instanceLabel] = {
+                rows: [],
                 facetKey: dp.facetKey,
-                highlight: dp.highlight,
+                highlight: 0,
                 facetLabel: dp.facetLabel,
                 instanceValue: dp.instanceValue,
                 instanceLabel: dp.instanceLabel,
-                instanceCount: dp.instanceCount,
+                instanceCount: 0,
                 instanceCountFormatter: dp.instanceCountFormatter,
                 instanceColor: dp.instanceColor,
                 instanceIconClass: dp.instanceIconClass,
             });
-            createBucket(instanceMap[instanceLabel], dp);
-        } else {
-            instanceMap[instanceLabel].highlight += dp.highlight;
-            instanceMap[instanceLabel].instanceCount += dp.instanceCount;
-            instanceMap[instanceLabel].rows.push(...dp.rows);
-            createBucket(instanceMap[instanceLabel], dp);
-        }
-    });
-    return result;
-}
-
-/**
- * Aggregate data points by face instance, applying only the (optional) range filter from the given options object.
- * It is used to create a list of the data points for the selected facet instances which bypass the keyword filter
- * and can have zero for the instance or highlight count.
- *
- * @param  {DataPoint[]}                     dataPoints An array of data points.
- * @param  {AggregateDataPointsOptions = {}} options    An options object.
- * @return {DataPoint[]}                                An array of datapoints.
- */
-function aggregateUsingRangeFilterOnly(dataPoints: DataPoint[], options: AggregateDataPointsOptions = {}): DataPoint[] {
-    const { forEachDataPoint, filter = {} } = options;
-    const instanceMap = {};
-    const result: DataPoint[] = [];
-    dataPoints.forEach((dp: DataPoint) => {
-        const instanceLabel = dp.instanceLabel;
-        dp.isSelected = true;
-        forEachDataPoint && forEachDataPoint(dp);
-        !instanceMap[instanceLabel] && result.push(instanceMap[instanceLabel] = {
-            rows: [],
-            facetKey: dp.facetKey,
-            highlight: 0,
-            facetLabel: dp.facetLabel,
-            instanceValue: dp.instanceValue,
-            instanceLabel: dp.instanceLabel,
-            instanceCount: 0,
-            instanceCountFormatter: dp.instanceCountFormatter,
-            instanceColor: dp.instanceColor,
-            instanceIconClass: dp.instanceIconClass,
-            isSelected: true,
-        });
-        if (!checkRangeFilter(filter.range, dp.rangeValues)) { return; }
-        instanceMap[instanceLabel].highlight += dp.highlight;
-        instanceMap[instanceLabel].instanceCount += dp.instanceCount;
-        instanceMap[instanceLabel].rows.push(...dp.rows);
-        // TODO: need test
-        createBucket(instanceMap[instanceLabel], dp);
+            if (checkRangeFilter(filter.range, dp.rangeValues)) {
+                instanceMap[instanceLabel].highlight += dp.highlight;
+                instanceMap[instanceLabel].instanceCount += dp.instanceCount;
+                instanceMap[instanceLabel].rows.push(...dp.rows);
+                createBucket(instanceMap[instanceLabel], dp);
+            }
+        };
+        isInSelectedDataPoints(dp, filter.selectedDataPoints) ? handleSelectedDp() : handleDp();
     });
     return result;
 }
@@ -324,13 +309,18 @@ export function convertToDataPointsMap(dataView: DataView): DataPointsMapData {
 /**
  * Convert the given DataPointsMapData to aggregated data, optionally applying the given filter
  *
- * @param  {DataPointsMapData}   data   A dataPointsMap data converted from dataview.
+ * @param  {DataPointsMapData}   data   A dataPointsMap data converted from data view.
  * @param  {DataPointsFilter={}} filter A DataPointsFilter which is used to filter the data points.
- * @return {AggregatedData}             Data that contains aggregated datapoints map and the range data map.
+ * @return {AggregatedData}             Data that contains aggregated data points map and the range data map.
  */
 export function aggregateDataPointsMap(data: DataPointsMapData, filter: DataPointsFilter = {}): AggregatedData {
     const dataPointsMap = data.dataPointsMap;
-    const aggregatedData = { dataPointsMap: {}, rangeDataMap: {}, hasHighlight: !!data.hasHighlight };
+    const aggregatedData = {
+        dataPointsMap: {},
+        rangeDataMap: {},
+        selectedDataPoints: filter.selectedDataPoints,
+        hasHighlight: !!data.hasHighlight
+    };
     const constructRangeFacetData = (dp: DataPoint) => {
         if (!dp.rangeValues) { return; }
         dp.rangeValues.forEach((rangeValue: RangeValue) => {
@@ -350,20 +340,15 @@ export function aggregateDataPointsMap(data: DataPointsMapData, filter: DataPoin
             rangeDataMap[rangeValue.valueLabel].rows.push(...dp.rows);
             rangeDataMap[rangeValue.valueLabel].count += dp.instanceCount;
             rangeDataMap[rangeValue.valueLabel].highlight += dp.highlight;
-            const passFilter = dp.isSelected || (checkKeywordFilter(filter.contains, dp) && checkRangeFilter(filter.range, dp.rangeValues));
+            const passFilter = (isInSelectedDataPoints(dp, filter.selectedDataPoints) || checkKeywordFilter(filter.contains, dp)) && checkRangeFilter(filter.range, dp.rangeValues);
             if (passFilter) {
                 rangeDataMap[rangeValue.valueLabel].subSelection += dp.instanceCount;
             }
         });
     };
-    const opt = {
-        forEachDataPoint: constructRangeFacetData,
-        filter: filter,
-    };
     Object.keys(dataPointsMap).forEach((key: string) => {
-        const aggregateResult = aggregateDataPoints(dataPointsMap[key], opt);
-        const dataPoints: DataPoint[] = aggregateResult.aggregatedDataPoints
-            .concat(aggregateUsingRangeFilterOnly(aggregateResult.ignoredDataPoints, opt));
+        dataPointsMap[key].forEach(constructRangeFacetData);
+        const dataPoints: DataPoint[] = aggregateDataPoints(dataPointsMap[key], filter);
         dataPoints.length > 0 && (aggregatedData.dataPointsMap[key] = dataPoints);
     });
     return aggregatedData;
@@ -387,7 +372,7 @@ export function convertToFacetsVisualData(aggregatedData: AggregatedData, option
         hasHighlight: hasHighlight,
         facetsData: <FacetGroup[]>[],
         facetsSelectionData: <any>[],
-        selectedDataPoints: <DataPoint[]>[],
+        selectedDataPoints: aggregatedData.selectedDataPoints,
     };
     let maxFacetInstanceCount = 0;
 
@@ -467,8 +452,8 @@ export function convertToFacetsVisualData(aggregatedData: AggregatedData, option
             }
 
             !!highlight && selectionGroup.facets.push(selectionSpec);
-            dp.isSelected
-                ? data.selectedDataPoints.push(dp) && prependedSelectedFacets.push(facet)
+            isInSelectedDataPoints(dp, aggregatedData.selectedDataPoints)
+                ? prependedSelectedFacets.push(facet)
                 : useDataPoint && facets.push(facet);
 
             maxFacetInstanceCount = Math.max(maxFacetInstanceCount, instanceCount);

@@ -66,7 +66,6 @@ interface DataPoint {
     instanceIconClass: string;
     bucket?: any;
     rangeValues?: RangeValue[];
-    isSelected?: boolean;
     selectionColor?: { color: string, opacity: number };
 }
 
@@ -82,25 +81,42 @@ interface DataPointsMapData {
 interface AggregatedData {
     rangeDataMap: any;
     dataPointsMap: DataPointsMap;
+    selectedDataPoints: DataPoint[];
     hasHighlight: boolean;
+}
+
+interface RangeMetadata {
+    rangeValue: Date | string | number | boolean;
+    isFirst: boolean;
+    isLast: boolean;
+}
+
+interface FacetRangeObject {
+    from: {
+        index: number,
+        metadata: RangeMetadata[],
+    };
+    to: {
+        index: number,
+        metadata: RangeMetadata[],
+    };
+}
+
+interface RangeFilter {
+    [rangeKey: string]: FacetRangeObject
 }
 
 interface DataPointsFilter {
     contains?: string;
-    range?: any;
-    ignore?: DataPoint[];
-}
-
-interface AggregateDataPointsOptions {
-    forEachDataPoint?: (dp: DataPoint) => void;
-    filter?: DataPointsFilter;
+    range?: RangeFilter;
+    selectedDataPoints?: DataPoint[];
 }
 
 interface ConvertToFacetsVisualDataOptions {
     colors: powerbi.IColorInfo[];
     settings: FacetKeySettings;
     hasHighlight?: boolean;
-    selectedRange?: any;
+    selectedRange?: RangeFilter;
 }
 
 interface FacetGroup {
