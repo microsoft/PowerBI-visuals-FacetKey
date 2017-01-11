@@ -323,7 +323,7 @@ describe('.aggregateDataPointsMap', () => {
             expect(dp.instanceLabel).to.equal('Wand');
             expect(dp.instanceCount).to.equal(3);
         });
-        it('should keep selected data point even it has 0 instance count after range filter', () => {
+        it('should keep selected data point when it has 0 instance count after range filter', () => {
             result = dataConversion.aggregateDataPointsMap(data, {
                 contains: 'new york',
                 range: {
@@ -538,7 +538,7 @@ describe('.convertToFacetsVisualData', () => {
         expect(locGroup.facets[1].label).to.equal('New York');
     });
     /* Colors */
-    it('should assign facests default colors of 3 diffrent opacities and grey default color', () => {
+    it('should assign facets default colors of 3 different opacities and grey default color', () => {
         sinon.stub(utils, 'getSegmentColor', (baseColor) => baseColor);
         const locationDps = aggregatedData.dataPointsMap.location;
         locationDps.forEach((dp) => { delete dp.bucket; });
@@ -598,7 +598,7 @@ describe('.convertToFacetsVisualData', () => {
         expect(locGroup.facets).to.have.length(1);
         expect(locGroup.allFacets).to.have.length(2);
     });
-    it('should assign proper facetGroup.more data when there is more facets other than initial facets', () => {
+    it('should assign proper facetGroup.more data when there are more facets other than initial facets', () => {
         sinon.stub(utils, 'otherLabelTemplate').withArgs(1).returns('Label1');
         result = dataConversion.convertToFacetsVisualData(aggregatedData, {
             colors: [],
