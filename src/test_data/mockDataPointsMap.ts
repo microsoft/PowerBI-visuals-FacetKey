@@ -27,6 +27,7 @@ export default {
             rows: [{
                 identity: 'fakeId1',
                 bucket: 'level1',
+                facetInstance: 'Wand',
             }],
             highlight: 2,
             facetKey: 'organization',
@@ -54,6 +55,7 @@ export default {
             rows: [{
                 identity: 'fakeId2',
                 bucket: 'level2',
+                facetInstance: 'Wand',
             }],
             highlight: 2,
             facetKey: 'organization',
@@ -83,6 +85,7 @@ export default {
             rows: [{
                 identity: 'fakeId3',
                 bucket: 'level1',
+                facetInstance: 'California',
             }],
             identity: 'fakeId3',
             highlight: 2,
@@ -111,6 +114,7 @@ export default {
             rows: [{
                 identity: 'fakeId4',
                 bucket: 'level1',
+                facetInstance: 'New York',
             }],
             highlight: 6,
             facetKey: 'location',
@@ -138,6 +142,7 @@ export default {
             rows: [{
                 identity: 'fakeId5',
                 bucket: 'level1',
+                facetInstance: 'New York',
             }],
             highlight: 0,
             facetKey: 'location',
@@ -155,7 +160,7 @@ export default {
                 key: 'class'
               },
               {
-                value: '2016-01-02',
+                value: '2016-01-04',
                 valueLabel: '2016-01-04',
                 key: 'date'
               }
