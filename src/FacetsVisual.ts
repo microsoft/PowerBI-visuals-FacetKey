@@ -154,7 +154,9 @@ export default class FacetsVisual implements IVisual {
             return;
         }
         if (options['resizeMode']) {
-            return this.reDrawRangeFilter();
+            this.reDrawRangeFilter();
+            // trigger height re-calculation so that the visuals knows whether it's sacrollable.
+            return this.facetsContainer.find('.facets-root-container').css({'padding-top': '0'});
         }
         if (!options.dataViews || !(options.dataViews.length > 0)) { return; }
 
