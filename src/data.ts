@@ -43,183 +43,6 @@ import * as _ from 'lodash';
 const MAX_NUM_FACET_GROUPS = 100;
 
 /**
- * Returns true if the given range values are within the range of the given filter.
- * @param  {any}          rangeFilter A range filter.
- * @param  {RangeValue[]} rangeValues An array of range values.
- * @return {boolean}
- */
-function checkRangeFilter(rangeFilter: RangeFilter, rangeValues: RangeValue[]) {
-    if (!rangeFilter) { return true; }
-    const compare = compareRangeValue;
-    return rangeValues.reduce((prev: boolean, rangeValue: RangeValue) => {
-        const filter = rangeFilter[rangeValue.key];
-        if (!filter) { return prev && true; }
-        const from = filter.from.metadata[0].rangeValue;
-        const to = filter.to.metadata[filter.to.metadata.length - 1].rangeValue;
-        return prev && (compare(rangeValue.value, from) >= 0) && (compare(rangeValue.value, to) <= 0);
-    }, true);
-}
-
-/**
- * Returns true if the facet instance of the given data point contains the given keyword.
- *
- * @param  {string}    keyword   A string keyword.
- * @param  {DataPoint} dataPoint A dataPoint Object.
- * @return {boolean}
- */
-function checkKeywordFilter(keyword: string, dataPoint: DataPoint) {
-    if (!keyword) { return true; }
-    const facetInstanceValue = String(dataPoint.rows[0].facetInstance);
-    const isMatch = facetInstanceValue.toLowerCase().indexOf(keyword.toLowerCase()) >= 0;
-    return isMatch;
-}
-
-/**
- * Returns true if given dataPoint is in the selected data points array.
- *
- * @param  {DataPoint}   dataPoint          A dataPoint Object.
- * @param  {DataPoint[]} selectedDataPoints An Array of selected data points.
- * @return {boolean}
- */
-function isInSelectedDataPoints(dataPoint: DataPoint, selectedDataPoints: DataPoint[]) {
-    return Boolean(_.find(selectedDataPoints, (selectedDp: DataPoint) => selectedDp.instanceLabel === dataPoint.instanceLabel && selectedDp.facetKey === dataPoint.facetKey));
-}
-
-/**
- * Create or update a bucket on the target Object.
- * Add the instance and highlight counts from the given data point to the bucket’s corresponding sums
- *
- * @param  {any}       targetObj An Object in which a bucket will be created.
- * @param  {DataPoint} dp        A dataPoint object.
- */
-function createBucket(targetObj: any, dp: DataPoint) {
-    if (!('bucket' in dp.rows[0])) { return; }
-    const bucketName = String(dp.rows[0].bucket);
-    !targetObj.bucket && (targetObj.bucket = {});
-    if (!targetObj.bucket[bucketName]) {
-        targetObj.bucket[bucketName] = { instanceCount: dp.instanceCount, highlight: dp.highlight };
-    } else {
-        targetObj.bucket[bucketName].instanceCount += dp.instanceCount;
-        targetObj.bucket[bucketName].highlight += dp.highlight;
-    }
-}
-
-/**
- * Aggregate the given data points by instance value, optionally applying a filter.
- *
- * @param  {DataPoint[]}           dataPoints An array of data points.
- * @param  {DataPointsFilter = {}} filter     A DataPointsFilter.
- * @return {Object}                           An Object containing an array of aggregated data points and an array of ignored data points.
- */
-function aggregateDataPoints(dataPoints: DataPoint[], filter: DataPointsFilter = {}) {
-    const instanceMap = {};
-    const result = [];
-    dataPoints.forEach((dp: DataPoint) => {
-        const instanceLabel = dp.instanceLabel;
-        const handleDp = () => {
-            if (!checkRangeFilter(filter.range, dp.rangeValues) || !checkKeywordFilter(filter.contains, dp)) {
-                return;
-            }
-            if (!instanceMap[instanceLabel]) {
-                result.push(instanceMap[instanceLabel] = {
-                    rows: dp.rows,
-                    facetKey: dp.facetKey,
-                    highlight: dp.highlight,
-                    facetLabel: dp.facetLabel,
-                    instanceValue: dp.instanceValue,
-                    instanceLabel: dp.instanceLabel,
-                    instanceCount: dp.instanceCount,
-                    instanceCountFormatter: dp.instanceCountFormatter,
-                    instanceColor: dp.instanceColor,
-                    instanceIconClass: dp.instanceIconClass,
-                });
-                createBucket(instanceMap[instanceLabel], dp);
-            } else {
-                instanceMap[instanceLabel].highlight += dp.highlight;
-                instanceMap[instanceLabel].instanceCount += dp.instanceCount;
-                instanceMap[instanceLabel].rows.push(...dp.rows);
-                createBucket(instanceMap[instanceLabel], dp);
-            }
-        };
-        const handleSelectedDp = () => {
-            // keyword filter is not applied to the selected data points
-            !instanceMap[instanceLabel] && result.push(instanceMap[instanceLabel] = {
-                rows: [],
-                facetKey: dp.facetKey,
-                highlight: 0,
-                facetLabel: dp.facetLabel,
-                instanceValue: dp.instanceValue,
-                instanceLabel: dp.instanceLabel,
-                instanceCount: 0,
-                instanceCountFormatter: dp.instanceCountFormatter,
-                instanceColor: dp.instanceColor,
-                instanceIconClass: dp.instanceIconClass,
-            });
-            if (checkRangeFilter(filter.range, dp.rangeValues)) {
-                instanceMap[instanceLabel].highlight += dp.highlight;
-                instanceMap[instanceLabel].instanceCount += dp.instanceCount;
-                instanceMap[instanceLabel].rows.push(...dp.rows);
-                createBucket(instanceMap[instanceLabel], dp);
-            }
-        };
-        isInSelectedDataPoints(dp, filter.selectedDataPoints) ? handleSelectedDp() : handleDp();
-    });
-    return result;
-}
-
-/**
- * Formats the given value with the provided value formatter.
- *
- * @param  {IValueFormatter} defaultFormatter A formatter that will be used to format the value.
- * @param  {any}             value            A value to be formatted.
- * @param  {any = ''}          defaultValue     A default value to be returned if provided value is invalid.
- * @return {string}                           A formatted value.
- */
-export function formatValue(defaultFormatter: IValueFormatter, value: any, defaultValue: any = '') {
-    const smallFormatter = powerbi.visuals.valueFormatter.create({format: 'O', value: 0});
-    const bigFormatter = powerbi.visuals.valueFormatter.create({format: 'O', value: 1e6});
-    if (value) {
-        if (defaultFormatter) {
-            return defaultFormatter.format(value);
-        } else if (value instanceof Date) {
-            return value.toDateString();
-        } else if (typeof(value) === 'number') {
-            if (value < 1e6 && value > -1e6) {
-                return smallFormatter.format(value);
-            } else {
-                return bigFormatter.format(value);
-            }
-        } else {
-            return value;
-        }
-    } else {
-        return defaultValue;
-    }
-}
-
-/**
- * Compares two range values (a and b) and returns 1 if a > b, -1 if a < b, or 0 if a = b.
- *
- * @param  {string|number|Object}    a A value representing a date.
- * @param  {string|number|Object}    b A value representing a date.
- * @return {number}
- */
-export function compareRangeValue(a: any, b: any) {
-    const isNumeric = (n: any) => !isNaN(parseFloat(n)) && isFinite(n);
-    let aValue: any = Date.parse(a);
-    let bValue: any = Date.parse(b);
-    const isNmberOnly = isNumeric(a) && isNumeric(b);
-    const isNotValidDate = isNmberOnly || isNaN(aValue) || isNaN(bValue);
-    if (isNotValidDate) {
-        aValue = isNmberOnly ? parseFloat(a) : a;
-        bValue = isNmberOnly ? parseFloat(b) : b;
-    }
-    if (aValue > bValue) { return 1; }
-    if (aValue < bValue) { return -1; }
-    return 0;
-}
-
-/**
  * Convert the given dataview into a data points map in which data points are grouped by facet key.
  *
  * @param  {DataView}          dataView A dataView object.
@@ -362,32 +185,250 @@ export function aggregateDataPointsMap(data: DataPointsMapData, filter: DataPoin
  * @return {FacetsVisualData}                                Data to be used in this visual.
  */
 export function convertToFacetsVisualData(aggregatedData: AggregatedData, options: ConvertToFacetsVisualDataOptions): FacetsVisualData {
-    const { colors, selectedRange, settings } = options;
-    const hasHighlight = aggregatedData.hasHighlight;
-    const rangeFacetState = JSON.parse(settings.facetState.rangeFacet);
-    const normalFacetState = JSON.parse(settings.facetState.normalFacet);
-    const colorPalette = COLOR_PALETTE.slice().concat(colors.map((color: IColorInfo) => color.value));
     const data: FacetsVisualData = {
         aggregatedData: aggregatedData,
-        hasHighlight: hasHighlight,
+        hasHighlight: aggregatedData.hasHighlight,
         facetsData: <FacetGroup[]>[],
         facetsSelectionData: <any>[],
         selectedDataPoints: aggregatedData.selectedDataPoints,
     };
+    data.facetsData.push(...createRangeFacetsData(aggregatedData, options));
+    data.facetsData.push(...createFacetsData(aggregatedData, options));
+    data.facetsSelectionData.push(...createFacetsSelectionData(aggregatedData, options));
+
+    data.facetsData = data.facetsData.sort((a: any, b: any) => a.order - b.order).slice(0, MAX_NUM_FACET_GROUPS);
+
+    return data;
+};
+
+/**
+ * Compares two range values (a and b) and returns 1 if a > b, -1 if a < b, or 0 if a = b.
+ *
+ * @param  {string|number|Object}    a A value representing a date.
+ * @param  {string|number|Object}    b A value representing a date.
+ * @return {number}
+ */
+function compareRangeValue(a: any, b: any) {
+    const isNumeric = (n: any) => !isNaN(parseFloat(n)) && isFinite(n);
+    let aValue: any = Date.parse(a);
+    let bValue: any = Date.parse(b);
+    const isNmberOnly = isNumeric(a) && isNumeric(b);
+    const isNotValidDate = isNmberOnly || isNaN(aValue) || isNaN(bValue);
+    if (isNotValidDate) {
+        aValue = isNmberOnly ? parseFloat(a) : a;
+        bValue = isNmberOnly ? parseFloat(b) : b;
+    }
+    if (aValue > bValue) { return 1; }
+    if (aValue < bValue) { return -1; }
+    return 0;
+}
+
+/**
+ * Returns true if the given range values are within the range of the given filter.
+ * @param  {any}          rangeFilter A range filter.
+ * @param  {RangeValue[]} rangeValues An array of range values.
+ * @return {boolean}
+ */
+function checkRangeFilter(rangeFilter: RangeFilter, rangeValues: RangeValue[]) {
+    if (!rangeFilter) { return true; }
+    const compare = compareRangeValue;
+    return rangeValues.reduce((prev: boolean, rangeValue: RangeValue) => {
+        const filter = rangeFilter[rangeValue.key];
+        if (!filter) { return prev && true; }
+        const from = filter.from.metadata[0].rangeValue;
+        const to = filter.to.metadata[filter.to.metadata.length - 1].rangeValue;
+        return prev && (compare(rangeValue.value, from) >= 0) && (compare(rangeValue.value, to) <= 0);
+    }, true);
+}
+
+/**
+ * Returns true if the facet instance of the given data point contains the given keyword.
+ *
+ * @param  {string}    keyword   A string keyword.
+ * @param  {DataPoint} dataPoint A dataPoint Object.
+ * @return {boolean}
+ */
+function checkKeywordFilter(keyword: string, dataPoint: DataPoint) {
+    if (!keyword) { return true; }
+    const facetInstanceValue = String(dataPoint.rows[0].facetInstance);
+    const isMatch = facetInstanceValue.toLowerCase().indexOf(keyword.toLowerCase()) >= 0;
+    return isMatch;
+}
+
+/**
+ * Returns true if given dataPoint is in the selected data points array.
+ *
+ * @param  {DataPoint}   dataPoint          A dataPoint Object.
+ * @param  {DataPoint[]} selectedDataPoints An Array of selected data points.
+ * @return {boolean}
+ */
+function isInSelectedDataPoints(dataPoint: DataPoint, selectedDataPoints: DataPoint[]) {
+    return Boolean(_.find(selectedDataPoints, (selectedDp: DataPoint) => selectedDp.instanceLabel === dataPoint.instanceLabel && selectedDp.facetKey === dataPoint.facetKey));
+}
+
+/**
+ * Create or update a bucket on the target Object.
+ * Add the instance and highlight counts from the given data point to the bucket’s corresponding sums
+ *
+ * @param  {any}       targetObj An Object in which a bucket will be created.
+ * @param  {DataPoint} dp        A dataPoint object.
+ */
+function createBucket(targetObj: any, dp: DataPoint) {
+    if (!('bucket' in dp.rows[0])) { return; }
+    const bucketName = String(dp.rows[0].bucket);
+    !targetObj.bucket && (targetObj.bucket = {});
+    if (!targetObj.bucket[bucketName]) {
+        targetObj.bucket[bucketName] = { instanceCount: dp.instanceCount, highlight: dp.highlight };
+    } else {
+        targetObj.bucket[bucketName].instanceCount += dp.instanceCount;
+        targetObj.bucket[bucketName].highlight += dp.highlight;
+    }
+}
+
+/**
+ * Formats the given value with the provided value formatter.
+ *
+ * @param  {IValueFormatter} defaultFormatter A formatter that will be used to format the value.
+ * @param  {any}             value            A value to be formatted.
+ * @param  {any = ''}          defaultValue     A default value to be returned if provided value is invalid.
+ * @return {string}                           A formatted value.
+ */
+function formatValue(defaultFormatter: IValueFormatter, value: any, defaultValue: any = '') {
+    const smallFormatter = powerbi.visuals.valueFormatter.create({format: 'O', value: 0});
+    const bigFormatter = powerbi.visuals.valueFormatter.create({format: 'O', value: 1e6});
+    if (value) {
+        if (defaultFormatter) {
+            return defaultFormatter.format(value);
+        } else if (value instanceof Date) {
+            return value.toDateString();
+        } else if (typeof(value) === 'number') {
+            if (value < 1e6 && value > -1e6) {
+                return smallFormatter.format(value);
+            } else {
+                return bigFormatter.format(value);
+            }
+        } else {
+            return value;
+        }
+    } else {
+        return defaultValue;
+    }
+}
+
+/**
+ * Aggregate the given data points by instance value, optionally applying a filter.
+ *
+ * @param  {DataPoint[]}           dataPoints An array of data points.
+ * @param  {DataPointsFilter = {}} filter     A DataPointsFilter.
+ * @return {Object}                           An Object containing an array of aggregated data points and an array of ignored data points.
+ */
+function aggregateDataPoints(dataPoints: DataPoint[], filter: DataPointsFilter = {}) {
+    const instanceMap = {};
+    const result = [];
+    dataPoints.forEach((dp: DataPoint) => {
+        const instanceLabel = dp.instanceLabel;
+        const handleDp = () => {
+            if (!checkRangeFilter(filter.range, dp.rangeValues) || !checkKeywordFilter(filter.contains, dp)) {
+                return;
+            }
+            if (!instanceMap[instanceLabel]) {
+                result.push(instanceMap[instanceLabel] = {
+                    rows: dp.rows,
+                    facetKey: dp.facetKey,
+                    highlight: dp.highlight,
+                    facetLabel: dp.facetLabel,
+                    instanceValue: dp.instanceValue,
+                    instanceLabel: dp.instanceLabel,
+                    instanceCount: dp.instanceCount,
+                    instanceCountFormatter: dp.instanceCountFormatter,
+                    instanceColor: dp.instanceColor,
+                    instanceIconClass: dp.instanceIconClass,
+                });
+                createBucket(instanceMap[instanceLabel], dp);
+            } else {
+                instanceMap[instanceLabel].highlight += dp.highlight;
+                instanceMap[instanceLabel].instanceCount += dp.instanceCount;
+                instanceMap[instanceLabel].rows.push(...dp.rows);
+                createBucket(instanceMap[instanceLabel], dp);
+            }
+        };
+        const handleSelectedDp = () => {
+            // keyword filter is not applied to the selected data points
+            !instanceMap[instanceLabel] && result.push(instanceMap[instanceLabel] = {
+                rows: [],
+                facetKey: dp.facetKey,
+                highlight: 0,
+                facetLabel: dp.facetLabel,
+                instanceValue: dp.instanceValue,
+                instanceLabel: dp.instanceLabel,
+                instanceCount: 0,
+                instanceCountFormatter: dp.instanceCountFormatter,
+                instanceColor: dp.instanceColor,
+                instanceIconClass: dp.instanceIconClass,
+            });
+            if (checkRangeFilter(filter.range, dp.rangeValues)) {
+                instanceMap[instanceLabel].highlight += dp.highlight;
+                instanceMap[instanceLabel].instanceCount += dp.instanceCount;
+                instanceMap[instanceLabel].rows.push(...dp.rows);
+                createBucket(instanceMap[instanceLabel], dp);
+            }
+        };
+        isInSelectedDataPoints(dp, filter.selectedDataPoints) ? handleSelectedDp() : handleDp();
+    });
+    return result;
+}
+
+function createFacetsSelectionData(aggregatedData: AggregatedData, options: ConvertToFacetsVisualDataOptions) {
+    const { colors, settings } = options;
+    const colorPalette = COLOR_PALETTE.slice().concat(colors.map((color: IColorInfo) => color.value));
+    const toSelectionGroup = ((key: string) => {
+        const dataPoints = aggregatedData.dataPointsMap[key];
+        const facetGroupColor = colorPalette.shift();
+        const toSelectionSpec = (dp: DataPoint) => {
+            const {
+                highlight,
+                instanceValue,
+                instanceCount,
+                instanceCountFormatter,
+                instanceColor,
+                bucket,
+            } = dp;
+            const selectionCountLabel = settings.display.selectionCount
+                ? `${formatValue(instanceCountFormatter, highlight, '')} / ${formatValue(instanceCountFormatter, instanceCount, '')}`
+                : formatValue(instanceCountFormatter, instanceCount, '');
+
+            const selectionSpec = {
+                selected: { count: highlight, countLabel: selectionCountLabel },
+                value: instanceValue,
+            };
+            if (bucket) {
+                const segmentsBaseColor = instanceColor || hexToRgba(facetGroupColor, 100);
+                selectionSpec.selected['segments'] = createSegments(bucket, segmentsBaseColor, true);
+            }
+            return selectionSpec;
+        };
+        return {
+            key: key,
+            facets: dataPoints.filter((dp: DataPoint) => !!dp.highlight).map(toSelectionSpec)
+        };
+    });
+    return Object.keys(aggregatedData.dataPointsMap).map(toSelectionGroup);
+}
+
+function createFacetsData(aggregatedData: AggregatedData, options: ConvertToFacetsVisualDataOptions) {
+    const { colors, settings } = options;
+    const normalFacetState = JSON.parse(settings.facetState.normalFacet);
+    const colorPalette = COLOR_PALETTE.slice().concat(colors.map((color: IColorInfo) => color.value));
+    const hasHighlight = aggregatedData.hasHighlight;
+    const result = <FacetGroup[]>[];
+
     let maxFacetInstanceCount = 0;
 
-    // 1. Construct the data for normal facets
     Object.keys(aggregatedData.dataPointsMap).forEach((key: string) => {
         const dataPoints = aggregatedData.dataPointsMap[key];
 
         const facets: Facet[] = [];
         const prependedSelectedFacets: Facet[] = [];
-
-        // highlighted facets
-        const selectionGroup = {
-            key: key,
-            facets: <any>[],
-        };
         const facetGroup: FacetGroup = {
             label: dataPoints[0].facetLabel,
             key: key,
@@ -405,8 +446,7 @@ export function convertToFacetsVisualData(aggregatedData: AggregatedData, option
         dataPoints.sort((a: DataPoint, b: DataPoint) => {
             const countComparison = b.instanceCount - a.instanceCount;
             return countComparison === 0 ? a.instanceLabel.localeCompare(b.instanceLabel) : countComparison;
-        });
-        dataPoints.forEach((dp: DataPoint) => {
+        }).forEach((dp: DataPoint) => {
             const {
                 highlight,
                 instanceValue,
@@ -417,22 +457,14 @@ export function convertToFacetsVisualData(aggregatedData: AggregatedData, option
                 instanceIconClass,
                 bucket,
             } = dp;
-            const selectionCountLabel = settings.display.selectionCount
-                ? `${formatValue(instanceCountFormatter, highlight, '')} / ${formatValue(instanceCountFormatter, instanceCount, '')}`
-                : formatValue(instanceCountFormatter, instanceCount, '');
             const nextColorOpacity = opacities.shift();
             const defaultColor = facetGroupColor && nextColorOpacity && hexToRgba(facetGroupColor, nextColorOpacity);
             const facetColor = instanceColor || defaultColor || '#DDDDDD';
             const useDataPoint = hasHighlight ? !!highlight : true;
-
-            const selectionSpec = {
-                selected: { count: highlight, countLabel: selectionCountLabel },
-                value: instanceValue,
-            };
             const facet: Facet = {
                 icon: {
-                     class: instanceIconClass,
-                     color: facetColor,
+                    class: instanceIconClass,
+                    color: facetColor,
                 },
                 count: instanceCount,
                 countLabel: formatValue(instanceCountFormatter, instanceCount, ''),
@@ -443,15 +475,11 @@ export function convertToFacetsVisualData(aggregatedData: AggregatedData, option
             // add segments if there is bucket
             if (bucket) {
                 const segmentsBaseColor = instanceColor || hexToRgba(facetGroupColor, 100);
-
-                selectionSpec.selected['segments'] = createSegments(bucket, segmentsBaseColor, true);
                 dp.selectionColor = { color: segmentsBaseColor, opacity: 100 };
-
                 facet['segments'] = createSegments(bucket, segmentsBaseColor, false);
                 facet.icon.color = getSegmentColor(segmentsBaseColor, 100, 0, 1, false);
             }
 
-            !!highlight && selectionGroup.facets.push(selectionSpec);
             isInSelectedDataPoints(dp, aggregatedData.selectedDataPoints)
                 ? prependedSelectedFacets.push(facet)
                 : useDataPoint && facets.push(facet);
@@ -471,12 +499,16 @@ export function convertToFacetsVisualData(aggregatedData: AggregatedData, option
         ];
         facetGroup.allFacets = facets;
 
-        facets.length > 0 && data.facetsData.push(facetGroup);
-        data.facetsSelectionData.push(selectionGroup);
+        facets.length > 0 && result.push(facetGroup);
     });
-    data.facetsData.forEach((group: FacetGroup) => group.total = maxFacetInstanceCount);
+    result.forEach((group: FacetGroup) => group.total = maxFacetInstanceCount);
+    return result;
+}
 
-    // 2. Construct the data for range facets
+function createRangeFacetsData(aggregatedData: AggregatedData, options: ConvertToFacetsVisualDataOptions) {
+    const result = [];
+    const { selectedRange, settings } = options;
+    const rangeFacetState = JSON.parse(settings.facetState.rangeFacet);
     Object.keys(aggregatedData.rangeDataMap).forEach((key: string) => {
         const rangeValueMap = aggregatedData.rangeDataMap[key];
         const rangeKeys = Object.keys(rangeValueMap);
@@ -494,7 +526,9 @@ export function convertToFacetsVisualData(aggregatedData: AggregatedData, option
             selection: {},
             histogram: {
                 slices: rangeKeys.map((rangeKey: any) => {
-                    selectionSlices[rangeKey] = hasHighlight ? rangeValueMap[rangeKey].highlight : rangeValueMap[rangeKey].subSelection;
+                    selectionSlices[rangeKey] = aggregatedData.hasHighlight
+                        ? rangeValueMap[rangeKey].highlight
+                        : rangeValueMap[rangeKey].subSelection;
                     return rangeValueMap[rangeKey];
                 }).sort((a: any, b: any) => compareRangeValue(a.metadata.rangeValue, b.metadata.rangeValue))
             }
@@ -512,9 +546,7 @@ export function convertToFacetsVisualData(aggregatedData: AggregatedData, option
         });
 
         group.facets.push(facet);
-        data.facetsData.unshift(group);
+        result.unshift(group);
     });
-    data.facetsData = data.facetsData.sort((a: any, b: any) => a.order - b.order).slice(0, MAX_NUM_FACET_GROUPS);
-
-    return data;
-};
+    return result;
+}

@@ -37,7 +37,7 @@ import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
 import DataViewScopeIdentity = powerbi.DataViewScopeIdentity;
 import * as _ from 'lodash';
 import * as $ from 'jquery';
-import { formatValue, convertToDataPointsMap, aggregateDataPointsMap, compareRangeValue, convertToFacetsVisualData } from './data';
+import { convertToDataPointsMap, aggregateDataPointsMap, convertToFacetsVisualData } from './data';
 import { findColumn, hexToRgba, otherLabelTemplate, createSegments, HIGHLIGHT_COLOR } from './utils';
 
 const Facets = require('../lib/@uncharted/facets/public/javascripts/main');
