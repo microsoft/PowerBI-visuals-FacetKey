@@ -192,10 +192,10 @@ export function convertToFacetsVisualData(aggregatedData: AggregatedData, option
         facetsSelectionData: <any>[],
         selectedDataPoints: aggregatedData.selectedDataPoints,
     };
+
+    data.facetsSelectionData.push(...createFacetsSelectionData(aggregatedData, options));
     data.facetsData.push(...createRangeFacetsData(aggregatedData, options));
     data.facetsData.push(...createFacetsData(aggregatedData, options));
-    data.facetsSelectionData.push(...createFacetsSelectionData(aggregatedData, options));
-
     data.facetsData = data.facetsData.sort((a: any, b: any) => a.order - b.order).slice(0, MAX_NUM_FACET_GROUPS);
 
     return data;

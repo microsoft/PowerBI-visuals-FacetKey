@@ -119,11 +119,11 @@ export function findColumn(dataView: DataView, dataRoleName: string, multi?: boo
  */
 export function getSegmentColor(baseColor: string, opacity: number = 100, segmentIndex: number, totalNumSegments: number, isHighlight: boolean): string {
     const hsl = convertToHSL(baseColor);
-    const isOriginalColorGrey = hsl[0] === 0 && hsl[1] === 0;
+    const isBaseColorGrey = hsl[0] === 0 && hsl[1] === 0;
     const hue = hsl[0] * 360;
     const [saturation, minLightness, maxLightness] = isHighlight
-        ? [isOriginalColorGrey ? 0 : 100, 50, 90]
-        : [isOriginalColorGrey ? 0 : 25, 30, 90];
+        ? [isBaseColorGrey ? 0 : 100, 50, 90]
+        : [isBaseColorGrey ? 0 : 25, 30, 90];
     const lightnessRange = maxLightness - minLightness;
     const lightnessFactor = lightnessRange / totalNumSegments;
     const lightness = minLightness + (lightnessFactor * segmentIndex);

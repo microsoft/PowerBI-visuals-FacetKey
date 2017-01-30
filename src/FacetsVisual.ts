@@ -154,9 +154,7 @@ export default class FacetsVisual implements IVisual {
             return;
         }
         if (options['resizeMode']) {
-            this.reDrawRangeFilter();
-            // trigger height re-calculation so that the visuals knows whether it's sacrollable.
-            return this.facetsContainer.find('.facets-root-container').css({'padding-top': '0'});
+            return this.reDrawRangeFilter();
         }
         if (!options.dataViews || !(options.dataViews.length > 0)) { return; }
 
@@ -184,7 +182,7 @@ export default class FacetsVisual implements IVisual {
 
         this.hasFilter() && (this.data = this.filterData(this.data));
 
-        // to ignore first update call seriese caused by selecting facets in highlihgted state
+        // to ignore first update call series caused by selecting facets in highlighted state
         this.firstSelectionInHighlightedState = isFreshData
             ? (this.previousFreshData.hasHighlight && this.selectedInstances.length > 0)
             : this.firstSelectionInHighlightedState;
