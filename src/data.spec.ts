@@ -667,11 +667,11 @@ describe('.convertToFacetsVisualData', () => {
             countLabel: '$7',
         });
         expect(orgGroup.facets[0].value).to.equal('Wand1');
-        expect(locGroup.facets[1].selected).to.deep.equal({
+        expect(locGroup.facets[0].selected).to.deep.equal({
                 count: 2,
                 countLabel: '$3',
         });
-        expect(locGroup.facets[1].value).to.equal('New York3');
+        expect(locGroup.facets[0].value).to.equal('New York3');
     });
     it('should populate facets selection data with selction count label', () => {
         result = dataConversion.convertToFacetsVisualData(aggregatedData, {
@@ -741,10 +741,8 @@ describe('.convertToFacetsVisualData', () => {
         const selectionData = result.facetsSelectionData;
         const locGroup = <FacetGroup>getFacetGroup(facetsData, 'location');
         const selectionLocGroup = <any>getFacetGroup(selectionData, 'location');
-
         expect(locGroup.facets[0].segments).to.deep.equal('fakeSeg:{"level1":{"instanceCount":10,"highlight":6}}:rgba(0, 0, 0, 1)');
-        expect(selectionLocGroup.facets[0].selected.segments).to.deep.equal('fakeHighlightSeg:{"level1":{"instanceCount":10,"highlight":6}}:rgba(0, 0, 0, 1)');
-        // expect(selectionLocGroup.facets[0].selected.segments).to.deep.equal('fakeHighlightSeg:{"level1":{"instanceCount":10,"highlight":6}}:#00c6e1:undefined');
+        expect(selectionLocGroup.facets[1].selected.segments).to.deep.equal('fakeHighlightSeg:{"level1":{"instanceCount":10,"highlight":6}}:rgba(0, 0, 0, 1)');
         expect(result.aggregatedData.dataPointsMap['location'][0].selectionColor.color).to.equal('rgba(0, 0, 0, 1)');
         expect(result.aggregatedData.dataPointsMap['location'][0].selectionColor.opacity).to.equal(100);
         stub.restore();
