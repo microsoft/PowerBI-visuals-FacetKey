@@ -14,7 +14,9 @@
   },
   "apiVersion": "",
   "assets": {
-    "icon": "assets/icon.svg"
+    "icon": "assets/icon.svg",
+    "thumbnail": "assets/thumbnail.png",
+    "screenshot": "assets/screenshot.png"
   },
   "style": "style/facets.scss",
   "capabilities": "capabilities.json",
