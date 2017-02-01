@@ -37,7 +37,7 @@ import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
 import DataViewScopeIdentity = powerbi.DataViewScopeIdentity;
 import * as _ from 'lodash';
 import * as $ from 'jquery';
-import { formatValue, convertToDataPointsMap, aggregateDataPointsMap, compareRangeValue, convertToFacetsVisualData } from './data';
+import { convertToDataPointsMap, aggregateDataPointsMap, convertToFacetsVisualData } from './data';
 import { findColumn, hexToRgba, otherLabelTemplate, createSegments, HIGHLIGHT_COLOR } from './utils';
 
 const Facets = require('../lib/@uncharted/facets/public/javascripts/main');
@@ -182,7 +182,7 @@ export default class FacetsVisual implements IVisual {
 
         this.hasFilter() && (this.data = this.filterData(this.data));
 
-        // to ignore first update call seriese caused by selecting facets in highlihgted state
+        // to ignore first update call series caused by selecting facets in highlighted state
         this.firstSelectionInHighlightedState = isFreshData
             ? (this.previousFreshData.hasHighlight && this.selectedInstances.length > 0)
             : this.firstSelectionInHighlightedState;

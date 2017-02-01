@@ -35,14 +35,6 @@ $facet_bar_width_animation_duration: 0.25s;
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
 }
 
-html, body {
-  height: 100%;
-}
-
-body.visual-sandbox {
-  overflow: auto;
-}
-
 .reportContainerContent i.fa {
   padding-left: 0;
 }
@@ -143,6 +135,10 @@ body.visual-sandbox {
 
   .render-segments & .facet-bar-background {
     box-shadow: inset 0 0 0 1000px hsl(187, 0%, 95%);
+  }
+
+  .facet-bar-base {
+    max-width: 100%;
   }
 
   .facet-bar-segments-container {
