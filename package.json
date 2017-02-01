@@ -33,7 +33,8 @@
   },
   "keywords": [],
   "author": "Microsoft (experimental)",
-  "license": "MIT",
+  "license": "https://raw.githubusercontent.com/Microsoft/PowerBI-visuals-FacetKey/master/LICENSE",
+  "privacyTerms": "https://privacy.microsoft.com/en-US/privacystatement/",
   "privateSubmodules": {
     "@uncharted/facets": "2.4.14"
   },
