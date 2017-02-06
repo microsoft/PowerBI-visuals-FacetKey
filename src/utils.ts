@@ -161,3 +161,12 @@ export function createSegments(bucket: any, mainColor: string, isHighlight: bool
 export function otherLabelTemplate(remaining: number) {
     return `Other (${roundToNearestTen(remaining)}${remaining < 10 || !(remaining % 10) ? '' : '+'})`;
 }
+
+/**
+ * Escape parentheses from given value since facets component doesn't support facet key value with parentheses.
+ * 
+ * @return {string} value A value to be used for facet key.
+ */
+export function safeKey(value: string) {
+    return value.replace(/[\(\)]/g, '\\$&');
+}
