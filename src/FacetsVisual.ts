@@ -38,7 +38,7 @@ import DataViewScopeIdentity = powerbi.DataViewScopeIdentity;
 import * as _ from 'lodash';
 import * as $ from 'jquery';
 import { convertToDataPointsMap, aggregateDataPointsMap, convertToFacetsVisualData } from './data';
-import { findColumn, hexToRgba, otherLabelTemplate, createSegments, HIGHLIGHT_COLOR } from './utils';
+import { safeKey, findColumn, hexToRgba, otherLabelTemplate, createSegments, HIGHLIGHT_COLOR } from './utils';
 
 const Facets = require('../lib/@uncharted/facets/public/javascripts/main');
 
@@ -571,7 +571,7 @@ export default class FacetsVisual implements IVisual {
         const rangeValueColumns = findColumn(this.dataView, 'rangeValue', true);
         let sqExpr: any;
         Object.keys(rangeFilter).forEach((key: string) => {
-            const column = _.find(rangeValueColumns, (column: any) => column.displayName === key);
+            const column = _.find(rangeValueColumns, (column: any) => safeKey(column.displayName) === key);
             const filter = rangeFilter[key];
             if (filter) {
                 const from = filter.from.metadata[0].rangeValue;
