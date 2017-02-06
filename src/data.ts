@@ -105,7 +105,7 @@ export function convertToDataPointsMap(dataView: DataView): DataPointsMapData {
         const facetLabel = formatValue(facetFormatter, (_.isString(facet) ? facet.charAt(0).toUpperCase() + facet.slice(1) : facet));
         const instanceLabel = formatValue(instanceFormatter, facetInstance);
         const instanceValue = instanceLabel !== '' ? instanceLabel + index : '';
-        const instanceCount = count || 0;
+        const instanceCount = Math.max(count, highlight) || 0;
         const instanceCountFormatter = countFormatter;
         const instanceColor = colorColumn ? (facetInstanceColor && String(facetInstanceColor)) || '#DDDDDD' : undefined;
         const instanceIconClass = (iconClass && String(iconClass)) || 'default fa fa-circle';
