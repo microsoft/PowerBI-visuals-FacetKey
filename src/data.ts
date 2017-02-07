@@ -27,6 +27,7 @@ import DataViewObjects = powerbi.DataViewObjects;
 import IColorInfo = powerbi.IColorInfo;
 import {
     findColumn,
+    safeKey,
     hexToRgba,
     convertToHSL,
     getSegmentColor,
@@ -92,7 +93,7 @@ export function convertToDataPointsMap(dataView: DataView): DataPointsMapData {
                     const value: RangeValue = {
                         value: columnValue,
                         valueLabel: formatValue(rangeValueFormatter, columnValue, ''),
-                        key: columnName.replace(/[\(\)]/g, '\\$&')
+                        key: safeKey(columnName)
                     };
                     columnValue && rowObj.rangeValues.push(value);
                 } else {
@@ -101,11 +102,11 @@ export function convertToDataPointsMap(dataView: DataView): DataPointsMapData {
             });
         });
         const { facet, facetInstance, count, facetInstanceColor, iconClass, rangeValues } = rowObj;
-        const facetKey = (String(facet || ' ')).replace(/[\(\)]/g, '\\$&'); // since jquery error when facetKey contains parentheses
+        const facetKey = safeKey(String(facet || ' '));
         const facetLabel = formatValue(facetFormatter, (_.isString(facet) ? facet.charAt(0).toUpperCase() + facet.slice(1) : facet));
         const instanceLabel = formatValue(instanceFormatter, facetInstance);
         const instanceValue = instanceLabel !== '' ? instanceLabel + index : '';
-        const instanceCount = count || 0;
+        const instanceCount = Math.max(count, highlight) || 0;
         const instanceCountFormatter = countFormatter;
         const instanceColor = colorColumn ? (facetInstanceColor && String(facetInstanceColor)) || '#DDDDDD' : undefined;
         const instanceIconClass = (iconClass && String(iconClass)) || 'default fa fa-circle';
