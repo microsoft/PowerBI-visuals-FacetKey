@@ -107,19 +107,45 @@ const patchAPI = function (version) {
     }
 };
 
+const patchCapabilities = function(capabilities) {
+    if (capabilities.objects) {
+        var objects = capabilities.objects;
+        for (var objectKey in objects) {
+            if (objects.hasOwnProperty(objectKey)) {
+                var properties = objects[objectKey].properties;
+                if (properties) {
+                    for (var propertyKey in properties) {
+                        if (properties.hasOwnProperty(propertyKey)) {
+                            var property = properties[propertyKey];
+                            if (property.type && property.type.enumeration) {
+                                property.type.enumeration = powerbi.createEnumType(property.type.enumeration);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return capabilities;
+};
+
 function pbivizPluginTemplate (pbiviz) {
     return `(function (powerbi) {
         var visuals;
         (function (visuals) {
             var plugins;
             (function (plugins) {
+                /* ESSEX Capabilities Patcher */
+                var patchCapabilities = ${patchCapabilities.toString()};
+
                 plugins['${pbiviz.visual.guid}'] = {
                     name: '${pbiviz.visual.guid}',
                     displayName: '${pbiviz.visual.name}',
                     class: '${pbiviz.visual.visualClassName}',
                     version: '${packageJson.version}',
                     apiVersion: ${pbiviz.apiVersion ? `'${pbiviz.apiVersion}'` : undefined },
-                    capabilities: ${pbiviz.apiVersion ? '{}' : `${JSON.stringify(capabilitiesJson)}`},
+                    capabilities: ${pbiviz.apiVersion ? '{}' : 'patchCapabilities(' + `${JSON.stringify(capabilitiesJson)}` + ')'},
                     create: function (/*options*/) {
                         var instance = Object.create(${pbiviz.visual.visualClassName}.prototype);
                         ${pbiviz.apiVersion ?
@@ -138,6 +164,11 @@ function pbivizPluginTemplate (pbiviz) {
                                     element: options.element.get(0),
                                 };
                                 ${pbiviz.visual.visualClassName}.call(instance, adaptedOptions);
+
+                                instance.update = function(options) {
+                                    options.type = powerbi.extensibility.v100.convertLegacyUpdateType(options);
+                                    ${pbiviz.visual.visualClassName}.prototype.update.call(instance, options);
+                                }
                             }`
                         }
                         return instance;
@@ -161,9 +192,9 @@ function pbivizPluginTemplate (pbiviz) {
  * Webpack loader function that appends pbiviz plugin code at the end of the provided source
  */
 function pluginLoader (source, map) {
-  this.cacheable();
-  source = source + '\n' + pbivizPluginTemplate(pbiviz);
-  this.callback(null, source, map);
+    this.cacheable();
+    source = source + '\n' + pbivizPluginTemplate(pbiviz);
+    this.callback(null, source, map);
 }
 
 module.exports = pluginLoader;
