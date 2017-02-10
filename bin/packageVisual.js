@@ -79,7 +79,7 @@ const _buildLegacyPackageJson = () => {
                 "sourceType": 6,
                 "file": `resources/${path.basename(pbivizJson.assets.thumbnail)}`
             },
-            { 
+            {
                 "resourceId": "rId5",
                 "sourceType": 2,
                 "file": `resources/${path.basename(pbivizJson.assets.screenshot)}`
