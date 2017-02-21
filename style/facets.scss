@@ -49,7 +49,31 @@ $facet_bar_width_animation_duration: 0.25s;
   min-width: 150px;
 
   &.no-animation {
-    * {
+    .facets-facet-vertical,
+    .facets-facet-vertical-abbreviated,
+    .facet-icon,
+    .facet-bar-container,
+    .facet-bar-base,
+    .facet-bar-segment,
+    .facet-label-container,
+    .facet-links,
+    .facet-query-close,
+    .facet-search-container,
+
+    .facets-facet-horizontal,
+    .facets-facet-horizontal-abbreviated,
+    .facet-histogram,
+    .facet-histogram-bar-transform,
+    .facet-range-filter,
+    .facet-range-labels,
+    .facet-range-controls,
+    .facet-page-ctrl,
+    .facet-range-current,
+    .facet-range-current-hidden,
+
+    .group-more-container,
+    .group-facet-ellipsis
+     {
       /**
        * Setting `transition: none;` even disabled the animation in somecases even before this class is added.
        * Using transition delay and duration seems to be working fine.
