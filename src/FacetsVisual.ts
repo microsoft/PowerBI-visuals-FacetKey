@@ -406,9 +406,10 @@ export default class FacetsVisual implements IVisual {
         });
 
         this.facets.on('facet-group:expand', (e: any, key: string) => {
+            this.runWithNoAnimation(this.resetGroup, this, key);
+            this.facets._getGroup(key).collapsed = false;
             this.getFacetGroup(key).collapsed = false;
             this.saveFacetState();
-            this.resetGroup(key);
         });
 
         this.facets.on('facet-group:dragging:end', () => {
