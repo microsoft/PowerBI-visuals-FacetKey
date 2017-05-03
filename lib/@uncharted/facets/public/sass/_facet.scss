@@ -31,7 +31,6 @@
 	padding: 0px 8px 2px 8px;
 	position: relative;
 	cursor: pointer;
-	height: $facet_vertical_height;
 
 	.facet-icon {
 		transition: opacity ($facet_abbreviation_animation_duration * 0.75) ($facet_abbreviation_animation_duration * 0.25) ease;
@@ -69,7 +68,7 @@
 
 	.facet-bar-container {
 		transition: height $facet_abbreviation_animation_duration ease,
-					opacity $facet_abbreviation_animation_duration ease;
+		opacity $facet_abbreviation_animation_duration ease;
 		left: 0;
 		right: 0;
 		height: 4px;
@@ -78,8 +77,8 @@
 
 	.facet-bar-base {
 		transition: width $facet_bar_width_animation_duration ease,
-	  			box-shadow $facet_bar_width_animation_duration ease,
-					opacity $facet_abbreviation_animation_duration ease;
+		box-shadow $facet_bar_width_animation_duration ease,
+		opacity $facet_abbreviation_animation_duration ease;
 		left: 0;
 		position: absolute;
 		height: 4px;
@@ -95,8 +94,8 @@
 		border-right: 1px solid $facet_bar_background_color;
 		position: initial;
 		transition: width $facet_bar_width_animation_duration ease,
-					box-shadow $facet_bar_width_animation_duration ease,
-					opacity $facet_abbreviation_animation_duration ease;
+		box-shadow $facet_bar_width_animation_duration ease,
+		opacity $facet_abbreviation_animation_duration ease;
 		&:last-child,
 		&.zero-width {
 			border: none;
@@ -117,7 +116,7 @@
 
 	.facet-label-container {
 		transition: height $facet_abbreviation_animation_duration ease,
-					opacity $facet_abbreviation_animation_duration ease;
+		opacity $facet_abbreviation_animation_duration ease;
 		color: #222;
 		vertical-align: top;
 		overflow: hidden;
@@ -148,10 +147,10 @@
 
 	.facet-links {
 		transition: height $facet_abbreviation_animation_duration ease,
-					opacity $facet_abbreviation_animation_duration ease;
+		opacity $facet_abbreviation_animation_duration ease;
 		font-size: $facet_button_size;
 		text-align: center;
-		float:right;
+		float: right;
 		color: $facet_button_color;
 		white-space: nowrap;
 		overflow-y: hidden;
@@ -162,7 +161,7 @@
 		transition: height $facet_abbreviation_animation_duration ease,
 		opacity $facet_abbreviation_animation_duration ease;
 		font-size: $facet_button_size;
-		float:right;
+		float: right;
 		color: $facet_button_color;
 		white-space: nowrap;
 		overflow-y: hidden;
@@ -171,7 +170,7 @@
 
 	.facet-search-container {
 		transition: height $facet_abbreviation_animation_duration ease,
-					opacity $facet_abbreviation_animation_duration ease;
+		opacity $facet_abbreviation_animation_duration ease;
 		float: right;
 		white-space: nowrap;
 		overflow-y: hidden;
@@ -187,12 +186,39 @@
 	.facet-search-container:empty {
 		display: none;
 	}
+
+	.facet-sparkline-container {
+		position: relative;
+		height: 12px;
+		margin: 3px 0px;
+		visibility: visible;
+		transition: visibility $facet_abbreviation_animation_duration step-end;
+
+		.facet-sparkline {
+			width: 100%;
+			height: 100%;
+
+			path {
+				fill: transparent;
+				stroke: black;
+				stroke-width: 1px;
+			}
+
+			.facet-sparkline-total {
+				stroke: black;
+				stroke-dasharray: 1, 3;
+			}
+			.facet-sparkline-selected {
+				stroke: $facet_bar_selected_color;
+			}
+		}
+	}
 }
 
 .facets-facet-vertical-abbreviated {
 	cursor: default;
 	margin-top: -4px;
-	height: $facet_vertical_height_abbreviated;
+	margin-bottom: 2px;
 
 	.facet-icon {
 		transition: opacity ($facet_abbreviation_animation_duration * 0.5) ease;
@@ -219,6 +245,11 @@
 	.facet-search-container {
 		opacity: 0;
 	}
+
+	.facet-sparkline-container {
+		height: 0;
+		visibility: hidden;
+	}
 }
 
 .facets-facet-vertical-hidden {
@@ -229,18 +260,23 @@
 	margin-bottom: 0;
 	height: 0;
 	opacity: 0;
+
+	.facet-sparkline-container {
+		height: 0;
+		visibility: hidden;
+	}
 }
 
 .facets-facet-horizontal {
 	transition: height $facet_abbreviation_animation_duration ease,
-				margin $facet_abbreviation_animation_duration ease,
-				opacity $facet_abbreviation_animation_duration ease;
+	margin $facet_abbreviation_animation_duration ease,
+	opacity $facet_abbreviation_animation_duration ease;
 	margin: 0px 1px 2px 1px;
 	height: $facet_horizontal_height;
 	cursor: default;
-	-webkit-user-select: none;  /* Chrome all / Safari all */
-	-moz-user-select: none;     /* Firefox all */
-	-ms-user-select: none;      /* IE 10+ */
+	-webkit-user-select: none; /* Chrome all / Safari all */
+	-moz-user-select: none; /* Firefox all */
+	-ms-user-select: none; /* IE 10+ */
 	user-select: none;
 
 	.facet-range {
@@ -278,7 +314,7 @@
 
 	.facet-histogram-bar-transform {
 		transition: height $facet_bar_height_animation_duration ease,
-					fill $facet_bar_color_animation_duration ease;
+		fill $facet_bar_color_animation_duration ease;
 	}
 
 	.facet-range-filter {
@@ -331,7 +367,7 @@
 
 	.facet-range-label {
 		position: absolute;
-		background: rgba(255,255,255, 0.25);
+		background: rgba(255, 255, 255, 0.25);
 		top: -9px;
 
 		&:first-child {
@@ -347,7 +383,7 @@
 
 	.facet-range-controls {
 		transition: height $facet_abbreviation_animation_duration ease,
-					opacity $facet_abbreviation_animation_duration ease;
+		opacity $facet_abbreviation_animation_duration ease;
 		color: #666;
 		font-size: 11px;
 		position: relative;
@@ -407,7 +443,7 @@
 		visibility: hidden;
 		opacity: 0;
 		transition: visibility 0s $facet_range_current_fade_animation_duration,
-					opacity $facet_range_current_fade_animation_duration linear;
+		opacity $facet_range_current_fade_animation_duration linear;
 	}
 
 }

@@ -31,3 +31,11 @@ lib/@uncharted/facets/public/facets.js
 lib/@uncharted/facets/public/facets.min.js
 lib/@uncharted/facets/public/facets.extern.js
 lib/@uncharted/facets/public/javascripts/templates
+
+lib/@uncharted/facets/.bowerrc
+lib/@uncharted/facets/bamboo-run-tests.sh
+lib/@uncharted/facets/bower.json
+lib/@uncharted/facets/gulpfile.js
+lib/@uncharted/facets/karma.conf.js
+lib/@uncharted/facets/public/extern/
+lib/@uncharted/facets/tests/
