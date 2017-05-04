@@ -390,19 +390,20 @@ export default class FacetsVisual implements IVisual {
 
         this.facets.on('facet-group:collapse', (e: any, key: string) => {
             const facetGroup = this.getFacetGroup(key);
-            facetGroup.collapsed = true;
-            this.saveFacetState();
             if (facetGroup.isRange) {
                 this.filter.range && this.filter.range[key] && (this.filter.range[key] = undefined);
                 this.filterFacets(true);
                 this.selectedInstances.length > 0
                     ? this.selectFacetInstances(this.selectedInstances)
                     : this.selectRanges();
-                return;
+                this.facets._getGroup(key).collapsed = true;
+            } else {
+                const deselected = _.remove(this.selectedInstances, (selected) => selected.facetKey === key);
+                this.selectedInstances.length > 0 && this.selectFacetInstances(this.selectedInstances);
+                this.updateFacetsSelection(this.selectedInstances);
             }
-            const deselected = _.remove(this.selectedInstances, (selected) => selected.facetKey === key);
-            this.selectedInstances.length > 0 && this.selectFacetInstances(this.selectedInstances);
-            this.updateFacetsSelection(this.selectedInstances);
+            facetGroup.collapsed = true;
+            this.saveFacetState();
         });
 
         this.facets.on('facet-group:expand', (e: any, key: string) => {
