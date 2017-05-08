@@ -163,7 +163,6 @@ export default class FacetsVisual implements IVisual {
         this.settings = this.validateSettings($.extend(true, {}, DEFAULT_SETTINGS, this.dataView.metadata.objects));
 
         const isFreshData = (options['operationKind'] === VisualDataChangeOperationKind.Create);
-        const isMoreData = !isFreshData;
         const hasMoreData = !!this.dataView.metadata.segment && this.hasRequiredFields(this.dataView);
         const rangeValueColumn = findColumn(this.dataView, 'rangeValue');
         const bucketColumn = findColumn(this.dataView, 'bucket');
@@ -187,17 +186,32 @@ export default class FacetsVisual implements IVisual {
             ? (this.previousFreshData.hasHighlight && this.selectedInstances.length > 0)
             : this.firstSelectionInHighlightedState;
 
-        !loadAllDataBeforeRender && !this.firstSelectionInHighlightedState && this.updateFacets(isMoreData);
+        this.loadMoreCount = isFreshData ? 0 : ++this.loadMoreCount;
+        const shouldLoadMoreData = hasMoreData && this.loadMoreCount < MAX_DATA_LOADS;
+
+        if (this.firstSelectionInHighlightedState) {
+            return shouldLoadMoreData && this.hostServices.loadMoreData();
+        }
+        if (loadAllDataBeforeRender) {
+            isFreshData && this.toggleLoader(true);
+            return shouldLoadMoreData
+                ? this.hostServices.loadMoreData()
+                : this.updateFacets() && this.toggleLoader(false);
+        }
+        isFreshData ? this.updateFacets() : this.syncFacets();
+        return shouldLoadMoreData && this.hostServices.loadMoreData();
+
+        // !loadAllDataBeforeRender && !this.firstSelectionInHighlightedState && isMoreData && this.syncFacets();
 
         // Load more data while there is more data under the threshold
-        const loadMoreData = () => {
-            loadAllDataBeforeRender && !this.firstSelectionInHighlightedState && this.loader.addClass('show');
-            this.hostServices.loadMoreData();
-        };
-        this.loadMoreCount = isFreshData ? 0 : ++this.loadMoreCount;
-        hasMoreData && this.loadMoreCount < MAX_DATA_LOADS
-            ? loadMoreData()
-            : loadAllDataBeforeRender && !this.firstSelectionInHighlightedState && this.updateFacets();
+        // const loadMoreData = () => {
+        //     loadAllDataBeforeRender && !this.firstSelectionInHighlightedState && this.loader.addClass('show');
+        //     this.hostServices.loadMoreData();
+        // };
+        // this.loadMoreCount = isFreshData ? 0 : ++this.loadMoreCount;
+        // hasMoreData && this.loadMoreCount < MAX_DATA_LOADS
+        //     ? loadMoreData()
+        //     : loadAllDataBeforeRender && !this.firstSelectionInHighlightedState && this.updateFacets();
     }
 
     /**
@@ -278,14 +292,17 @@ export default class FacetsVisual implements IVisual {
     }
 
     /**
-     * Updates the facets.
-     * @param  {boolean = false} syncFacets A flag indicating syncying with the more data is needed.
+     * Show or hide a loader depending on the provided boolean value. 
+     * @param show boolean A boolean flag indicating whether to show loader.
      */
-    private updateFacets(syncFacets: boolean = false) {
-        if (syncFacets) {
-            return this.syncFacets();
-        }
-        // else, it's fresh data
+    private toggleLoader(show) {
+        show ? this.loader.addClass('show') : this.loader.removeClass('show');
+    }
+
+    /**
+     * Updates the facets.
+     */
+    private updateFacets() {
         this.loader.removeClass('show');
         this.resetFacets(false, true);
         this.data.hasHighlight && this.facets.select(this.data.facetsSelectionData);
