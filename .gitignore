@@ -18,24 +18,3 @@ dist
 
 todo.txt
 .npmrc
-
-# Uncharted facets (ignore non-source files)
-lib/@uncharted/facets/bamboo
-lib/@uncharted/facets/config.js
-lib/@uncharted/facets/coverage
-lib/@uncharted/facets/jspm_packages
-lib/@uncharted/facets/mocha.json
-lib/@uncharted/facets/public/facets.css
-lib/@uncharted/facets/public/facets.min.css
-lib/@uncharted/facets/public/facets.js
-lib/@uncharted/facets/public/facets.min.js
-lib/@uncharted/facets/public/facets.extern.js
-lib/@uncharted/facets/public/javascripts/templates
-
-lib/@uncharted/facets/.bowerrc
-lib/@uncharted/facets/bamboo-run-tests.sh
-lib/@uncharted/facets/bower.json
-lib/@uncharted/facets/gulpfile.js
-lib/@uncharted/facets/karma.conf.js
-lib/@uncharted/facets/public/extern/
-lib/@uncharted/facets/tests/
