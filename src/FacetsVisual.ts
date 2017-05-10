@@ -291,7 +291,6 @@ export default class FacetsVisual implements IVisual {
      * Updates the facets.
      */
     private updateFacets() {
-        this.loader.removeClass('show');
         this.resetFacets(false, true);
         this.data.hasHighlight && this.facets.select(this.data.facetsSelectionData);
     }
