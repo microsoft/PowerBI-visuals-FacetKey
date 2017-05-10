@@ -40,7 +40,7 @@ import * as $ from 'jquery';
 import { convertToDataPointsMap, aggregateDataPointsMap, convertToFacetsVisualData } from './data';
 import { safeKey, findColumn, hexToRgba, otherLabelTemplate, createSegments, HIGHLIGHT_COLOR } from './utils';
 
-const Facets = require('../lib/@uncharted/facets/public/javascripts/main');
+const Facets = require('../lib/@uncharted.software/stories-facets/src/main');
 
 const MAX_DATA_LOADS = 5;
 
@@ -200,18 +200,6 @@ export default class FacetsVisual implements IVisual {
         }
         isFreshData ? this.updateFacets() : this.syncFacets();
         return shouldLoadMoreData && this.hostServices.loadMoreData();
-
-        // !loadAllDataBeforeRender && !this.firstSelectionInHighlightedState && isMoreData && this.syncFacets();
-
-        // Load more data while there is more data under the threshold
-        // const loadMoreData = () => {
-        //     loadAllDataBeforeRender && !this.firstSelectionInHighlightedState && this.loader.addClass('show');
-        //     this.hostServices.loadMoreData();
-        // };
-        // this.loadMoreCount = isFreshData ? 0 : ++this.loadMoreCount;
-        // hasMoreData && this.loadMoreCount < MAX_DATA_LOADS
-        //     ? loadMoreData()
-        //     : loadAllDataBeforeRender && !this.firstSelectionInHighlightedState && this.updateFacets();
     }
 
     /**
