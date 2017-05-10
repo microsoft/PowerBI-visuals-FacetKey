@@ -176,7 +176,7 @@ export function aggregateDataPointsMap(data: DataPointsMapData, filter: DataPoin
         dataPoints.length > 0 && (aggregatedData.dataPointsMap[key] = dataPoints);
     });
     return aggregatedData;
-};
+}
 
 /**
  * Converts the given aggregated data into facets visual data.
@@ -195,12 +195,11 @@ export function convertToFacetsVisualData(aggregatedData: AggregatedData, option
     };
 
     data.facetsSelectionData.push(...createFacetsSelectionData(aggregatedData, options));
-    data.facetsData.push(...createRangeFacetsData(aggregatedData, options));
-    data.facetsData.push(...createFacetsData(aggregatedData, options));
-    data.facetsData = data.facetsData.sort((a: any, b: any) => a.order - b.order).slice(0, MAX_NUM_FACET_GROUPS);
-
+    data.facetsData = [...createRangeFacetsData(aggregatedData, options), ...createFacetsData(aggregatedData, options)]
+        .sort((a: any, b: any) => a.order - b.order)
+        .slice(0, MAX_NUM_FACET_GROUPS);
     return data;
-};
+}
 
 /**
  * Compares two range values (a and b) and returns 1 if a > b, -1 if a < b, or 0 if a = b.
@@ -444,49 +443,48 @@ function createFacetsData(aggregatedData: AggregatedData, options: ConvertToFace
         const facetGroupColor = colorPalette.shift();
         const opacities = [100, 60, 35];
 
-        dataPoints.sort((a: DataPoint, b: DataPoint) => {
-            const countComparison = b.instanceCount - a.instanceCount;
-            return countComparison === 0 ? a.instanceLabel.localeCompare(b.instanceLabel) : countComparison;
-        }).forEach((dp: DataPoint) => {
-            const {
-                highlight,
-                instanceValue,
-                instanceLabel,
-                instanceCount,
-                instanceCountFormatter,
-                instanceColor,
-                instanceIconClass,
-                bucket,
-            } = dp;
-            const nextColorOpacity = opacities.shift();
-            const defaultColor = facetGroupColor && nextColorOpacity && hexToRgba(facetGroupColor, nextColorOpacity);
-            const facetColor = instanceColor || defaultColor || '#DDDDDD';
-            const useDataPoint = hasHighlight ? !!highlight : true;
-            const facet: Facet = {
-                icon: {
-                    class: instanceIconClass,
-                    color: facetColor,
-                },
-                count: instanceCount,
-                countLabel: formatValue(instanceCountFormatter, instanceCount, ''),
-                value: instanceValue,
-                label: instanceLabel,
-            };
+        dataPoints
+            .sort((a: DataPoint, b: DataPoint) => b.instanceCount - a.instanceCount || a.instanceLabel.localeCompare(b.instanceLabel))
+            .forEach((dp: DataPoint) => {
+                const {
+                    highlight,
+                    instanceValue,
+                    instanceLabel,
+                    instanceCount,
+                    instanceCountFormatter,
+                    instanceColor,
+                    instanceIconClass,
+                    bucket,
+                } = dp;
+                const nextColorOpacity = opacities.shift();
+                const defaultColor = facetGroupColor && nextColorOpacity && hexToRgba(facetGroupColor, nextColorOpacity);
+                const facetColor = instanceColor || defaultColor || '#DDDDDD';
+                const useDataPoint = hasHighlight ? !!highlight : true;
+                const facet: Facet = {
+                    icon: {
+                        class: instanceIconClass,
+                        color: facetColor,
+                    },
+                    count: instanceCount,
+                    countLabel: formatValue(instanceCountFormatter, instanceCount, ''),
+                    value: instanceValue,
+                    label: instanceLabel,
+                };
 
-            // add segments if there is bucket
-            if (bucket) {
-                const segmentsBaseColor = instanceColor || hexToRgba(facetGroupColor, 100);
-                dp.selectionColor = { color: segmentsBaseColor, opacity: 100 };
-                facet['segments'] = createSegments(bucket, segmentsBaseColor, false);
-                facet.icon.color = getSegmentColor(segmentsBaseColor, 100, 0, 1, false);
-            }
+                // add segments if there is bucket
+                if (bucket) {
+                    const segmentsBaseColor = instanceColor || hexToRgba(facetGroupColor, 100);
+                    dp.selectionColor = { color: segmentsBaseColor, opacity: 100 };
+                    facet['segments'] = createSegments(bucket, segmentsBaseColor, false);
+                    facet.icon.color = getSegmentColor(segmentsBaseColor, 100, 0, 1, false);
+                }
 
-            isInSelectedDataPoints(dp, aggregatedData.selectedDataPoints)
-                ? prependedSelectedFacets.push(facet)
-                : useDataPoint && facets.push(facet);
+                isInSelectedDataPoints(dp, aggregatedData.selectedDataPoints)
+                    ? prependedSelectedFacets.push(facet)
+                    : useDataPoint && facets.push(facet);
 
-            maxFacetInstanceCount = Math.max(maxFacetInstanceCount, instanceCount);
-        });
+                maxFacetInstanceCount = Math.max(maxFacetInstanceCount, instanceCount);
+            });
         // prepend selected facets to the facets array
         facets.unshift(...prependedSelectedFacets);
 

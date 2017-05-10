@@ -173,7 +173,7 @@ function getModuleInfo(registries, name, version, callback) {
                 return;
             }
 
-            const url = registry + name + '/' + version;
+            const url = registry + name.replace('/', '%2F') + '/=' + version;
             hitRegistryForInfo(url, protocol, retrieveInfo);
         } else {
             callback(null);

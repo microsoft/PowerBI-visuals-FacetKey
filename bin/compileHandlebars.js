@@ -27,8 +27,8 @@ const mkdirp = require('mkdirp');
 const fileTools = require('./fileTools');
 const handlebars = require('handlebars');
 
-const templatesDir = 'lib/@uncharted/facets/public/templates';
-const outputDir = 'lib/@uncharted/facets/public/javascripts/templates';
+const templatesDir = 'lib/@uncharted.software/stories-facets/templates';
+const outputDir = 'lib/@uncharted.software/stories-facets/src/templates';
 
 const files = fs.readdirSync(templatesDir);
 
