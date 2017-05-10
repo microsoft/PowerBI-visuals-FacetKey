@@ -281,7 +281,7 @@ export default class FacetsVisual implements IVisual {
 
     /**
      * Show or hide a loader depending on the provided boolean value.
-     * @param show boolean A boolean flag indicating whether to show loader.
+     * @param {boolean} show A boolean flag indicating whether to show loader.
      */
     private toggleLoader(show) {
         show ? this.loader.addClass('show') : this.loader.removeClass('show');
