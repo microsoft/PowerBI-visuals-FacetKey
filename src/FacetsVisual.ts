@@ -193,10 +193,10 @@ export default class FacetsVisual implements IVisual {
             return shouldLoadMoreData && this.hostServices.loadMoreData();
         }
         if (loadAllDataBeforeRender) {
-            isFreshData && this.toggleLoader(true);
+            isFreshData && this.toggleLoadingSpinner(true);
             return shouldLoadMoreData
                 ? this.hostServices.loadMoreData()
-                : this.updateFacets() && this.toggleLoader(false);
+                : this.updateFacets() && this.toggleLoadingSpinner(false);
         }
         isFreshData ? this.updateFacets() : this.syncFacets();
         return shouldLoadMoreData && this.hostServices.loadMoreData();
@@ -280,10 +280,10 @@ export default class FacetsVisual implements IVisual {
     }
 
     /**
-     * Show or hide a loader depending on the provided boolean value.
-     * @param {boolean} show A boolean flag indicating whether to show loader.
+     * Show or hide a loading spinner depending on the provided boolean value.
+     * @param {boolean} show A boolean flag indicating whether to show the loading spinner.
      */
-    private toggleLoader(show) {
+    private toggleLoadingSpinner(show) {
         show ? this.loader.addClass('show') : this.loader.removeClass('show');
     }
 
