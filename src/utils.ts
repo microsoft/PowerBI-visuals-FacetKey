@@ -164,7 +164,7 @@ export function otherLabelTemplate(remaining: number) {
 
 /**
  * Escape parentheses from given value since facets component doesn't support facet key value with parentheses.
- * 
+ *
  * @return {string} value A value to be used for facet key.
  */
 export function safeKey(value: string) {

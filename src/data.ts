@@ -176,7 +176,7 @@ export function aggregateDataPointsMap(data: DataPointsMapData, filter: DataPoin
         dataPoints.length > 0 && (aggregatedData.dataPointsMap[key] = dataPoints);
     });
     return aggregatedData;
-};
+}
 
 /**
  * Converts the given aggregated data into facets visual data.
@@ -199,7 +199,7 @@ export function convertToFacetsVisualData(aggregatedData: AggregatedData, option
         .sort((a: any, b: any) => a.order - b.order)
         .slice(0, MAX_NUM_FACET_GROUPS);
     return data;
-};
+}
 
 /**
  * Compares two range values (a and b) and returns 1 if a > b, -1 if a < b, or 0 if a = b.
