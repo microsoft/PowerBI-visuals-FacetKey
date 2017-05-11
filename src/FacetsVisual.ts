@@ -78,7 +78,7 @@ export default class FacetsVisual implements IVisual {
     private previousData: any;
     private previousFreshData: any;
     private hostServices: IVisualHostServices;
-    private firstSelectionInHighlightedState: boolean;
+    private selectionInHighlightedState: boolean;
     private selectedInstances: DataPoint[] = [];
     private loadMoreCount: number;
     private reDrawRangeFilter: any = _.debounce(() => {
@@ -183,14 +183,14 @@ export default class FacetsVisual implements IVisual {
         this.hasFilter() && (this.data = this.filterData(this.data));
 
         // to ignore first update call series caused by selecting facets in highlighted state
-        this.firstSelectionInHighlightedState = isFreshData
+        this.selectionInHighlightedState = isFreshData
             ? (this.previousFreshData.hasHighlight && this.selectedInstances.length > 0)
-            : this.firstSelectionInHighlightedState;
+            : this.selectionInHighlightedState;
 
         this.loadMoreCount = isFreshData ? 0 : ++this.loadMoreCount;
         const shouldLoadMoreData = hasMoreData && this.loadMoreCount < MAX_DATA_LOADS;
 
-        if (this.firstSelectionInHighlightedState) {
+        if (this.selectionInHighlightedState) {
             return shouldLoadMoreData && this.hostServices.loadMoreData();
         }
         if (loadAllDataBeforeRender) {
@@ -268,23 +268,6 @@ export default class FacetsVisual implements IVisual {
     }
 
     /**
-     * Show or hide a loading spinner depending on the provided boolean value.
-     * @param {boolean} show A boolean flag indicating whether to show the loading spinner.
-     */
-    private toggleLoadingSpinner(show) {
-        show ? this.loader.addClass('show') : this.loader.removeClass('show');
-    }
-
-    /**
-     * Updates the facets.
-     */
-    private updateFacets() {
-        this.toggleLoadingSpinner(false);
-        this.resetFacets(false, true);
-        this.data.hasHighlight && this.facets.select(this.data.facetsSelectionData);
-    }
-
-    /**
      * Update and render facets with current state of the data.
      */
     private syncFacets() {
@@ -325,6 +308,43 @@ export default class FacetsVisual implements IVisual {
     }
 
     /**
+     * Show or hide a loading spinner depending on the provided boolean value.
+     * @param {boolean} show A boolean flag indicating whether to show the loading spinner.
+     */
+    private toggleLoadingSpinner(show) {
+        show ? this.loader.addClass('show') : this.loader.removeClass('show');
+    }
+
+    /**
+     * Updates the facets.
+     */
+    private updateFacets() {
+        this.toggleLoadingSpinner(false);
+        this.resetFacets();
+        this.data.hasHighlight && this.facets.select(this.data.facetsSelectionData);
+    }
+
+    /**
+     * Reset the facets
+     *
+     */
+    private resetFacets() {
+        this.clearFilters();
+        this.selectedInstances = [];
+        this.selectionInHighlightedState = false;
+        this.runWithNoAnimation(this.facets.replace, this.facets, this.data.facetsData);
+    }
+
+    /**
+     * Clears filters.
+     */
+    private clearFilters() {
+        this.filter = {};
+        this.searchBox.val('');
+        this.retainFilters = false;
+    }
+
+    /**
      * Re-render facets with filtered facets data.
      *
      * @param  {boolean=false} force.
@@ -335,7 +355,9 @@ export default class FacetsVisual implements IVisual {
         if (isKeywordChanged || force) {
             this.filter.contains = newKeyword;
             this.data = this.filterData(this.data);
-            this.redrawFacets();
+            this.runWithNoAnimation(this.facets.replace, this.facets, this.data.facetsData);
+            this.selectionInHighlightedState = false;
+            this.updateFacetsSelection(this.selectedInstances);
         }
     }
 
@@ -489,45 +511,6 @@ export default class FacetsVisual implements IVisual {
     }
 
     /**
-     * Clears filters.
-     */
-    private clearFilters() {
-        this.filter = {};
-        this.searchBox.val('');
-        this.retainFilters = false;
-    }
-
-    /**
-     * Reset facets by unselecting all facets instances.
-     *
-     * @param {boolean = true}  notifyHost A flag indicating whether to notify the host to trigger update call.
-     * @param {boolean = false} replace    A flag indicating whether to replace facets with current data.
-     */
-    private resetFacets(notifyHost: boolean = true, replace: boolean = false): void {
-        notifyHost && this.sendSelectionToHost([]);
-        this.deselectNormalFacetInstances();
-        this.facets.unhighlight();
-        this.selectedInstances = [];
-        if (replace) {
-            !this.retainFilters && this.clearFilters();
-            this.firstSelectionInHighlightedState = false;
-            this.runWithNoAnimation(this.facets.replace, this.facets, this.data.facetsData);
-        }
-    }
-
-    /**
-     * Redraw facets with current data and update the selection state.
-     */
-    private redrawFacets() {
-        this.runWithNoAnimation(this.facets.replace, this.facets, this.data.facetsData);
-        this.facets._queryGroup._element.find('.facet-bar-container').append('<i class="fa fa-times query-remove" aria-hidden="true"></i>');
-        this.data.hasHighlight
-            ? this.facets.select(this.data.facetsSelectionData)
-            : this.updateFacetsSelection(this.selectedInstances, false);
-    }
-
-
-    /**
      * Returns true if there is a range or keyword filter.
      *
      * @return {boolean}
@@ -629,24 +612,24 @@ export default class FacetsVisual implements IVisual {
      * Update the facets component so that it reflects the given selected facet instances
      *
      * @param {DataPoint[] = []}   selectedInstances An array of datapoints for the selected facet instances.
-     * @param {boolean     = true} reset             Flag indicating whether to reset the facets components when there's no selected facets.
      */
-    private updateFacetsSelection(selectedInstances: DataPoint[] = [], reset: boolean = true): void {
-        this.facets.unhighlight();
-        this.facets.highlight(selectedInstances.map((dp) => ({ key: dp.facetKey, value: dp.instanceValue, count: dp.instanceCount })));
-        this.deselectNormalFacetInstances();
-        this.facets.select(selectedInstances.map(selected => ({
-            key: selected.facetKey,
-            facets: [{
-                value: selected.instanceValue,
-                selected: selected.bucket ? {
-                    count: selected.instanceCount,
-                    segments: createSegments(selected.bucket, selected.selectionColor.color, false, selected.selectionColor.opacity, true)
-                } : selected.instanceCount,
-            }],
-        })));
-        if (reset && this.selectedInstances.length === 0) {
-            !this.hasRangeFilter() && this.resetFacets(true, this.firstSelectionInHighlightedState);
+    private updateFacetsSelection(selectedInstances: DataPoint[] = []): void {
+        if (this.selectionInHighlightedState && this.selectedInstances.length === 0) {
+            this.resetFacets();
+        } else {
+            this.facets.unhighlight();
+            this.facets.highlight(selectedInstances.map((dp) => ({ key: dp.facetKey, value: dp.instanceValue, count: dp.instanceCount })));
+            this.deselectNormalFacetInstances();
+            this.facets.select(selectedInstances.map(selected => ({
+                key: selected.facetKey,
+                facets: [{
+                    value: selected.instanceValue,
+                    selected: selected.bucket ? {
+                        count: selected.instanceCount,
+                        segments: createSegments(selected.bucket, selected.selectionColor.color, false, selected.selectionColor.opacity, true)
+                    } : selected.instanceCount,
+                }],
+            })));
         }
     }
 
