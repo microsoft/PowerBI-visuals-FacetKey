@@ -107,6 +107,19 @@ export function findColumn(dataView: DataView, dataRoleName: string, multi?: boo
 }
 
 /**
+ * Check if provided dataView has all the columns with given data role names.
+ *
+ * @export
+ * @param   {DataView} dataView      A Powerbi dataView object.
+ * @param   {string[]} dataRoleNames An array of the data role names for corresponding columns.
+ * @returns {boolean}                A Boolean value indicating whether the dataView has all matching columns.
+ */
+export function hasColumns(dataView: DataView, dataRoleNames: string[]): boolean {
+    const columns = dataView.metadata.columns;
+    return dataRoleNames.reduce((prev, dataRoleName) => prev && findColumn(dataView, dataRoleName) !== undefined, true);
+}
+
+/**
  * Returns an hsl color string based on the given color, opacity, index, total number of segments, and a boolean indicating it's highlighted or not.
  * Lightness of the color will be determined by segmentIndex and totalNumSegments where higer segmentIndex will produce lighter color while segmentIndex < totalNumSegments.
  *
