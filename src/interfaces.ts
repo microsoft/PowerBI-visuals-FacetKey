@@ -141,6 +141,7 @@ interface Facet {
     countLabel: string;
     value: string;
     label: string;
+    timeseries?: any[];
     segments?: { count: number; color: string}[];
 }
 

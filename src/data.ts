@@ -43,6 +43,16 @@ import * as _ from 'lodash';
  */
 const MAX_NUM_FACET_GROUPS = 100;
 
+const createTimeSeries = (sparklineXDomain: any[], sparklineData: Object, isHighlight: boolean = false) => {
+    const timeseries = Array.apply(null, new Array(sparklineXDomain.length)).map(Number.prototype.valueOf, 0);
+    Object.keys(sparklineData).forEach((xValue) => {
+        const value = sparklineData[xValue];
+        const index = sparklineXDomain.indexOf(xValue);
+        timeseries[index] += value[isHighlight ? 'highlight' : 'instanceCount'];
+    });
+    return timeseries;
+};
+
 /**
  * Convert the given dataview into a data points map in which data points are grouped by facet key.
  *
@@ -143,6 +153,7 @@ export function aggregateDataPointsMap(data: DataPointsMapData, filter: DataPoin
         dataPointsMap: {},
         rangeDataMap: {},
         selectedDataPoints: filter.selectedDataPoints,
+        sparklineXDomain: [],
         hasHighlight: !!data.hasHighlight
     };
     const constructRangeFacetData = (dp: DataPoint) => {
@@ -170,11 +181,15 @@ export function aggregateDataPointsMap(data: DataPointsMapData, filter: DataPoin
             }
         });
     };
+    const sparklineXValues = [];
     Object.keys(dataPointsMap).forEach((key: string) => {
         dataPointsMap[key].forEach(constructRangeFacetData);
         const dataPoints: DataPoint[] = aggregateDataPoints(dataPointsMap[key], filter);
         dataPoints.length > 0 && (aggregatedData.dataPointsMap[key] = dataPoints);
+
+        dataPoints.forEach(dp => sparklineXValues.push(...Object.keys(dp['sparklineData'] || {})));
     });
+    aggregatedData.sparklineXDomain = Array.from(new Set(sparklineXValues)).sort(compareRangeValue);
     return aggregatedData;
 }
 
@@ -212,11 +227,11 @@ function compareRangeValue(a: any, b: any) {
     const isNumeric = (n: any) => !isNaN(parseFloat(n)) && isFinite(n);
     let aValue: any = Date.parse(a);
     let bValue: any = Date.parse(b);
-    const isNmberOnly = isNumeric(a) && isNumeric(b);
-    const isNotValidDate = isNmberOnly || isNaN(aValue) || isNaN(bValue);
+    const isNumberOnly = isNumeric(a) && isNumeric(b);
+    const isNotValidDate = isNumberOnly || isNaN(aValue) || isNaN(bValue);
     if (isNotValidDate) {
-        aValue = isNmberOnly ? parseFloat(a) : a;
-        bValue = isNmberOnly ? parseFloat(b) : b;
+        aValue = isNumberOnly ? parseFloat(a) : a;
+        bValue = isNumberOnly ? parseFloat(b) : b;
     }
     if (aValue > bValue) { return 1; }
     if (aValue < bValue) { return -1; }
@@ -273,15 +288,15 @@ function isInSelectedDataPoints(dataPoint: DataPoint, selectedDataPoints: DataPo
  * @param  {any}       targetObj An Object in which a bucket will be created.
  * @param  {DataPoint} dp        A dataPoint object.
  */
-function createBucket(targetObj: any, dp: DataPoint) {
-    if (!('bucket' in dp.rows[0])) { return; }
-    const bucketName = String(dp.rows[0].bucket);
-    !targetObj.bucket && (targetObj.bucket = {});
-    if (!targetObj.bucket[bucketName]) {
-        targetObj.bucket[bucketName] = { instanceCount: dp.instanceCount, highlight: dp.highlight };
+function createBucket(targetObj: any, dp: DataPoint, bucketName: string) {
+    if (!(bucketName in dp.rows[0])) { return; }
+    const bucketValue = String(dp.rows[0][bucketName]);
+    !targetObj[bucketName] && (targetObj[bucketName] = {});
+    if (!targetObj[bucketName][bucketValue]) {
+        targetObj[bucketName][bucketValue] = { instanceCount: dp.instanceCount, highlight: dp.highlight };
     } else {
-        targetObj.bucket[bucketName].instanceCount += dp.instanceCount;
-        targetObj.bucket[bucketName].highlight += dp.highlight;
+        targetObj[bucketName][bucketValue].instanceCount += dp.instanceCount;
+        targetObj[bucketName][bucketValue].highlight += dp.highlight;
     }
 }
 
@@ -344,12 +359,14 @@ function aggregateDataPoints(dataPoints: DataPoint[], filter: DataPointsFilter =
                     instanceColor: dp.instanceColor,
                     instanceIconClass: dp.instanceIconClass,
                 });
-                createBucket(instanceMap[instanceLabel], dp);
+                createBucket(instanceMap[instanceLabel], dp, 'bucket');
+                createBucket(instanceMap[instanceLabel], dp, 'sparklineData');
             } else {
                 instanceMap[instanceLabel].highlight += dp.highlight;
                 instanceMap[instanceLabel].instanceCount += dp.instanceCount;
                 instanceMap[instanceLabel].rows.push(...dp.rows);
-                createBucket(instanceMap[instanceLabel], dp);
+                createBucket(instanceMap[instanceLabel], dp, 'bucket');
+                createBucket(instanceMap[instanceLabel], dp, 'sparklineData');
             }
         };
         const handleSelectedDp = () => {
@@ -370,7 +387,8 @@ function aggregateDataPoints(dataPoints: DataPoint[], filter: DataPointsFilter =
                 instanceMap[instanceLabel].highlight += dp.highlight;
                 instanceMap[instanceLabel].instanceCount += dp.instanceCount;
                 instanceMap[instanceLabel].rows.push(...dp.rows);
-                createBucket(instanceMap[instanceLabel], dp);
+                createBucket(instanceMap[instanceLabel], dp, 'bucket');
+                createBucket(instanceMap[instanceLabel], dp, 'sparklineData');
             }
         };
         isInSelectedDataPoints(dp, filter.selectedDataPoints) ? handleSelectedDp() : handleDp();
@@ -392,6 +410,7 @@ function createFacetsSelectionData(aggregatedData: AggregatedData, options: Conv
                 instanceCountFormatter,
                 instanceColor,
                 bucket,
+                sparklineData,
             } = dp;
             const selectionCountLabel = settings.display.selectionCount
                 ? `${formatValue(instanceCountFormatter, highlight, '')} / ${formatValue(instanceCountFormatter, instanceCount, '')}`
@@ -401,6 +420,9 @@ function createFacetsSelectionData(aggregatedData: AggregatedData, options: Conv
                 selected: { count: highlight, countLabel: selectionCountLabel },
                 value: instanceValue,
             };
+            if (sparklineData) {
+                selectionSpec.selected['timeseries'] = createTimeSeries(aggregatedData.sparklineXDomain, sparklineData, true);
+            }
             if (bucket) {
                 const segmentsBaseColor = instanceColor || hexToRgba(facetGroupColor, 100);
                 selectionSpec.selected['segments'] = createSegments(bucket, segmentsBaseColor, true);
@@ -455,6 +477,7 @@ function createFacetsData(aggregatedData: AggregatedData, options: ConvertToFace
                     instanceColor,
                     instanceIconClass,
                     bucket,
+                    sparklineData,
                 } = dp;
                 const nextColorOpacity = opacities.shift();
                 const defaultColor = facetGroupColor && nextColorOpacity && hexToRgba(facetGroupColor, nextColorOpacity);
@@ -468,6 +491,7 @@ function createFacetsData(aggregatedData: AggregatedData, options: ConvertToFace
                     count: instanceCount,
                     countLabel: formatValue(instanceCountFormatter, instanceCount, ''),
                     value: instanceValue,
+                    timeseries: sparklineData ? createTimeSeries(aggregatedData.sparklineXDomain, sparklineData) : undefined,
                     label: instanceLabel,
                 };
 
