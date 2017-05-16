@@ -180,7 +180,7 @@ export function aggregateDataPointsMap(data: DataPointsMapData, filter: DataPoin
 
         dataPoints.forEach(dp => sparklineXValues.push(...Object.keys(dp['sparklineData'] || {})));
     });
-    aggregatedData.sparklineXDomain = Array.from(new Set(sparklineXValues)).sort(compareRangeValue);
+    aggregatedData.sparklineXDomain = _.uniq(sparklineXValues).sort(compareRangeValue);
     return aggregatedData;
 }
 
