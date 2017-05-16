@@ -165,6 +165,16 @@ export function createSegments(bucket: any, mainColor: string, isHighlight: bool
     }));
 }
 
+export function createTimeSeries(sparklineXDomain: any[], sparklineData: Object, isHighlight: boolean = false) {
+    const timeseries = Array.apply(null, new Array(sparklineXDomain.length)).map(Number.prototype.valueOf, 0);
+    Object.keys(sparklineData).forEach((xValue) => {
+        const value = sparklineData[xValue];
+        const index = sparklineXDomain.indexOf(xValue);
+        timeseries[index] += value[isHighlight ? 'highlight' : 'instanceCount'];
+    });
+    return timeseries;
+}
+
 /**
  * Creates a label displaying the remaining number of facets for a facet group.
  *

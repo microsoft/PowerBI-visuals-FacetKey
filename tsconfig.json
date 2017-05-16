@@ -3,7 +3,7 @@
     "target": "es5",
     "sourceMap": true,
     "types": ["mocha", "sinon-chai", "requirejs"],
-    "lib": ["es2017"],
+    "lib": ["es2017", "dom"],
     "experimentalDecorators": true
   },
   "compileOnSave": false,

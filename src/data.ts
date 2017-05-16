@@ -33,6 +33,7 @@ import {
     getSegmentColor,
     otherLabelTemplate,
     createSegments,
+    createTimeSeries,
     HIGHLIGHT_COLOR,
     COLOR_PALETTE
 } from './utils';
@@ -42,16 +43,6 @@ import * as _ from 'lodash';
  * Maximum number of facet groups to be rendered.
  */
 const MAX_NUM_FACET_GROUPS = 100;
-
-const createTimeSeries = (sparklineXDomain: any[], sparklineData: Object, isHighlight: boolean = false) => {
-    const timeseries = Array.apply(null, new Array(sparklineXDomain.length)).map(Number.prototype.valueOf, 0);
-    Object.keys(sparklineData).forEach((xValue) => {
-        const value = sparklineData[xValue];
-        const index = sparklineXDomain.indexOf(xValue);
-        timeseries[index] += value[isHighlight ? 'highlight' : 'instanceCount'];
-    });
-    return timeseries;
-};
 
 /**
  * Convert the given dataview into a data points map in which data points are grouped by facet key.
@@ -93,7 +84,7 @@ export function convertToDataPointsMap(dataView: DataView): DataPointsMapData {
         row.forEach((colValue, idx) => {
             const colRoles = Object.keys(columns[idx].roles);
             // In sandbox mode, date type colValue sometimes include string so we have to force it to be date.
-            const columnValue = colValue && (columns[idx].type.dateTime ? new Date(colValue) : colValue);
+            const columnValue = colValue && (columns[idx].type.dateTime ? new Date(<string>colValue) : colValue);
             colRoles.forEach(role => {
                 if (role === 'rangeValue') {
                     const format = columns[idx].format;

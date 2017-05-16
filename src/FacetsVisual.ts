@@ -38,7 +38,7 @@ import DataViewScopeIdentity = powerbi.DataViewScopeIdentity;
 import * as _ from 'lodash';
 import * as $ from 'jquery';
 import { convertToDataPointsMap, aggregateDataPointsMap, convertToFacetsVisualData } from './data';
-import { safeKey, findColumn, hexToRgba, otherLabelTemplate, createSegments, HIGHLIGHT_COLOR, hasColumns } from './utils';
+import { safeKey, findColumn, hexToRgba, otherLabelTemplate, createSegments, HIGHLIGHT_COLOR, hasColumns, createTimeSeries } from './utils';
 
 const Facets = require('../lib/@uncharted.software/stories-facets/src/main');
 
@@ -97,6 +97,11 @@ export default class FacetsVisual implements IVisual {
             });
         }
     }, 500);
+    private updateSparklines: any = _.debounce(() => {
+        if (this.data.aggregatedData.sparklineXDomain.length > 0) {
+            this.updateFacetsSelection(this.selectedInstances);
+        }
+    }, 500);
 
     /**
      * Initializes an instance of the IVisual.
@@ -120,7 +125,7 @@ export default class FacetsVisual implements IVisual {
         this.searchBox = this.facetsContainer.find('.search-box');
         this.loader = this.facetsContainer.find('.facets-global-loading');
 
-        this.facetsContainer.on('mousedown pointerdown', (e: Event) => e.stopPropagation());
+        this.facetsContainer.on('mousedown pointerdown', (e) => e.stopPropagation());
 
         this.bindFacetsEventHandlers();
     }
@@ -154,7 +159,8 @@ export default class FacetsVisual implements IVisual {
             return (this.suppressNextUpdate = false);
         }
         if (options['resizeMode']) {
-            return this.reDrawRangeFilter();
+            this.reDrawRangeFilter();
+            return this.updateSparklines();
         }
         if (!options.dataViews || !(options.dataViews.length > 0)) {
             return;
@@ -171,7 +177,8 @@ export default class FacetsVisual implements IVisual {
         const hasMoreData = Boolean(this.dataView.metadata.segment);
         const rangeValueColumn = findColumn(this.dataView, 'rangeValue');
         const bucketColumn = findColumn(this.dataView, 'bucket');
-        const loadAllDataBeforeRender = Boolean(rangeValueColumn) || Boolean(bucketColumn);
+        const sparklineColumn = findColumn(this.dataView, 'sparklineData');
+        const loadAllDataBeforeRender = Boolean(rangeValueColumn) || Boolean(bucketColumn) || Boolean(sparklineColumn);
 
         this.facetsContainer.toggleClass('render-segments', Boolean(bucketColumn));
 
@@ -394,7 +401,7 @@ export default class FacetsVisual implements IVisual {
      */
     private bindFacetsEventHandlers() {
         // If the mouse leaves the container while dragging, cancel it by triggering a mouseup event.
-        this.facetsContainer.on('mouseleave', (evt: Event) => this.facetsContainer.trigger('mouseup'));
+        this.facetsContainer.on('mouseleave', (evt) => this.facetsContainer.trigger('mouseup'));
 
         this.searchBox.on('input', _.debounce((e: any) => this.filterFacets(), 500));
 
@@ -614,6 +621,22 @@ export default class FacetsVisual implements IVisual {
      * @param {DataPoint[] = []}   selectedInstances An array of datapoints for the selected facet instances.
      */
     private updateFacetsSelection(selectedInstances: DataPoint[] = []): void {
+        const createSelectionData = (selectedDp: DataPoint) => {
+            if (selectedDp.sparklineData) {
+                return {
+                    count: selectedDp.instanceCount,
+                    timeseries: createTimeSeries(this.data.aggregatedData.sparklineXDomain, selectedDp.sparklineData),
+                };
+            }
+            if (selectedDp.bucket) {
+                return {
+                    count: selectedDp.instanceCount,
+                    segments: createSegments(selectedDp.bucket, selectedDp.selectionColor.color, false, selectedDp.selectionColor.opacity, true)
+                };
+            }
+            return selectedDp.instanceCount;
+        };
+
         if (this.selectionInHighlightedState && this.selectedInstances.length === 0) {
             this.resetFacets();
         } else {
@@ -624,10 +647,7 @@ export default class FacetsVisual implements IVisual {
                 key: selected.facetKey,
                 facets: [{
                     value: selected.instanceValue,
-                    selected: selected.bucket ? {
-                        count: selected.instanceCount,
-                        segments: createSegments(selected.bucket, selected.selectionColor.color, false, selected.selectionColor.opacity, true)
-                    } : selected.instanceCount,
+                    selected: createSelectionData(selected),
                 }],
             })));
         }
