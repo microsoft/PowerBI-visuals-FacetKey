@@ -99,7 +99,10 @@ export default class FacetsVisual implements IVisual {
     }, 500);
     private updateSparklines: any = _.debounce(() => {
         if (this.data.aggregatedData.sparklineXDomain.length > 0) {
-            this.updateFacetsSelection(this.selectedInstances);
+            // updating selection triggers redrawing of the sparklines
+            this.data.hasHighlight
+                ? this.facets.select(this.data.facetsSelectionData)
+                : this.updateFacetsSelection(this.selectedInstances);
         }
     }, 500);
 
