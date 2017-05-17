@@ -165,6 +165,17 @@ export function createSegments(bucket: any, mainColor: string, isHighlight: bool
     }));
 }
 
+
+
+/**
+ * Creates a timeseries data for facet sparkline.
+ *
+ * @export
+ * @param {any[]}           sparklineXDomain A domain of x values of the sparkline data.
+ * @param {Object}          sparklineData    Sparkline data that contains facet instacne and highlight count that mapped to x values.
+ * @param {boolean = false} isHighlight      A boolean value indicating whether to use highlight count.
+ * @returns {number[]}                       A timeseries array.
+ */
 export function createTimeSeries(sparklineXDomain: any[], sparklineData: Object, isHighlight: boolean = false) {
     const timeseries = Array.apply(null, new Array(sparklineXDomain.length)).map(Number.prototype.valueOf, 0);
     Object.keys(sparklineData).forEach((xValue) => {

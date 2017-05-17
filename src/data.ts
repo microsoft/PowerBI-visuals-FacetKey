@@ -276,8 +276,9 @@ function isInSelectedDataPoints(dataPoint: DataPoint, selectedDataPoints: DataPo
  * Create or update a bucket on the target Object.
  * Add the instance and highlight counts from the given data point to the bucket’s corresponding sums
  *
- * @param  {any}       targetObj An Object in which a bucket will be created.
- * @param  {DataPoint} dp        A dataPoint object.
+ * @param  {any}       targetObj   An Object in which a bucket will be created.
+ * @param  {DataPoint} dp          A dataPoint object.
+ * @param  {string}    bucketName  Name of the bucket field, 'bucket' or 'sparklineData'.
  */
 function createBucket(targetObj: any, dp: DataPoint, bucketName: string) {
     if (!(bucketName in dp.rows[0])) { return; }
