@@ -339,6 +339,7 @@ export default class FacetsVisual implements IVisual {
      *
      */
     private resetFacets() {
+        this.facetsContainer.removeClass('facets-selected');
         this.clearFilters();
         this.selectedInstances = [];
         this.selectionInHighlightedState = false;
@@ -646,6 +647,7 @@ export default class FacetsVisual implements IVisual {
             this.facets.unhighlight();
             this.facets.highlight(selectedInstances.map((dp) => ({ key: dp.facetKey, value: dp.instanceValue, count: dp.instanceCount })));
             this.deselectNormalFacetInstances();
+            this.facetsContainer.toggleClass('facets-selected', selectedInstances.length > 0);
             this.facets.select(selectedInstances.map(selected => ({
                 key: selected.facetKey,
                 facets: [{
