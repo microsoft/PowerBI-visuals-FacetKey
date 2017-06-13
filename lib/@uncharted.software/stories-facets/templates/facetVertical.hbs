@@ -29,12 +29,14 @@
 			<span class="facet-query-close">
 	        {{> facetVertical_queryClose}}
 	    </span>
+			{{#unless isQuery}}
+				<span class="facet-links">
+				 {{> facetVertical_links}}
+			 </span>
+			{{/unless}}
 			<span class="facet-search-container">
 				{{> facetVertical_search}}
 			</span>
-			<span class="facet-links">
-			 {{> facetVertical_links}}
-		 </span>
 			<span class="facet-label">
 				{{#if displayValue}}
 					{{{displayValue}}}

@@ -51,6 +51,7 @@ interface RowObject {
     iconClass?: Date | string | number | boolean;
     rangeValues?: RangeValue[];
     bucket?: Date | string | number | boolean;
+    sparklineData?: Date | string | number | boolean;
 }
 
 interface DataPoint {
@@ -65,6 +66,7 @@ interface DataPoint {
     instanceColor: string;
     instanceIconClass: string;
     bucket?: any;
+    sparklineData?: any;
     rangeValues?: RangeValue[];
     selectionColor?: { color: string, opacity: number };
 }
@@ -83,6 +85,7 @@ interface AggregatedData {
     dataPointsMap: DataPointsMap;
     selectedDataPoints: DataPoint[];
     hasHighlight: boolean;
+    sparklineXDomain: Date[] | string[] | number[] | boolean[];
 }
 
 interface RangeMetadata {
@@ -103,7 +106,7 @@ interface FacetRangeObject {
 }
 
 interface RangeFilter {
-    [rangeKey: string]: FacetRangeObject
+    [rangeKey: string]: FacetRangeObject;
 }
 
 interface DataPointsFilter {
@@ -141,6 +144,7 @@ interface Facet {
     countLabel: string;
     value: string;
     label: string;
+    timeseries?: any[];
     segments?: { count: number; color: string}[];
 }
 

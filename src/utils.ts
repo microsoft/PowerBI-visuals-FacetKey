@@ -93,7 +93,7 @@ export function convertToHSL(colorString: string) {
 /**
  * Finds and returns the dataview column(s) that matches the given data role name.
  *
- * @param  {DataView} dataView     A Powerbi dataView object.
+ * @param  {DataView} dataView     A PowerBI dataView object.
  * @param  {string}   dataRoleName A name of the role for the columen.
  * @param  {boolean}  multi        A boolean flag indicating whether to find multiple matching columns or not           .
  * @return {any}                   A dataview table column or an array of the columns.
@@ -104,6 +104,19 @@ export function findColumn(dataView: DataView, dataRoleName: string, multi?: boo
     return multi
         ? (result[0] && result)
         : result[0];
+}
+
+/**
+ * Check if provided dataView has all the columns with given data role names.
+ *
+ * @export
+ * @param   {DataView} dataView      A PowerBI dataView object.
+ * @param   {string[]} dataRoleNames An array of the data role names for corresponding columns.
+ * @returns {boolean}                A Boolean value indicating whether the dataView has all matching columns.
+ */
+export function hasColumns(dataView: DataView, dataRoleNames: string[]): boolean {
+    const columns = dataView.metadata.columns;
+    return dataRoleNames.reduce((prev, dataRoleName) => prev && findColumn(dataView, dataRoleName) !== undefined, true);
 }
 
 /**
@@ -150,6 +163,27 @@ export function createSegments(bucket: any, mainColor: string, isHighlight: bool
         count: bucket[key][countType],
         color: getSegmentColor(mainColor, opacity, index, array.length, useHighlightColor || isHighlight)
     }));
+}
+
+
+
+/**
+ * Creates timeseries data for a facet sparkline.
+ *
+ * @export
+ * @param {any[]}           sparklineXDomain A domain of x values of the sparkline data.
+ * @param {Object}          sparklineData    Sparkline data that contains facet instacne and highlight count that mapped to x values.
+ * @param {boolean = false} isHighlight      A boolean value indicating whether to use highlight count.
+ * @returns {number[]}                       A timeseries array.
+ */
+export function createTimeSeries(sparklineXDomain: any[], sparklineData: Object, isHighlight: boolean = false) {
+    const timeseries = Array.apply(null, new Array(sparklineXDomain.length)).map(Number.prototype.valueOf, 0);
+    Object.keys(sparklineData).forEach((xValue) => {
+        const value = sparklineData[xValue];
+        const index = sparklineXDomain.indexOf(xValue);
+        timeseries[index] += value[isHighlight ? 'highlight' : 'instanceCount'];
+    });
+    return timeseries;
 }
 
 /**

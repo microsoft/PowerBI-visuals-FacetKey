@@ -20,9 +20,9 @@
     </h1>
     <div class='clearfix'>
       <div class='fl pad1y space-right2'>
-        <span class="strong">71.26% </span>
+        <span class="strong">71.03% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>176/247</span>
+        <span class='fraction'>179/252</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">51.97% </span>
@@ -30,14 +30,14 @@
         <span class='fraction'>66/127</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">77.14% </span>
+        <span class="strong">75% </span>
         <span class="quiet">Functions</span>
-        <span class='fraction'>27/35</span>
+        <span class='fraction'>27/36</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">71.54% </span>
+        <span class="strong">71.31% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>176/246</span>
+        <span class='fraction'>179/251</span>
       </div>
     </div>
   </div>
@@ -679,7 +679,20 @@
 634
 635
 636
-637</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+637
+638
+639
+640
+641
+642
+643
+644
+645
+646
+647
+648
+649
+650</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1040,7 +1053,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">223×</span>
 <span class="cline-any cline-yes">223×</span>
-<span class="cline-any cline-yes">3195×</span>
+<span class="cline-any cline-yes">3137×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1059,6 +1072,7 @@
 <span class="cline-any cline-yes">230×</span>
 <span class="cline-any cline-yes">230×</span>
 <span class="cline-any cline-yes">230×</span>
+<span class="cline-any cline-yes">230×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1069,6 +1083,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">250×</span>
 <span class="cline-any cline-yes">250×</span>
 <span class="cline-any cline-yes">250×</span>
 <span class="cline-any cline-yes">250×</span>
@@ -1243,6 +1258,17 @@
 <span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-yes">2×</span>
 <span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1694,6 +1720,7 @@ FacetVertical.prototype._addHandlers = function() {
 		);
 		this._element.click(this._onClick.bind(this));
 		this._element.find('.facet-search-container').on('click.facetSearch', this._onSearch.bind(this));
+		this._element.find('.facet-links').on('click.facetLink', this._onLink.bind(this));
 		this._element.find('.facet-query-close').on('click.queryClose', this._onClose.bind(this));
 	}
 };
@@ -1708,6 +1735,7 @@ FacetVertical.prototype._removeHandlers = function() {
 	this._iconContainer.off('hover');
 	this._element.off('click');
 	this._element.find('.facet-search-container').off('click.facetSearch');
+	this._element.find('.facet-links').off('click.facetLink');
 };
 &nbsp;
 /**
@@ -1767,8 +1795,8 @@ FacetVertical.prototype._updateSparkline = function() {
 <span class="cstat-no" title="statement not covered" >			var selectedSparklinePath = this._renderSparkline(sparkWidth,sparkHeight,this._spec.selected.timeseries, maxValue);</span>
 <span class="cstat-no" title="statement not covered" >			selectedSparklinePath.appendTo(sparkline);</span>
 &nbsp;
-<span class="cstat-no" title="statement not covered" >			totalSparklinePath.addClass('facet-sparkline-total');</span>
-<span class="cstat-no" title="statement not covered" >			selectedSparklinePath.addClass('facet-sparkline-selected');</span>
+<span class="cstat-no" title="statement not covered" >			totalSparklinePath[0].classList.add('facet-sparkline-total');</span>
+<span class="cstat-no" title="statement not covered" >			selectedSparklinePath[0].classList.add('facet-sparkline-selected');</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >			if (this._spec.isQuery &amp;&amp; this._spec.icon &amp;&amp; this._spec.icon.color) {</span>
 <span class="cstat-no" title="statement not covered" >				selectedSparklinePath.css('stroke', this._spec.icon.color);</span>
@@ -1882,6 +1910,17 @@ FacetVertical.prototype._onSearch = function(evt) {
 };
 &nbsp;
 /**
+ * Link click event handler.
+ *
+ * @param {Event} evt - Event to handle.
+ * @private
+ */
+FacetVertical.prototype._onLink = <span class="fstat-no" title="function not covered" >function(evt) {</span>
+<span class="cstat-no" title="statement not covered" >	evt.stopPropagation();</span>
+<span class="cstat-no" title="statement not covered" >	this.emit(this._type + ':link', evt, this._key, this._value, this._count);</span>
+};
+&nbsp;
+/**
  * Close event handler.
  *
  * @param {Event} evt - Event to handle.
@@ -1957,7 +1996,7 @@ module.exports = FacetVertical;
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Tue May 09 2017 16:16:26 GMT+0000 (UTC)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Tue Jun 13 2017 19:12:45 GMT+0000 (UTC)
 </div>
 </div>
 <script src="../../../prettify.js"></script>

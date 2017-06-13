@@ -1,6 +1,6 @@
 {
   "name": "essex.widget.facetkey",
-  "version": "0.3.11",
+  "version": "0.4.0",
   "description": "PowerBI custom visual.",
   "main": "src/index.js",
   "repository": {
@@ -36,7 +36,7 @@
   "license": "https://raw.githubusercontent.com/Microsoft/PowerBI-visuals-FacetKey/master/LICENSE",
   "privacyTerms": "https://privacy.microsoft.com/en-US/privacystatement/",
   "privateSubmodules": {
-    "@uncharted.software/stories-facets": "2.4.24"
+    "@uncharted.software/stories-facets": "2.5.1"
   },
   "devDependencies": {
     "@types/jquery": "^2.0.33",
@@ -55,7 +55,7 @@
     "karma-chrome-launcher": "^2.0.0",
     "karma-mocha": "^1.2.0",
     "karma-mocha-reporter": "^2.2.0",
-    "karma-phantomjs-launcher": "^1.0.2",
+    "karma-phantomjs-launcher": "^1.0.4",
     "karma-sinon-chai": "^1.2.4",
     "karma-sourcemap-loader": "^0.3.7",
     "karma-webpack": "^1.8.0",
