@@ -93,7 +93,7 @@ export function convertToHSL(colorString: string) {
 /**
  * Finds and returns the dataview column(s) that matches the given data role name.
  *
- * @param  {DataView} dataView     A Powerbi dataView object.
+ * @param  {DataView} dataView     A PowerBI dataView object.
  * @param  {string}   dataRoleName A name of the role for the columen.
  * @param  {boolean}  multi        A boolean flag indicating whether to find multiple matching columns or not           .
  * @return {any}                   A dataview table column or an array of the columns.
@@ -110,7 +110,7 @@ export function findColumn(dataView: DataView, dataRoleName: string, multi?: boo
  * Check if provided dataView has all the columns with given data role names.
  *
  * @export
- * @param   {DataView} dataView      A Powerbi dataView object.
+ * @param   {DataView} dataView      A PowerBI dataView object.
  * @param   {string[]} dataRoleNames An array of the data role names for corresponding columns.
  * @returns {boolean}                A Boolean value indicating whether the dataView has all matching columns.
  */
@@ -168,7 +168,7 @@ export function createSegments(bucket: any, mainColor: string, isHighlight: bool
 
 
 /**
- * Creates a timeseries data for facet sparkline.
+ * Creates timeseries data for a facet sparkline.
  *
  * @export
  * @param {any[]}           sparklineXDomain A domain of x values of the sparkline data.

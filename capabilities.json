@@ -42,7 +42,7 @@
       "name": "sparklineData",
       "kind": 0,
       "displayName": "Sparkline Axis",
-      "description": "A field to place on the horizontal axis for supporting spark line for the facet instance."
+      "description": "A field to render on the horizontal axis as a sparkline."
     },
     {
       "name": "facetInstanceColor",
