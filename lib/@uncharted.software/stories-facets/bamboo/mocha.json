@@ -3,7 +3,7 @@
     "tests": 51,
     "passes": 51,
     "failures": 0,
-    "duration": 198
+    "duration": 217
   },
   "failures": [],
   "passes": [
@@ -15,7 +15,7 @@
     {
       "title": "Adds a new group (Append)",
       "fullTitle": "Append Adds a new group on PhantomJS 2.1.1 (Linux 0.0.0)",
-      "duration": 4
+      "duration": 3
     },
     {
       "title": "Modifies existing entry in existing group (Append)",
@@ -25,12 +25,12 @@
     {
       "title": "Adds a new query (Append)",
       "fullTitle": "Append Adds a new query on PhantomJS 2.1.1 (Linux 0.0.0)",
-      "duration": 4
+      "duration": 5
     },
     {
       "title": "Emits click event with key and value of clicked on facet (Click)",
       "fullTitle": "Click Emits click event with key and value of clicked on facet on PhantomJS 2.1.1 (Linux 0.0.0)",
-      "duration": 4
+      "duration": 5
     },
     {
       "title": "Emits click event for newly appended item (Click)",
@@ -45,7 +45,7 @@
     {
       "title": "Removes click event (Click)",
       "fullTitle": "Click Removes click event on PhantomJS 2.1.1 (Linux 0.0.0)",
-      "duration": 0
+      "duration": 1
     },
     {
       "title": "Groups are expanded by default (Expand and Collapse)",
@@ -65,12 +65,12 @@
     {
       "title": "Emits collapse and expand events for newly appended group (Expand and Collapse)",
       "fullTitle": "Expand and Collapse Emits collapse and expand events for newly appended group on PhantomJS 2.1.1 (Linux 0.0.0)",
-      "duration": 4
+      "duration": 5
     },
     {
       "title": "Removes all dom elements (Destroy)",
       "fullTitle": "Destroy Removes all dom elements on PhantomJS 2.1.1 (Linux 0.0.0)",
-      "duration": 2
+      "duration": 3
     },
     {
       "title": "Preserves client container (Destroy)",
@@ -85,27 +85,27 @@
     {
       "title": "Displays queries and groups (Display)",
       "fullTitle": "Display Displays queries and groups on PhantomJS 2.1.1 (Linux 0.0.0)",
-      "duration": 9
+      "duration": 10
     },
     {
       "title": "Hides query section when given only groups (Display)",
       "fullTitle": "Display Hides query section when given only groups on PhantomJS 2.1.1 (Linux 0.0.0)",
-      "duration": 4
+      "duration": 5
     },
     {
       "title": "Displays link information if provided (Display)",
       "fullTitle": "Display Displays link information if provided on PhantomJS 2.1.1 (Linux 0.0.0)",
-      "duration": 3
+      "duration": 4
     },
     {
       "title": "Adds highlight class to a group (Highlight)",
       "fullTitle": "Highlight Adds highlight class to a group on PhantomJS 2.1.1 (Linux 0.0.0)",
-      "duration": 0
+      "duration": 1
     },
     {
       "title": "Adds highlight class to multiple groups (Highlight)",
       "fullTitle": "Highlight Adds highlight class to multiple groups on PhantomJS 2.1.1 (Linux 0.0.0)",
-      "duration": 0
+      "duration": 1
     },
     {
       "title": "Does not add highlight for unknown group (Highlight)",
@@ -150,22 +150,22 @@
     {
       "title": "Emits more event with group key (More)",
       "fullTitle": "More Emits more event with group key on PhantomJS 2.1.1 (Linux 0.0.0)",
-      "duration": 3
+      "duration": 1
     },
     {
       "title": "Emits more event for newly appended data (More)",
       "fullTitle": "More Emits more event for newly appended data on PhantomJS 2.1.1 (Linux 0.0.0)",
-      "duration": 4
+      "duration": 7
     },
     {
       "title": "Emits mouse enter and leave events with key and value of hovered over facet icon (Mouse Events)",
       "fullTitle": "Mouse Events Emits mouse enter and leave events with key and value of hovered over facet icon on PhantomJS 2.1.1 (Linux 0.0.0)",
-      "duration": 3
+      "duration": 2
     },
     {
       "title": "Emits mouse events for newly appended items (Mouse Events)",
       "fullTitle": "Mouse Events Emits mouse events for newly appended items on PhantomJS 2.1.1 (Linux 0.0.0)",
-      "duration": 4
+      "duration": 3
     },
     {
       "title": "Removes mouse events (Mouse Events)",
@@ -180,42 +180,42 @@
     {
       "title": "Returns 'queries' as the key (Queries)",
       "fullTitle": "Queries Returns 'queries' as the key on PhantomJS 2.1.1 (Linux 0.0.0)",
-      "duration": 9
+      "duration": 8
     },
     {
       "title": "Emits click event with key, value and count of clicked on query (Queries)",
       "fullTitle": "Queries Emits click event with key, value and count of clicked on query on PhantomJS 2.1.1 (Linux 0.0.0)",
-      "duration": 8
+      "duration": 9
     },
     {
       "title": "Emits events for newly added query (Queries)",
       "fullTitle": "Queries Emits events for newly added query on PhantomJS 2.1.1 (Linux 0.0.0)",
-      "duration": 13
+      "duration": 12
     },
     {
       "title": "Displays query with key and value (Queries)",
       "fullTitle": "Queries Displays query with key and value on PhantomJS 2.1.1 (Linux 0.0.0)",
-      "duration": 6
+      "duration": 9
     },
     {
       "title": "Displays query with only value when key is * (Queries)",
       "fullTitle": "Queries Displays query with only value when key is * on PhantomJS 2.1.1 (Linux 0.0.0)",
-      "duration": 5
+      "duration": 7
     },
     {
       "title": "Replaces existing facets data with new data (Replace)",
       "fullTitle": "Replace Replaces existing facets data with new data on PhantomJS 2.1.1 (Linux 0.0.0)",
-      "duration": 10
+      "duration": 11
     },
     {
       "title": "Maintains client events (Replace)",
       "fullTitle": "Replace Maintains client events on PhantomJS 2.1.1 (Linux 0.0.0)",
-      "duration": 11
+      "duration": 12
     },
     {
       "title": "Displays search icon if specified in options (Search)",
       "fullTitle": "Search Displays search icon if specified in options on PhantomJS 2.1.1 (Linux 0.0.0)",
-      "duration": 6
+      "duration": 7
     },
     {
       "title": "Does not display search icon if not provided any options (Search)",
@@ -225,12 +225,12 @@
     {
       "title": "Does not display search icon if not specified in options (Search)",
       "fullTitle": "Search Does not display search icon if not specified in options on PhantomJS 2.1.1 (Linux 0.0.0)",
-      "duration": 5
+      "duration": 6
     },
     {
       "title": "Does not display search icon if set to false in options (Search)",
       "fullTitle": "Search Does not display search icon if set to false in options on PhantomJS 2.1.1 (Linux 0.0.0)",
-      "duration": 6
+      "duration": 7
     },
     {
       "title": "Emits search event with key and value when search icon is clicked on (Search)",
@@ -240,22 +240,22 @@
     {
       "title": "Does not emit facet:click event when search icon is clicked on (Search)",
       "fullTitle": "Search Does not emit facet:click event when search icon is clicked on on PhantomJS 2.1.1 (Linux 0.0.0)",
-      "duration": 6
+      "duration": 9
     },
     {
       "title": "Select displays matching facets with additional bar as percentage (Selection)",
       "fullTitle": "Selection Select displays matching facets with additional bar as percentage on PhantomJS 2.1.1 (Linux 0.0.0)",
-      "duration": 4
+      "duration": 5
     },
     {
       "title": "Deselect removes selected bar (Selection)",
       "fullTitle": "Selection Deselect removes selected bar on PhantomJS 2.1.1 (Linux 0.0.0)",
-      "duration": 7
+      "duration": 6
     },
     {
       "title": "Selects query (Selection)",
       "fullTitle": "Selection Selects query on PhantomJS 2.1.1 (Linux 0.0.0)",
-      "duration": 2
+      "duration": 1
     },
     {
       "title": "generates a random id that looks like a guid (Util randomId)",
