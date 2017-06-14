@@ -33,6 +33,7 @@ import {
     getSegmentColor,
     otherLabelTemplate,
     createSegments,
+    createTimeSeries,
     HIGHLIGHT_COLOR,
     COLOR_PALETTE
 } from './utils';
@@ -83,7 +84,7 @@ export function convertToDataPointsMap(dataView: DataView): DataPointsMapData {
         row.forEach((colValue, idx) => {
             const colRoles = Object.keys(columns[idx].roles);
             // In sandbox mode, date type colValue sometimes include string so we have to force it to be date.
-            const columnValue = colValue && (columns[idx].type.dateTime ? new Date(colValue) : colValue);
+            const columnValue = colValue && (columns[idx].type.dateTime ? new Date(<string>colValue) : colValue);
             colRoles.forEach(role => {
                 if (role === 'rangeValue') {
                     const format = columns[idx].format;
@@ -143,6 +144,7 @@ export function aggregateDataPointsMap(data: DataPointsMapData, filter: DataPoin
         dataPointsMap: {},
         rangeDataMap: {},
         selectedDataPoints: filter.selectedDataPoints,
+        sparklineXDomain: [],
         hasHighlight: !!data.hasHighlight
     };
     const constructRangeFacetData = (dp: DataPoint) => {
@@ -170,13 +172,17 @@ export function aggregateDataPointsMap(data: DataPointsMapData, filter: DataPoin
             }
         });
     };
+    const sparklineXValues = [];
     Object.keys(dataPointsMap).forEach((key: string) => {
         dataPointsMap[key].forEach(constructRangeFacetData);
         const dataPoints: DataPoint[] = aggregateDataPoints(dataPointsMap[key], filter);
         dataPoints.length > 0 && (aggregatedData.dataPointsMap[key] = dataPoints);
+
+        dataPoints.forEach(dp => sparklineXValues.push(...Object.keys(dp['sparklineData'] || {})));
     });
+    aggregatedData.sparklineXDomain = _.uniq(sparklineXValues).sort(compareRangeValue);
     return aggregatedData;
-};
+}
 
 /**
  * Converts the given aggregated data into facets visual data.
@@ -195,12 +201,11 @@ export function convertToFacetsVisualData(aggregatedData: AggregatedData, option
     };
 
     data.facetsSelectionData.push(...createFacetsSelectionData(aggregatedData, options));
-    data.facetsData.push(...createRangeFacetsData(aggregatedData, options));
-    data.facetsData.push(...createFacetsData(aggregatedData, options));
-    data.facetsData = data.facetsData.sort((a: any, b: any) => a.order - b.order).slice(0, MAX_NUM_FACET_GROUPS);
-
+    data.facetsData = [...createRangeFacetsData(aggregatedData, options), ...createFacetsData(aggregatedData, options)]
+        .sort((a: any, b: any) => a.order - b.order)
+        .slice(0, MAX_NUM_FACET_GROUPS);
     return data;
-};
+}
 
 /**
  * Compares two range values (a and b) and returns 1 if a > b, -1 if a < b, or 0 if a = b.
@@ -213,11 +218,11 @@ function compareRangeValue(a: any, b: any) {
     const isNumeric = (n: any) => !isNaN(parseFloat(n)) && isFinite(n);
     let aValue: any = Date.parse(a);
     let bValue: any = Date.parse(b);
-    const isNmberOnly = isNumeric(a) && isNumeric(b);
-    const isNotValidDate = isNmberOnly || isNaN(aValue) || isNaN(bValue);
+    const isNumberOnly = isNumeric(a) && isNumeric(b);
+    const isNotValidDate = isNumberOnly || isNaN(aValue) || isNaN(bValue);
     if (isNotValidDate) {
-        aValue = isNmberOnly ? parseFloat(a) : a;
-        bValue = isNmberOnly ? parseFloat(b) : b;
+        aValue = isNumberOnly ? parseFloat(a) : a;
+        bValue = isNumberOnly ? parseFloat(b) : b;
     }
     if (aValue > bValue) { return 1; }
     if (aValue < bValue) { return -1; }
@@ -271,18 +276,19 @@ function isInSelectedDataPoints(dataPoint: DataPoint, selectedDataPoints: DataPo
  * Create or update a bucket on the target Object.
  * Add the instance and highlight counts from the given data point to the bucket’s corresponding sums
  *
- * @param  {any}       targetObj An Object in which a bucket will be created.
- * @param  {DataPoint} dp        A dataPoint object.
+ * @param  {any}       targetObj   An Object in which a bucket will be created.
+ * @param  {DataPoint} dp          A dataPoint object.
+ * @param  {string}    bucketName  Name of the bucket field, 'bucket' or 'sparklineData'.
  */
-function createBucket(targetObj: any, dp: DataPoint) {
-    if (!('bucket' in dp.rows[0])) { return; }
-    const bucketName = String(dp.rows[0].bucket);
-    !targetObj.bucket && (targetObj.bucket = {});
-    if (!targetObj.bucket[bucketName]) {
-        targetObj.bucket[bucketName] = { instanceCount: dp.instanceCount, highlight: dp.highlight };
+function createBucket(targetObj: any, dp: DataPoint, bucketName: string) {
+    if (!(bucketName in dp.rows[0])) { return; }
+    const bucketValue = String(dp.rows[0][bucketName]);
+    !targetObj[bucketName] && (targetObj[bucketName] = {});
+    if (!targetObj[bucketName][bucketValue]) {
+        targetObj[bucketName][bucketValue] = { instanceCount: dp.instanceCount, highlight: dp.highlight };
     } else {
-        targetObj.bucket[bucketName].instanceCount += dp.instanceCount;
-        targetObj.bucket[bucketName].highlight += dp.highlight;
+        targetObj[bucketName][bucketValue].instanceCount += dp.instanceCount;
+        targetObj[bucketName][bucketValue].highlight += dp.highlight;
     }
 }
 
@@ -345,12 +351,14 @@ function aggregateDataPoints(dataPoints: DataPoint[], filter: DataPointsFilter =
                     instanceColor: dp.instanceColor,
                     instanceIconClass: dp.instanceIconClass,
                 });
-                createBucket(instanceMap[instanceLabel], dp);
+                createBucket(instanceMap[instanceLabel], dp, 'bucket');
+                createBucket(instanceMap[instanceLabel], dp, 'sparklineData');
             } else {
                 instanceMap[instanceLabel].highlight += dp.highlight;
                 instanceMap[instanceLabel].instanceCount += dp.instanceCount;
                 instanceMap[instanceLabel].rows.push(...dp.rows);
-                createBucket(instanceMap[instanceLabel], dp);
+                createBucket(instanceMap[instanceLabel], dp, 'bucket');
+                createBucket(instanceMap[instanceLabel], dp, 'sparklineData');
             }
         };
         const handleSelectedDp = () => {
@@ -371,7 +379,8 @@ function aggregateDataPoints(dataPoints: DataPoint[], filter: DataPointsFilter =
                 instanceMap[instanceLabel].highlight += dp.highlight;
                 instanceMap[instanceLabel].instanceCount += dp.instanceCount;
                 instanceMap[instanceLabel].rows.push(...dp.rows);
-                createBucket(instanceMap[instanceLabel], dp);
+                createBucket(instanceMap[instanceLabel], dp, 'bucket');
+                createBucket(instanceMap[instanceLabel], dp, 'sparklineData');
             }
         };
         isInSelectedDataPoints(dp, filter.selectedDataPoints) ? handleSelectedDp() : handleDp();
@@ -393,6 +402,7 @@ function createFacetsSelectionData(aggregatedData: AggregatedData, options: Conv
                 instanceCountFormatter,
                 instanceColor,
                 bucket,
+                sparklineData,
             } = dp;
             const selectionCountLabel = settings.display.selectionCount
                 ? `${formatValue(instanceCountFormatter, highlight, '')} / ${formatValue(instanceCountFormatter, instanceCount, '')}`
@@ -402,6 +412,9 @@ function createFacetsSelectionData(aggregatedData: AggregatedData, options: Conv
                 selected: { count: highlight, countLabel: selectionCountLabel },
                 value: instanceValue,
             };
+            if (sparklineData) {
+                selectionSpec.selected['timeseries'] = createTimeSeries(aggregatedData.sparklineXDomain, sparklineData, true);
+            }
             if (bucket) {
                 const segmentsBaseColor = instanceColor || hexToRgba(facetGroupColor, 100);
                 selectionSpec.selected['segments'] = createSegments(bucket, segmentsBaseColor, true);
@@ -444,49 +457,50 @@ function createFacetsData(aggregatedData: AggregatedData, options: ConvertToFace
         const facetGroupColor = colorPalette.shift();
         const opacities = [100, 60, 35];
 
-        dataPoints.sort((a: DataPoint, b: DataPoint) => {
-            const countComparison = b.instanceCount - a.instanceCount;
-            return countComparison === 0 ? a.instanceLabel.localeCompare(b.instanceLabel) : countComparison;
-        }).forEach((dp: DataPoint) => {
-            const {
-                highlight,
-                instanceValue,
-                instanceLabel,
-                instanceCount,
-                instanceCountFormatter,
-                instanceColor,
-                instanceIconClass,
-                bucket,
-            } = dp;
-            const nextColorOpacity = opacities.shift();
-            const defaultColor = facetGroupColor && nextColorOpacity && hexToRgba(facetGroupColor, nextColorOpacity);
-            const facetColor = instanceColor || defaultColor || '#DDDDDD';
-            const useDataPoint = hasHighlight ? !!highlight : true;
-            const facet: Facet = {
-                icon: {
-                    class: instanceIconClass,
-                    color: facetColor,
-                },
-                count: instanceCount,
-                countLabel: formatValue(instanceCountFormatter, instanceCount, ''),
-                value: instanceValue,
-                label: instanceLabel,
-            };
+        dataPoints
+            .sort((a: DataPoint, b: DataPoint) => b.instanceCount - a.instanceCount || a.instanceLabel.localeCompare(b.instanceLabel))
+            .forEach((dp: DataPoint) => {
+                const {
+                    highlight,
+                    instanceValue,
+                    instanceLabel,
+                    instanceCount,
+                    instanceCountFormatter,
+                    instanceColor,
+                    instanceIconClass,
+                    bucket,
+                    sparklineData,
+                } = dp;
+                const nextColorOpacity = opacities.shift();
+                const defaultColor = facetGroupColor && nextColorOpacity && hexToRgba(facetGroupColor, nextColorOpacity);
+                const facetColor = instanceColor || defaultColor || '#DDDDDD';
+                const useDataPoint = hasHighlight ? !!highlight : true;
+                const facet: Facet = {
+                    icon: {
+                        class: instanceIconClass,
+                        color: facetColor,
+                    },
+                    count: instanceCount,
+                    countLabel: formatValue(instanceCountFormatter, instanceCount, ''),
+                    value: instanceValue,
+                    timeseries: sparklineData ? createTimeSeries(aggregatedData.sparklineXDomain, sparklineData) : undefined,
+                    label: instanceLabel,
+                };
 
-            // add segments if there is bucket
-            if (bucket) {
-                const segmentsBaseColor = instanceColor || hexToRgba(facetGroupColor, 100);
-                dp.selectionColor = { color: segmentsBaseColor, opacity: 100 };
-                facet['segments'] = createSegments(bucket, segmentsBaseColor, false);
-                facet.icon.color = getSegmentColor(segmentsBaseColor, 100, 0, 1, false);
-            }
+                // add segments if there is bucket
+                if (bucket) {
+                    const segmentsBaseColor = instanceColor || hexToRgba(facetGroupColor, 100);
+                    dp.selectionColor = { color: segmentsBaseColor, opacity: 100 };
+                    facet['segments'] = createSegments(bucket, segmentsBaseColor, false);
+                    facet.icon.color = getSegmentColor(segmentsBaseColor, 100, 0, 1, false);
+                }
 
-            isInSelectedDataPoints(dp, aggregatedData.selectedDataPoints)
-                ? prependedSelectedFacets.push(facet)
-                : useDataPoint && facets.push(facet);
+                isInSelectedDataPoints(dp, aggregatedData.selectedDataPoints)
+                    ? prependedSelectedFacets.push(facet)
+                    : useDataPoint && facets.push(facet);
 
-            maxFacetInstanceCount = Math.max(maxFacetInstanceCount, instanceCount);
-        });
+                maxFacetInstanceCount = Math.max(maxFacetInstanceCount, instanceCount);
+            });
         // prepend selected facets to the facets array
         facets.unshift(...prependedSelectedFacets);
 

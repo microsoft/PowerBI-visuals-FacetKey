@@ -39,6 +39,12 @@
       "description": "Each facet instance is segmented by this field."
     },
     {
+      "name": "sparklineData",
+      "kind": 0,
+      "displayName": "Sparkline Axis",
+      "description": "A field to render on the horizontal axis as a sparkline."
+    },
+    {
       "name": "facetInstanceColor",
       "kind": 0,
       "displayName": "Color",
@@ -69,6 +75,9 @@
             "max": 5
           },
           "bucket": {
+            "max": 1
+          },
+          "sparklineData": {
             "max": 1
           },
           "iconClass": {
@@ -110,6 +119,11 @@
             {
               "bind": {
                 "to": "bucket"
+              }
+            },
+            {
+              "bind": {
+                "to": "sparklineData"
               }
             },
             {

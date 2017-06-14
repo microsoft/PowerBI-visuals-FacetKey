@@ -24,7 +24,7 @@
 $facet_bar_width_animation_duration: 0.25s;
 
 @import "./font-awesome/font-awesome";
-@import "../lib/@uncharted/facets/public/sass/main";
+@import "../lib/@uncharted.software/stories-facets/sass/main";
 @import "facets-loader";
 
 @font-face{
@@ -173,5 +173,7 @@ $facet_bar_width_animation_duration: 0.25s;
       border-color: hsl(187, 0%, 95%);
     }
   }
-
+  &.facets-selected .facets-facet-vertical .facet-sparkline path:not(.facet-sparkline-selected) {
+      stroke:#ddd !important;
+  }
 }
