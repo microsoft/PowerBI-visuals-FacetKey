@@ -201,8 +201,7 @@ export function convertToFacetsVisualData(aggregatedData: AggregatedData, option
     };
 
     data.facetsSelectionData.push(...createFacetsSelectionData(aggregatedData, options));
-    data.facetsData = [...createRangeFacetsData(aggregatedData, options), ...createFacetsData(aggregatedData, options)]
-        .sort((a: any, b: any) => a.order - b.order)
+    data.facetsData = _.sortBy([...createRangeFacetsData(aggregatedData, options), ...createFacetsData(aggregatedData, options)], 'order')
         .slice(0, MAX_NUM_FACET_GROUPS);
     return data;
 }
