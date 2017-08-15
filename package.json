@@ -36,7 +36,7 @@
   "license": "https://raw.githubusercontent.com/Microsoft/PowerBI-visuals-FacetKey/master/LICENSE",
   "privacyTerms": "https://privacy.microsoft.com/en-US/privacystatement/",
   "privateSubmodules": {
-    "@uncharted.software/stories-facets": "2.6.2"
+    "@uncharted.software/stories-facets": "2.6.1"
   },
   "devDependencies": {
     "@types/jquery": "^2.0.33",
