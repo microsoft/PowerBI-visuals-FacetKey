@@ -71,6 +71,9 @@ function toHSL(rgb) {
  * @return {string}               A rgba color string.
  */
 export function hexToRgba(hex: string, opacity: number = 100) {
+    if ( !hex ) {
+        return 'rgba(221, 221, 221, 1)';
+    }
     hex = hex.replace('#', '');
     const r = parseInt(hex.substring(0, 2), 16);
     const g = parseInt(hex.substring(2, 4), 16);

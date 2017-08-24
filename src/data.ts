@@ -104,8 +104,8 @@ export function convertToDataPointsMap(dataView: DataView): DataPointsMapData {
         });
         const { facet, facetInstance, count, facetInstanceColor, iconClass, rangeValues } = rowObj;
         const facetKey = safeKey(String(facet || ' '));
-        const facetLabel = formatValue(facetFormatter, (_.isString(facet) ? facet.charAt(0).toUpperCase() + facet.slice(1) : facet));
-        const instanceLabel = formatValue(instanceFormatter, facetInstance);
+        const facetLabel = _.escape(formatValue(facetFormatter, (_.isString(facet) ? facet.charAt(0).toUpperCase() + facet.slice(1) : facet)));
+        const instanceLabel = _.escape(formatValue(instanceFormatter, facetInstance));
         const instanceValue = instanceLabel !== '' ? instanceLabel + index : '';
         const instanceCount = Math.max(count, highlight) || 0;
         const instanceCountFormatter = countFormatter;
@@ -201,8 +201,7 @@ export function convertToFacetsVisualData(aggregatedData: AggregatedData, option
     };
 
     data.facetsSelectionData.push(...createFacetsSelectionData(aggregatedData, options));
-    data.facetsData = [...createRangeFacetsData(aggregatedData, options), ...createFacetsData(aggregatedData, options)]
-        .sort((a: any, b: any) => a.order - b.order)
+    data.facetsData = _.sortBy([...createRangeFacetsData(aggregatedData, options), ...createFacetsData(aggregatedData, options)], 'order')
         .slice(0, MAX_NUM_FACET_GROUPS);
     return data;
 }

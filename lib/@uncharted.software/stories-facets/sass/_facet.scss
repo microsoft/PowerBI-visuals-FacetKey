@@ -513,3 +513,50 @@
 	height: 0;
 	opacity: 0;
 }
+
+.facets-facet-placeholder-hidden {
+	cursor: default;
+	padding-top: 0;
+	padding-bottom: 0;
+	margin-top: 0;
+	margin-bottom: 0;
+	height: 0;
+	opacity: 0;
+
+	.facet-block {
+		visibility: hidden;
+	}
+}
+
+.facets-facet-placeholder-abbreviated {
+	cursor: default;
+	margin-top: -4px;
+	margin-bottom: 2px;
+
+	.facet-block {
+		opacity: 0.5;
+	}
+}
+
+.facets-facet-placeholder {
+	transition: margin $facet_abbreviation_animation_duration ease,
+				padding $facet_abbreviation_animation_duration ease,
+				height $facet_abbreviation_animation_duration ease,
+				opacity $facet_abbreviation_animation_duration ease;
+	padding: 0px 8px 2px 8px;
+	position: relative;
+	cursor: pointer;
+
+	.facet-block {
+		position: relative;
+	}
+
+	.facet-html {
+		margin: 10px auto 0;
+		text-align: center;
+	}
+}
+
+.facets-no-transition *{
+	transition: none !important;
+}
