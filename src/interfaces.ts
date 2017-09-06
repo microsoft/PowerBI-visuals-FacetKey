@@ -33,6 +33,9 @@ interface FacetKeySettings {
     display: {
         selectionCount: boolean,
     };
+    style: {
+        boxShadow: boolean,
+    };
 }
 
 interface RangeValue {

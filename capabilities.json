@@ -204,6 +204,18 @@
           }
         }
       }
+    },
+    "style": {
+      "displayName": "Style",
+      "description": "Style options",
+      "properties": {
+        "boxShadow": {
+          "displayName": "Box Shadow",
+          "type": {
+            "bool": true
+          }
+        }
+      }
     }
   },
   "supportsHighlight": true

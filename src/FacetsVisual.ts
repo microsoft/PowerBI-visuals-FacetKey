@@ -59,7 +59,10 @@ const DEFAULT_SETTINGS: FacetKeySettings = {
     },
     display: {
         selectionCount: false,
-    }
+    },
+    style: {
+        boxShadow: true,
+    },
 };
 
 export default class FacetsVisual implements IVisual {
@@ -184,6 +187,7 @@ export default class FacetsVisual implements IVisual {
         const loadAllDataBeforeRender = Boolean(rangeValueColumn) || Boolean(bucketColumn) || Boolean(sparklineColumn);
 
         this.facetsContainer.toggleClass('render-segments', Boolean(bucketColumn));
+        this.facetsContainer.toggleClass('flat-style', this.settings.style.boxShadow);
 
         this.previousFreshData = isFreshData ? (this.data || {}) : this.previousFreshData;
         this.retainFilters = this.previousFreshData.hasHighlight && this.retainFilters;

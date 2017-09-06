@@ -48,6 +48,15 @@ $facet_bar_width_animation_duration: 0.25s;
   padding-right: 2px;
   min-width: 150px;
 
+  &.flat-style {
+    .facets-group-container {
+      background-color: transparent;
+    }
+    .facets-group, .facets-header {
+      box-shadow: none;
+    }
+  }
+
   &.no-animation {
     .facets-facet-vertical,
     .facets-facet-vertical-abbreviated,

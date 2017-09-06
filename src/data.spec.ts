@@ -465,6 +465,9 @@ describe('.convertToFacetsVisualData', () => {
         },
         display: {
             selectionCount: false
+        },
+        style: {
+            boxShadow: true,
         }
     };
     let aggregatedData;
