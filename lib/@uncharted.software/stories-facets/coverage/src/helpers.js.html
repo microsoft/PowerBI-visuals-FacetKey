@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for src/helpers.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../index.html">all files</a> / <a href="index.html">src/</a> helpers.js
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">36.84% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>14/38</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">22.06% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>15/68</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">33.33% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>2/6</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">36.84% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>14/38</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line low'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">354×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">223×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">15×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">116×</span>
+<span class="cline-any cline-yes">116×</span>
+<span class="cline-any cline-yes">116×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">446×</span>
+<span class="cline-any cline-yes">110×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">336×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/*
+ * Copyright 2017 Uncharted Software Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+&nbsp;
+var Handlebars = require('handlebars');
+&nbsp;
+Handlebars.registerHelper('ifCond', function (v1, operator, v2, options) {
+&nbsp;
+    switch (operator) {
+<span class="branch-0 cbranch-no" title="branch not covered" >        case '==':</span>
+<span class="cstat-no" title="statement not covered" >            return (v1 == v2) ? options.fn(this) : options.inverse(this);</span>
+        case '===':
+            return (v1 === v2) ? options.fn(this) : <span class="branch-1 cbranch-no" title="branch not covered" >options.inverse(this);</span>
+<span class="branch-2 cbranch-no" title="branch not covered" >        case '&lt;':</span>
+<span class="cstat-no" title="statement not covered" >            return (v1 &lt; v2) ? options.fn(this) : options.inverse(this);</span>
+<span class="branch-3 cbranch-no" title="branch not covered" >        case '&lt;=':</span>
+<span class="cstat-no" title="statement not covered" >            return (v1 &lt;= v2) ? options.fn(this) : options.inverse(this);</span>
+        case '&gt;':
+            return (v1 &gt; v2) ? options.fn(this) : <span class="branch-1 cbranch-no" title="branch not covered" >options.inverse(this);</span>
+<span class="branch-5 cbranch-no" title="branch not covered" >        case '&gt;=':</span>
+<span class="cstat-no" title="statement not covered" >            return (v1 &gt;= v2) ? options.fn(this) : options.inverse(this);</span>
+<span class="branch-6 cbranch-no" title="branch not covered" >        case '&amp;&amp;':</span>
+<span class="cstat-no" title="statement not covered" >            return (v1 &amp;&amp; v2) ? options.fn(this) : options.inverse(this);</span>
+<span class="branch-7 cbranch-no" title="branch not covered" >        case '||':</span>
+<span class="cstat-no" title="statement not covered" >            return (v1 || v2) ? options.fn(this) : options.inverse(this);</span>
+		case 'instanceof':
+			<span class="missing-if-branch" title="else path not taken" >E</span>if (typeof v2 === 'string') {
+				<span class="missing-if-branch" title="else path not taken" >E</span>if (typeof(v1) === v2 || (<span class="branch-1 cbranch-no" title="branch not covered" >window[v2] </span>&amp;&amp; <span class="branch-2 cbranch-no" title="branch not covered" >v1 instanceof window[v2])</span>) {
+					return options.fn(this);
+				}
+			} else <span class="cstat-no" title="statement not covered" >if (v2 === Object(v2) &amp;&amp; v1 instanceof v2) {</span>
+<span class="cstat-no" title="statement not covered" >				return options.fn(this);</span>
+			}
+<span class="cstat-no" title="statement not covered" >			return options.inverse(this);</span>
+<span class="branch-9 cbranch-no" title="branch not covered" >        default:</span>
+<span class="cstat-no" title="statement not covered" >            return options.inverse(this);</span>
+    }
+});
+&nbsp;
+Handlebars.registerHelper('math',<span class="fstat-no" title="function not covered" >function(v1,operator,v2) {</span>
+<span class="cstat-no" title="statement not covered" >    if (v1 === null || v1 === undefined || v2 === null || v2 === undefined) {</span>
+<span class="cstat-no" title="statement not covered" >        return 0;</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    switch (operator) {</span>
+        case '+':
+<span class="cstat-no" title="statement not covered" >            return (v1 + v2);</span>
+        case '-':
+<span class="cstat-no" title="statement not covered" >            return (v1 - v2);</span>
+        case '*':
+<span class="cstat-no" title="statement not covered" >            return (v1 * v2);</span>
+        case '/':
+<span class="cstat-no" title="statement not covered" >            if (v2 === 0) {</span>
+<span class="cstat-no" title="statement not covered" >                return 0;</span>
+            }
+<span class="cstat-no" title="statement not covered" >            return (v1 / v2);</span>
+    }
+});
+&nbsp;
+Handlebars.registerHelper('percentage',function(v1,v2) {
+    if (v1 === null || v1 === undefined || v2 === null || v2 === undefined || v2 === 0) {
+        return 0;
+    }
+    return v1 / v2 * 100.0;
+});
+&nbsp;
+$.fn.enterKey = <span class="fstat-no" title="function not covered" >function (fnc, mod) {</span>
+<span class="cstat-no" title="statement not covered" >    return this.each(<span class="fstat-no" title="function not covered" >function () {</span></span>
+<span class="cstat-no" title="statement not covered" >        $(this).keyup(<span class="fstat-no" title="function not covered" >function (ev) {</span></span>
+<span class="cstat-no" title="statement not covered" >            var keycode = (ev.keyCode ? ev.keyCode : ev.which);</span>
+<span class="cstat-no" title="statement not covered" >            if ((keycode == '13' || keycode == '10') &amp;&amp; (!mod || ev[mod + 'Key'])) {</span>
+<span class="cstat-no" title="statement not covered" >                fnc.call(this, ev);</span>
+            }
+        });
+    });
+};
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Tue Jun 27 2017 15:51:57 GMT+0000 (UTC)
+</div>
+</div>
+<script src="../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../sorter.js"></script>
+</body>
+</html>
