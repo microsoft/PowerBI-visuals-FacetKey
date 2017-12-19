@@ -1,6 +1,6 @@
 {
   "name": "essex.widget.facetkey",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "PowerBI custom visual.",
   "main": "src/index.js",
   "repository": {
@@ -11,7 +11,7 @@
     "url": "https://github.com/Microsoft/PowerBI-visuals-FacetKey/issues"
   },
   "scripts": {
-    "preinstall:prereq": "npm install tar.gz mv --save-dev",
+    "preinstall:prereq": "npm install targz mv --save-dev",
     "preinstall:submodules": "node bin/downloadPrivateSubmodules",
     "preinstall:dependencies": "node bin/installSubmoduleDeps",
     "preinstall": "npm run preinstall:prereq && npm run preinstall:submodules && npm run preinstall:dependencies",
@@ -36,7 +36,7 @@
   "license": "https://raw.githubusercontent.com/Microsoft/PowerBI-visuals-FacetKey/master/LICENSE",
   "privacyTerms": "https://privacy.microsoft.com/en-US/privacystatement/",
   "privateSubmodules": {
-    "@uncharted.software/stories-facets": "2.6.1"
+    "@uncharted.software/stories-facets": "2.12.0"
   },
   "devDependencies": {
     "@types/jquery": "^2.0.33",
@@ -69,9 +69,9 @@
     "onchange": "^3.0.2",
     "powerbi-visuals": "^0.5.9",
     "serve-static": "^1.11.1",
-    "sinon": "^1.17.6",
+    "sinon": "^2.1.0",
     "sinon-chai": "^2.8.0",
-    "tar.gz": "^1.0.5",
+    "targz": "^1.0.1",
     "ts-loader": "^2.0.3",
     "tslint": "^5.2.0",
     "tslint-loader": "^3.5.3",

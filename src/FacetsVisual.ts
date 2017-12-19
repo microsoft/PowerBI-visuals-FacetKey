@@ -82,20 +82,18 @@ export default class FacetsVisual implements IVisual {
     private selectedInstances: DataPoint[] = [];
     private loadMoreCount: number;
     private reDrawRangeFilter: any = _.debounce(() => {
-        if (this.data && this.data.facetsData) {
-            const rangeFacets = this.data.facetsData.filter((group: any) => group.isRange);
-            rangeFacets.forEach((facetData: any) => {
-                const group = this.facets._getGroup(facetData.key);
-                const range = group.getFilterRange(facetData.key);
-                if (range) {
-                    facetData.facets[0].selection['range'] = {
-                        from: range.from.label[0],
-                        to: range.to.label[range.to.label.length - 1],
-                    };
-                    group.replace(facetData);
-                }
-            });
-        }
+        const rangeFacets = this.data.facetsData.filter((group: any) => group.isRange);
+        rangeFacets.forEach((facetData: any) => {
+            const group = this.facets._getGroup(facetData.key);
+            const range = group.getFilterRange(facetData.key);
+            if (range) {
+                facetData.facets[0].selection['range'] = {
+                    from: range.from.label[0],
+                    to: range.to.label[range.to.label.length - 1],
+                };
+                group.replace(facetData);
+            }
+        });
     }, 500);
     private updateSparklines: any = _.debounce(() => {
         if (this.data.aggregatedData.sparklineXDomain.length > 0) {
@@ -161,7 +159,7 @@ export default class FacetsVisual implements IVisual {
         if (this.suppressNextUpdate) {
             return (this.suppressNextUpdate = false);
         }
-        if (options['resizeMode']) {
+        if (options['resizeMode'] && this.data && this.data.facetsData) {
             this.reDrawRangeFilter();
             return this.updateSparklines();
         }
@@ -223,15 +221,15 @@ export default class FacetsVisual implements IVisual {
         let instances: VisualObjectInstance[];
         switch (options.objectName) {
             case 'facetState':
-            break;
+                break;
             default:
-            instances = [{
-                selector: undefined,
-                objectName: options.objectName,
-                properties: {}
-            }];
-            $.extend(true, instances[0].properties, this.settings[options.objectName]);
-            break;
+                instances = [{
+                    selector: undefined,
+                    objectName: options.objectName,
+                    properties: {}
+                }];
+                $.extend(true, instances[0].properties, this.settings[options.objectName]);
+                break;
         }
         return instances;
     }
@@ -295,14 +293,14 @@ export default class FacetsVisual implements IVisual {
                 const remaining = Math.max(allFacets.length - newNumVisibleFacets, 0);
                 const hasMoreThanInitial = newNumVisibleFacets > this.settings.facetCount.initial;
                 let more = remaining && [
-                    { label: otherLabelTemplate(remaining), class: 'other', clickable: false },
-                    { label: 'More', class: 'more', clickable: true },
-                ];
+                        { label: otherLabelTemplate(remaining), class: 'other', clickable: false },
+                        { label: 'More', class: 'more', clickable: true },
+                    ];
                 hasMoreThanInitial && more
                     ? more.splice(1, 0,
-                        { label: 'Less', class: 'less', clickable: true },
-                        { label: '|', class: 'seperator', clickable: false }
-                    )
+                    { label: 'Less', class: 'less', clickable: true },
+                    { label: '|', class: 'seperator', clickable: false }
+                )
                     : [{ label: 'Less', class: 'less', clickable: true }];
                 this.facets.append([{
                     key: key,
@@ -366,9 +364,11 @@ export default class FacetsVisual implements IVisual {
         if (isKeywordChanged || force) {
             this.filter.contains = newKeyword;
             this.data = this.filterData(this.data);
-            this.runWithNoAnimation(this.facets.replace, this.facets, this.data.facetsData);
-            this.selectionInHighlightedState = false;
-            this.updateFacetsSelection(this.selectedInstances);
+            if (this.data && this.data.facetsData) {
+                this.runWithNoAnimation(this.facets.replace, this.facets, this.data.facetsData);
+                this.selectionInHighlightedState = false;
+                this.updateFacetsSelection(this.selectedInstances);
+            }
         }
     }
 
@@ -380,14 +380,18 @@ export default class FacetsVisual implements IVisual {
      */
     private filterData(data: FacetsVisualData) {
         this.filter.selectedDataPoints = this.selectedInstances;
-        const aggregatedData = aggregateDataPointsMap(data.dataPointsMapData, this.filter);
-        const result: any =  _.extend({}, data, convertToFacetsVisualData(aggregatedData, {
-            settings: this.settings,
-            colors: this.colors,
-            selectedRange: this.filter.range,
-        }));
-        this.selectedInstances = result.selectedDataPoints;
-        return result;
+        if (data) {
+            const aggregatedData = aggregateDataPointsMap(data.dataPointsMapData, this.filter);
+            const result: any =  _.extend({}, data, convertToFacetsVisualData(aggregatedData, {
+                settings: this.settings,
+                colors: this.colors,
+                selectedRange: this.filter.range,
+            }));
+            this.selectedInstances = result.selectedDataPoints;
+            return result;
+        }
+
+        return data;
     }
 
     /**
@@ -489,11 +493,11 @@ export default class FacetsVisual implements IVisual {
         const moreFacets = allFacets.slice(visibleFacets.length, visibleFacets.length + LIMIT);
         const remaining = Math.max(allFacets.length - (visibleFacets.length + LIMIT), 0);
         const more = remaining && [
-            { label: otherLabelTemplate(remaining), class: 'other', clickable: false },
-            { label: 'Less', class: 'less', clickable: true },
-            { label: '|', class: 'seperator', clickable: false },
-            { label: 'More', class: 'more', clickable: true },
-        ] || [{ label: 'Less', class: 'less', clickable: true }];
+                { label: otherLabelTemplate(remaining), class: 'other', clickable: false },
+                { label: 'Less', class: 'less', clickable: true },
+                { label: '|', class: 'seperator', clickable: false },
+                { label: 'More', class: 'more', clickable: true },
+            ] || [{ label: 'Less', class: 'less', clickable: true }];
 
         this.facets.append([{
             key: key,
