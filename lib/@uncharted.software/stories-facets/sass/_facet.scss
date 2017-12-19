@@ -34,7 +34,6 @@
 
 
 .facets-facet-base {
-	margin: 0 1px -2px 1px;
 	width: 100%;
 	overflow-y: hidden;
 }
@@ -43,6 +42,7 @@
 	transition: margin $facet_abbreviation_animation_duration ease,
 				padding $facet_abbreviation_animation_duration ease,
 				height $facet_abbreviation_animation_duration ease,
+				background-color $facet_abbreviation_animation_duration ease,
 				opacity $facet_abbreviation_animation_duration ease;
 	padding: 0px 8px 2px 8px;
 	position: relative;
@@ -130,13 +130,23 @@
 		box-shadow: inset 0 0 0 1000px $facet_bar_selected_color;
 	}
 
+	.facets-facet-base {
+		transition: background-color $facet_bar_width_animation_duration ease;
+	}
+
+	&:hover {
+		background-color: $facet_chart_background_selected;
+		.facet-bar-selected {
+			box-shadow: inset 0 0 0 1000px $facet_histogram_bar_highlighted_hover_color;
+		}
+	}
+
 	.facet-label-container {
 		transition: height $facet_abbreviation_animation_duration ease,
 		opacity $facet_abbreviation_animation_duration ease;
 		color: #222;
 		vertical-align: top;
 		overflow: hidden;
-		float: none;
 		height: 17px;
 	}
 
