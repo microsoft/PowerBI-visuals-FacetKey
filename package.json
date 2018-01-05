@@ -24,7 +24,7 @@
     "package": "npm run compiletemplates && node bin/packageVisual",
     "test": "karma start",
     "test:tdd": "karma start --tdd",
-    "lint": "tslint src/**/*.ts",
+    "lint": "tslint --project ./tsconfig.json src/**/*.ts",
     "clean": "rm -rf node_modules .tmp"
   },
   "config": {
@@ -73,9 +73,10 @@
     "sinon-chai": "^2.8.0",
     "targz": "^1.0.1",
     "ts-loader": "^2.0.3",
-    "tslint": "^5.2.0",
+    "tslint": "^5.8.0",
     "tslint-loader": "^3.5.3",
-    "typescript": "^2.0.3",
+    "tslint-microsoft-contrib": "^5.0.1",
+    "typescript": "^2.6.2",
     "typings": "^1.4.0",
     "webpack": "^1.13.2"
   },

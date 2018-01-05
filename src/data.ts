@@ -240,9 +240,9 @@ function checkRangeFilter(rangeFilter: RangeFilter, rangeValues: RangeValue[]) {
     return rangeValues.reduce((prev: boolean, rangeValue: RangeValue) => {
         const filter = rangeFilter[rangeValue.key];
         if (!filter) { return prev && true; }
-        const from = filter.from.metadata[0].rangeValue;
+        const rangeFrom = filter.from.metadata[0].rangeValue;
         const to = filter.to.metadata[filter.to.metadata.length - 1].rangeValue;
-        return prev && (compare(rangeValue.value, from) >= 0) && (compare(rangeValue.value, to) <= 0);
+        return prev && (compare(rangeValue.value, rangeFrom) >= 0) && (compare(rangeValue.value, to) <= 0);
     }, true);
 }
 

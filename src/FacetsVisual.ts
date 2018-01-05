@@ -558,9 +558,9 @@ export default class FacetsVisual implements IVisual {
             const column = _.find(rangeValueColumns, (column: any) => safeKey(column.displayName) === key);
             const filter = rangeFilter[key];
             if (filter) {
-                const from = filter.from.metadata[0].rangeValue;
+                const rangeFrom = filter.from.metadata[0].rangeValue;
                 const to = filter.to.metadata[filter.to.metadata.length - 1].rangeValue;
-                const rangeExpr = SQExprBuilder.between(column.expr,  SQExprBuilder.typedConstant(from, column.type), SQExprBuilder.typedConstant(to, column.type));
+                const rangeExpr = SQExprBuilder.between(column.expr,  SQExprBuilder.typedConstant(rangeFrom, column.type), SQExprBuilder.typedConstant(to, column.type));
                 sqExpr = sqExpr ? SQExprBuilder.and(rangeExpr, sqExpr) : rangeExpr;
             }
         });
