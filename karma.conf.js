@@ -30,6 +30,7 @@ module.exports = function(config) {
                     },
                 ]
             },
+            tslint: webpackConfig.tslint,
             resolve: webpackConfig.resolve,
             externals: [
                 {

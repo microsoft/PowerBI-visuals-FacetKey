@@ -95,7 +95,7 @@ interface RangeMetadata {
 }
 
 interface FacetRangeObject {
-    from: {
+    start: {
         index: number,
         metadata: RangeMetadata[],
     };

@@ -240,7 +240,7 @@ function checkRangeFilter(rangeFilter: RangeFilter, rangeValues: RangeValue[]) {
     return rangeValues.reduce((prev: boolean, rangeValue: RangeValue) => {
         const filter = rangeFilter[rangeValue.key];
         if (!filter) { return prev && true; }
-        const rangeFrom = filter.from.metadata[0].rangeValue;
+        const rangeFrom = filter.start.metadata[0].rangeValue;
         const to = filter.to.metadata[filter.to.metadata.length - 1].rangeValue;
         return prev && (compare(rangeValue.value, rangeFrom) >= 0) && (compare(rangeValue.value, to) <= 0);
     }, true);
@@ -555,7 +555,7 @@ function createRangeFacetsData(aggregatedData: AggregatedData, options: ConvertT
         // set initial selection state
         facet.selection['slices'] = selectionSlices;
         selectedRange && selectedRange[key] && (facet.selection['range'] = {
-            from: selectedRange[key].from.index,
+            start: selectedRange[key].start.index,
             to: selectedRange[key].to.index,
         });
 
