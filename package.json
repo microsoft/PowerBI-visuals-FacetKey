@@ -21,10 +21,10 @@
     "dev": "node bin/startDev",
     "watch:templates": "onchange 'lib/@uncharted/facets/public/templates/**/*' -- npm run compiletemplates",
     "compiletemplates": "node bin/compileHandlebars",
-    "package": "npm run compiletemplates && node bin/packageVisual",
+    "package": "npm run lint && npm run compiletemplates && node bin/packageVisual",
     "test": "karma start",
     "test:tdd": "karma start --tdd",
-    "lint": "tslint --project ./tsconfig.json src/**/*.ts",
+    "lint": "tslint --project ./tsconfig.json 'src/**/*.ts'",
     "clean": "rm -rf node_modules .tmp"
   },
   "config": {
