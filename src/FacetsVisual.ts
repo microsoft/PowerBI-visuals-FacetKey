@@ -88,7 +88,7 @@ export default class FacetsVisual implements IVisual {
             const range = group.getFilterRange(facetData.key);
             if (range) {
                 facetData.facets[0].selection['range'] = {
-                    start: range.start.label[0],
+                    from: range.from.label[0],
                     to: range.to.label[range.to.label.length - 1],
                 };
                 group.replace(facetData);
@@ -451,7 +451,7 @@ export default class FacetsVisual implements IVisual {
         });
 
         this.facets.on('facet-histogram:rangechangeduser', (e: any, key: string, range: FacetRangeObject) => {
-            const isFullRange = range.start.metadata[0].isFirst && range.to.metadata[range.to.metadata.length - 1].isLast;
+            const isFullRange = range.from.metadata[0].isFirst && range.to.metadata[range.to.metadata.length - 1].isLast;
             !this.filter.range && (this.filter.range = {});
             this.filter.range[key] = isFullRange ? undefined : range;
             this.data.hasHighlight ? (this.retainFilters = true) : this.filterFacets(true);
@@ -558,7 +558,7 @@ export default class FacetsVisual implements IVisual {
             const column = _.find(rangeValueColumns, (column: any) => safeKey(column.displayName) === key);
             const filter = rangeFilter[key];
             if (filter) {
-                const rangeFrom = filter.start.metadata[0].rangeValue;
+                const rangeFrom = filter.from.metadata[0].rangeValue;
                 const to = filter.to.metadata[filter.to.metadata.length - 1].rangeValue;
                 const rangeExpr = SQExprBuilder.between(column.expr,  SQExprBuilder.typedConstant(rangeFrom, column.type), SQExprBuilder.typedConstant(to, column.type));
                 sqExpr = sqExpr ? SQExprBuilder.and(rangeExpr, sqExpr) : rangeExpr;

@@ -187,7 +187,7 @@ describe('.aggregateDataPointsMap', () => {
 
     const buildRangeObj = (fromRangeValue, toRangeValue) => {
         return <FacetRangeObject>{
-            start: { metadata: [{ rangeValue: fromRangeValue }] },
+            from: { metadata: [{ rangeValue: fromRangeValue }] },
             to: { metadata: [{ rangeValue: toRangeValue }] },
         };
     };
@@ -850,7 +850,7 @@ describe('.convertToFacetsVisualData', () => {
     });
     it('should set selection range based on the provided range filter', () => {
         result = dataConversion.convertToFacetsVisualData(aggregatedData, {
-            selectedRange: { date: <FacetRangeObject>{ start: { index: 1 }, to: { index: 3 } } },
+            selectedRange: { date: <FacetRangeObject>{ from: { index: 1 }, to: { index: 3 } } },
             colors: [],
             settings: DEFAULT_SETTINGS
         });
@@ -858,7 +858,7 @@ describe('.convertToFacetsVisualData', () => {
         const dateGroup = <FacetGroup>getFacetGroup(facetsData, 'date');
         const classGroup = <FacetGroup>getFacetGroup(facetsData, 'icon_class');
 
-        expect(dateGroup.facets[0]['selection'].range.start).to.equal(1);
+        expect(dateGroup.facets[0]['selection'].range.from).to.equal(1);
         expect(dateGroup.facets[0]['selection'].range.to).to.equal(3);
 
         expect(classGroup.facets[0]['selection'].range).to.be.undefined;

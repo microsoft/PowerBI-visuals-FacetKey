@@ -95,7 +95,8 @@ interface RangeMetadata {
 }
 
 interface FacetRangeObject {
-    start: {
+    // tslint:disable-next-line
+    from: {
         index: number,
         metadata: RangeMetadata[],
     };
