@@ -2,8 +2,8 @@
   "compilerOptions": {
     "target": "es5",
     "sourceMap": true,
-    "types": ["mocha", "sinon-chai", "requirejs"],
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "types": ["mocha", "sinon-chai", "requirejs"]
   },
   "compileOnSave": false,
   "exclude": [
