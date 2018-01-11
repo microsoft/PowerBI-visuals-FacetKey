@@ -193,7 +193,7 @@ describe('.aggregateDataPointsMap', () => {
     };
 
     beforeEach(() => {
-        data = { dataPointsMap: _.cloneDeep(mockDataPointsMap) }
+        data = { dataPointsMap: _.cloneDeep(mockDataPointsMap) };
     });
 
     it('should return hasHighlight flag', () => {
@@ -378,7 +378,7 @@ describe('.aggregateDataPointsMap', () => {
         });
         it('should apply case insensitive keyword filter', () => {
             result = dataConversion.aggregateDataPointsMap(data, {contains: 'new'});
-            const classData = result.rangeDataMap['class']; //['fa fa-globe'];
+            const classData = result.rangeDataMap['class']; // ['fa fa-globe'];
             const datesData = result.rangeDataMap['date'];
             expect(classData['fa fa-globe'].count).to.equal(13);
             expect(classData['fa fa-globe'].subSelection).to.equal(10);

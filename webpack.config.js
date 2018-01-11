@@ -30,6 +30,9 @@ module.exports = {
             },
         ]
     },
+    tslint: {
+        typeCheck: true,
+    },
     externals: [
         {
             jquery: "jQuery",
