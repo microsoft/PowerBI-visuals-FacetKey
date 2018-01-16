@@ -30,6 +30,7 @@ import DataView = powerbi.DataView;
 import VisualDataChangeOperationKind = powerbi.VisualDataChangeOperationKind;
 import IColorInfo = powerbi.IColorInfo;
 import VisualObjectInstance = powerbi.VisualObjectInstance;
+import IVisualHost = powerbi.extensibility.v110.IVisualHost;
 import IVisualHostServices = powerbi.IVisualHostServices;
 import EnumerateVisualObjectInstancesOptions = powerbi.EnumerateVisualObjectInstancesOptions;
 import SQExprBuilder = powerbi.data.SQExprBuilder;
@@ -77,7 +78,9 @@ export default class FacetsVisual implements IVisual {
     private retainFilters: boolean = false;
     private previousData: any;
     private previousFreshData: any;
+    private host: IVisualHost;
     private hostServices: IVisualHostServices;
+    private loadMoreData: Function;
     private selectionInHighlightedState: boolean;
     private selectedInstances: DataPoint[] = [];
     private loadMoreCount: number;
@@ -113,8 +116,9 @@ export default class FacetsVisual implements IVisual {
 
         this.settings = DEFAULT_SETTINGS;
 
+        this.host = options.host;
         this.hostServices = options.host.createSelectionManager()['hostServices'];
-        this.colors = options.host.colors;
+        this.colors = this.host.colors;
 
         this.facets = new Facets(this.facetsContainer, []);
         this.facetsContainer.prepend(`
@@ -129,6 +133,15 @@ export default class FacetsVisual implements IVisual {
         this.facetsContainer.on('mousedown pointerdown', (e) => e.stopPropagation());
 
         this.bindFacetsEventHandlers();
+
+        const findApi = (methodName) => {
+            return this.host[methodName] ? (arg) => {
+                this.host[methodName](arg);
+            } : this.hostServices && this.hostServices[methodName] ? (arg) => {
+                this.hostServices[methodName](arg);
+            } : null;
+        };
+        this.loadMoreData = findApi('loadMoreData') || function () {};
     }
 
     /**
@@ -199,16 +212,16 @@ export default class FacetsVisual implements IVisual {
         const shouldLoadMoreData = hasMoreData && this.loadMoreCount < MAX_DATA_LOADS;
 
         if (this.selectionInHighlightedState) {
-            return shouldLoadMoreData && this.hostServices.loadMoreData();
+            return shouldLoadMoreData && this.loadMoreData();
         }
         if (loadAllDataBeforeRender) {
             isFreshData && this.toggleLoadingSpinner(true);
             return shouldLoadMoreData
-                ? this.hostServices.loadMoreData()
+                ? this.loadMoreData()
                 : this.updateFacets();
         }
         isFreshData ? this.updateFacets() : this.syncFacets();
-        return shouldLoadMoreData && this.hostServices.loadMoreData();
+        return shouldLoadMoreData && this.loadMoreData();
     }
 
     /**
