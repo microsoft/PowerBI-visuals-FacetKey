@@ -606,7 +606,7 @@ export default class FacetsVisual implements IVisual {
             sqExpr = sqExpr ? SQExprBuilder.and(sqExpr, rangeExpr) : rangeExpr;
         }
 
-        this.sendSelectionToHost(sqExpr ? [powerbi.data.createDataViewScopeIdentity(sqExpr)] : []);
+        this.sendSelectionToHost(sqExpr ? [powerbi.data.createDataViewScopeIdentity(sqExpr)] : undefined);
     }
 
     /**
@@ -615,9 +615,16 @@ export default class FacetsVisual implements IVisual {
      * @param {DataViewScopeIdentity[]} identities An array of powerbi DataViewScopeIdentities.
      */
     private sendSelectionToHost(identities: DataViewScopeIdentity[]) {
-        const selectArgs = {
-            data: identities.map((identity: DataViewScopeIdentity) => ({ data: [identity] })),
-            visualObjects: [],
+        const selectArgs: powerbi.SelectEventArgs = {
+            visualObjects: [
+                {
+                    objectName: '',
+                    selectorsByColumn: {
+                        dataMap: identities ? {'': identities[0]} : undefined
+                    }
+
+                }
+            ],
         };
         this.hostServices.onSelect(selectArgs);
     }
