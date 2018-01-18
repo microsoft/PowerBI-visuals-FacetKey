@@ -95,6 +95,7 @@ interface RangeMetadata {
 }
 
 interface FacetRangeObject {
+    // tslint:disable-next-line
     from: {
         index: number,
         metadata: RangeMetadata[],
@@ -137,15 +138,16 @@ interface FacetGroup {
 
 interface Facet {
     icon: {
-         class: string,
-         color: string,
+        // tslint:disable-next-line
+        class: string,
+        color: string,
     };
     count: number;
     countLabel: string;
     value: string;
     label: string;
     timeseries?: any[];
-    segments?: { count: number; color: string}[];
+    segments?: { count: number; color: string }[];
 }
 
 interface FacetsVisualData {

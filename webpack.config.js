@@ -30,10 +30,14 @@ module.exports = {
             },
         ]
     },
-    externals: [
-        {
-            jquery: "jQuery",
-            lodash: "_"
-        },
+    tslint: {
+        typeCheck: true,
+    },
+    plugins: [
+        new webpack.ProvidePlugin({
+            $: 'jquery',
+            jQuery: 'jquery',
+            _: 'lodash',
+        }),
     ]
 };
