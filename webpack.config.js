@@ -33,10 +33,11 @@ module.exports = {
     tslint: {
         typeCheck: true,
     },
-    externals: [
-        {
-            jquery: "jQuery",
-            lodash: "_"
-        },
+    plugins: [
+        new webpack.ProvidePlugin({
+            $: 'jquery',
+            jQuery: 'jquery',
+            _: 'lodash',
+        }),
     ]
 };

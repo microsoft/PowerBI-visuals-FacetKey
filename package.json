@@ -1,6 +1,6 @@
 {
   "name": "essex.widget.facetkey",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "PowerBI custom visual.",
   "main": "src/index.js",
   "repository": {
@@ -81,6 +81,6 @@
   },
   "dependencies": {
     "jquery": "^3.1.1",
-    "lodash": "^4.16.3"
+    "lodash": "^3.10.1"
   }
 }
