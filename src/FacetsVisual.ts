@@ -26,6 +26,7 @@
 import IVisual = powerbi.extensibility.v110.IVisual;
 import VisualConstructorOptions = powerbi.extensibility.v110.VisualConstructorOptions;
 import VisualUpdateOptions = powerbi.extensibility.v110.VisualUpdateOptions;
+import ISelectionManager = powerbi.extensibility.ISelectionManager;
 import DataView = powerbi.DataView;
 import VisualDataChangeOperationKind = powerbi.VisualDataChangeOperationKind;
 import IColorInfo = powerbi.IColorInfo;
@@ -80,6 +81,7 @@ export default class FacetsVisual implements IVisual {
     private previousFreshData: any;
     private host: IVisualHost;
     private hostServices: IVisualHostServices;
+    private selectionManager: ISelectionManager;
     private loadMoreData: Function;
     private selectionInHighlightedState: boolean;
     private selectedInstances: DataPoint[] = [];
@@ -117,7 +119,8 @@ export default class FacetsVisual implements IVisual {
         this.settings = DEFAULT_SETTINGS;
 
         this.host = options.host;
-        this.hostServices = options.host.createSelectionManager()['hostServices'];
+        this.selectionManager = options.host.createSelectionManager();
+        this.hostServices = this.selectionManager['hostServices'];
         this.colors = this.host.colors;
 
         this.facets = new Facets(this.facetsContainer, []);
@@ -615,18 +618,22 @@ export default class FacetsVisual implements IVisual {
      * @param {DataViewScopeIdentity[]} identities An array of powerbi DataViewScopeIdentities.
      */
     private sendSelectionToHost(identities: DataViewScopeIdentity[]) {
-        const selectArgs: powerbi.SelectEventArgs = {
-            visualObjects: [
-                {
-                    objectName: '',
-                    selectorsByColumn: {
-                        dataMap: identities ? {'': identities[0]} : undefined
-                    }
+        if (identities) {
+            const selectArgs: powerbi.SelectEventArgs = {
+                visualObjects: [
+                    {
+                        objectName: '',
+                        selectorsByColumn: {
+                            dataMap: {'': identities[0]}
+                        }
 
-                }
-            ],
-        };
-        this.hostServices.onSelect(selectArgs);
+                    }
+                ],
+            };
+            this.hostServices.onSelect(selectArgs);
+        } else {
+            this.selectionManager.clear();
+        }
     }
 
     /**
