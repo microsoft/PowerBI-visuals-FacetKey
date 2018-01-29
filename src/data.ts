@@ -39,7 +39,6 @@ import {
     HIGHLIGHT_COLOR,
     COLOR_PALETTE
 } from './utils';
-import * as _ from 'lodash';
 
 /**
  * Maximum number of facet groups to be rendered.

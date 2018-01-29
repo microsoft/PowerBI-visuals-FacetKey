@@ -36,8 +36,6 @@ import EnumerateVisualObjectInstancesOptions = powerbi.EnumerateVisualObjectInst
 import SQExprBuilder = powerbi.data.SQExprBuilder;
 import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
 import DataViewScopeIdentity = powerbi.DataViewScopeIdentity;
-import * as _ from 'lodash';
-import * as $ from 'jquery';
 import { convertToDataPointsMap, aggregateDataPointsMap, convertToFacetsVisualData } from './data';
 import { safeKey, findColumn, hexToRgba, otherLabelTemplate, createSegments, HIGHLIGHT_COLOR, hasColumns, createTimeSeries } from './utils';
 

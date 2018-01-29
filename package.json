@@ -82,9 +82,6 @@
     "webpack": "^1.13.2"
   },
   "dependencies": {
-    "jquery": "^3.1.1",
-    "lodash": "^3.10.1",
-    "powerbi-visuals-utils-formattingutils": "^3.0.1",
-    "timers-browserify": "^2.0.6"
+    "powerbi-visuals-utils-formattingutils": "^3.0.1"
   }
 }

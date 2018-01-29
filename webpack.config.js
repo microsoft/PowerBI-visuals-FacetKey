@@ -50,11 +50,10 @@ module.exports = {
     tslint: {
         typeCheck: true,
     },
-    plugins: [
-        new webpack.ProvidePlugin({
-            $: 'jquery',
-            jQuery: 'jquery',
-            _: 'lodash',
-        }),
-    ]
+    externals: [
+        {
+            jquery: 'jQuery',
+            lodash: '_'
+        },
+    ],
 };
