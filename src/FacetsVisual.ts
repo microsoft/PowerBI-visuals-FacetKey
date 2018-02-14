@@ -36,8 +36,6 @@ import EnumerateVisualObjectInstancesOptions = powerbi.EnumerateVisualObjectInst
 import SQExprBuilder = powerbi.data.SQExprBuilder;
 import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
 import DataViewScopeIdentity = powerbi.DataViewScopeIdentity;
-import * as _ from 'lodash';
-import * as $ from 'jquery';
 import { convertToDataPointsMap, aggregateDataPointsMap, convertToFacetsVisualData } from './data';
 import { safeKey, findColumn, hexToRgba, otherLabelTemplate, createSegments, HIGHLIGHT_COLOR, hasColumns, createTimeSeries } from './utils';
 
@@ -152,7 +150,7 @@ export default class FacetsVisual implements IVisual {
      * @param  {FacetKeySettings} settings A facetkey settings object.
      * @return {FacetsVisualData}
      */
-    public static converter(dataView: DataView, colors: IColorInfo[], settings: FacetKeySettings): FacetsVisualData {
+    public converter(dataView: DataView, colors: IColorInfo[], settings: FacetKeySettings): FacetsVisualData {
         const dataPointsMapData = convertToDataPointsMap(dataView);
         const aggregatedData = aggregateDataPointsMap(dataPointsMapData);
         const facetsData = convertToFacetsVisualData(aggregatedData, {
@@ -200,7 +198,7 @@ export default class FacetsVisual implements IVisual {
         this.retainFilters = this.previousFreshData.hasHighlight && this.retainFilters;
         isFreshData && !this.retainFilters && this.clearFilters();
 
-        this.data = FacetsVisual.converter(this.dataView, this.colors, this.settings);
+        this.data = this.converter(this.dataView, this.colors, this.settings);
         this.hasFilter() && (this.data = this.filterData(this.data));
 
         // to ignore first update call series caused by selecting facets in highlighted state
