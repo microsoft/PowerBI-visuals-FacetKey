@@ -36,8 +36,10 @@ import EnumerateVisualObjectInstancesOptions = powerbi.EnumerateVisualObjectInst
 import SQExprBuilder = powerbi.data.SQExprBuilder;
 import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
 import DataViewScopeIdentity = powerbi.DataViewScopeIdentity;
+import ISelectionManager = powerbi.extensibility.ISelectionManager;
 import { convertToDataPointsMap, aggregateDataPointsMap, convertToFacetsVisualData } from './data';
 import { safeKey, findColumn, hexToRgba, otherLabelTemplate, createSegments, HIGHLIGHT_COLOR, hasColumns, createTimeSeries } from './utils';
+import { bookmarkHandler, loadSelectionFromBookmarks } from './bookmarks';
 
 const Facets = require('../lib/@uncharted.software/stories-facets/src/main');
 
@@ -104,6 +106,9 @@ export default class FacetsVisual implements IVisual {
                 : this.updateFacetsSelection(this.selectedInstances);
         }
     }, 500);
+    private selectionManager: ISelectionManager;
+    public sqExprTypeMap: any = null;
+    public bookmarkSelection: any = null;
 
     /**
      * Initializes an instance of the IVisual.
@@ -115,7 +120,8 @@ export default class FacetsVisual implements IVisual {
         this.settings = DEFAULT_SETTINGS;
 
         this.host = options.host;
-        this.hostServices = options.host.createSelectionManager()['hostServices'];
+        this.selectionManager = options.host.createSelectionManager();
+        this.hostServices = this.selectionManager['hostServices'];
         this.colors = this.host.colors;
 
         this.facets = new Facets(this.facetsContainer, []);
@@ -140,6 +146,7 @@ export default class FacetsVisual implements IVisual {
             } : null;
         };
         this.loadMoreData = findApi('loadMoreData') || function () {};
+        this.selectionManager['registerOnSelectCallback'](bookmarkHandler.bind(this));
     }
 
     /**
@@ -159,7 +166,6 @@ export default class FacetsVisual implements IVisual {
         });
         return _.extend({ dataPointsMapData: dataPointsMapData }, facetsData);
     }
-
 
     /**
      * Notifies the IVisual of an update (data, viewmode, size change).
@@ -219,6 +225,9 @@ export default class FacetsVisual implements IVisual {
                 : this.updateFacets();
         }
         isFreshData ? this.updateFacets() : this.syncFacets();
+
+        loadSelectionFromBookmarks(this);
+
         return shouldLoadMoreData && this.loadMoreData();
     }
 
@@ -604,7 +613,12 @@ export default class FacetsVisual implements IVisual {
             sqExpr = sqExpr ? SQExprBuilder.and(sqExpr, rangeExpr) : rangeExpr;
         }
 
-        this.sendSelectionToHost(sqExpr ? [powerbi.data.createDataViewScopeIdentity(sqExpr)] : undefined);
+        this.bookmarkSelection = null;
+        if (sqExpr) {
+            this.sendSelectionToHost([powerbi.data.createDataViewScopeIdentity(sqExpr)]);
+        } else {
+            this.selectionManager.clear();
+        }
     }
 
     /**

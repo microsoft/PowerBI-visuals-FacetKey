@@ -1,0 +1,136 @@
+/**
+ * Copyright (c) 2016 Uncharted Software Inc.
+ * http://www.uncharted.software/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ * of the Software, and to permit persons to whom the Software is furnished to do
+ * so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+// Support for Bookmarks, including parsing the SQExpr we create
+import ISelectionId = powerbi.extensibility.ISelectionId;
+import SQExprBuilder = powerbi.data.SQExprBuilder;
+import { safeKey } from './utils';
+
+const SQ_ENTITY = SQExprBuilder.entity(undefined, undefined);
+const SQ_KIND_OR = SQExprBuilder.or(SQ_ENTITY, SQ_ENTITY).kind;
+const SQ_KIND_EQUAL = SQExprBuilder.equal(undefined, undefined).kind;
+const SQ_KIND_BETWEEN = SQExprBuilder.between(SQ_ENTITY, SQ_ENTITY, SQ_ENTITY).kind;
+
+
+function parseBinarySQExprNode(facetsVisual, sqExprMap, node) {
+    sqExprMap[node.left._kind](facetsVisual, sqExprMap, node.left);
+    sqExprMap[node.right._kind](facetsVisual, sqExprMap, node.right);
+}
+
+function parseSQExprAndNode(facetsVisual, sqExprMap, node) {
+    // There are three cases where FacetKey.applySelection generates AND nodes:
+    // a) High level: Range filter AND Facet selection
+    // b) Low level: Facet AND Instance
+    // c) Low level: composing ranges
+    switch (node.left._kind) {
+        case SQ_KIND_OR:
+            // a) High level: Range filter AND Facet selection
+            parseBinarySQExprNode(facetsVisual, sqExprMap, node);
+            break;
+        case SQ_KIND_EQUAL:
+            // b) Low level: Facet AND Instance
+            const facet = node.right.right.value;
+            const instance = node.left.right.value;
+            const key = safeKey(facet);
+            const dataPoint = _.find(facetsVisual.data.aggregatedData.dataPointsMap[key],
+                (dp: DataPoint) => dp.facetKey === key && dp.rows[0].facetInstance === instance);
+            facetsVisual.selectedInstances.push(dataPoint);
+            break;
+        case SQ_KIND_BETWEEN:
+            // c) Low level: composing ranges
+            parseBinarySQExprNode(facetsVisual, sqExprMap, node);
+            break;
+    }
+}
+
+function passThroughSQExprNode(facetsVisual, sqExprMap, node) {
+    sqExprMap[node._expr._kind](facetsVisual, sqExprMap, node._expr);
+}
+
+function getSQExprKindMap(facetsVisual) {
+    if (!facetsVisual.sqExprTypeMap) {
+        facetsVisual.sqExprTypeMap = {};
+        facetsVisual.sqExprTypeMap[SQ_ENTITY.kind] = passThroughSQExprNode;
+        facetsVisual.sqExprTypeMap[SQExprBuilder.columnRef(SQ_ENTITY, '').kind] = passThroughSQExprNode;
+        facetsVisual.sqExprTypeMap[SQExprBuilder['subqueryRef']().kind] = passThroughSQExprNode;
+        facetsVisual.sqExprTypeMap[SQExprBuilder.and(SQ_ENTITY, SQ_ENTITY).kind] = parseSQExprAndNode;
+        facetsVisual.sqExprTypeMap[SQ_KIND_OR] = parseBinarySQExprNode;
+        facetsVisual.sqExprTypeMap[SQ_KIND_BETWEEN] = (facetsVisual, sqExprMap, node) => {
+            this.filter = this.filter || {};
+            this.filter.range = this.filter.range || {};
+            this.filter.range[node.arg.arg.ref] = <FacetRangeObject>{
+                // tslint:disable-next-line
+                from: {
+                    metadata: [{
+                        rangeValue: node.lower.value,
+                        isFirst: true
+                    }],
+                },
+                to: {
+                    metadata: [{
+                        rangeValue: node.upper.value,
+                    }],
+                },
+            };
+        };
+
+    }
+
+    return facetsVisual.sqExprTypeMap;
+}
+
+/*
+ * Parses an SQExpression to reverse engineer a bookmark, assuming it is a selection we sent to PowerBI at some point.
+ */
+function parseSQExpr(sqExpr, facetsVisual) {
+    const sqExprKindMap = getSQExprKindMap(facetsVisual);
+    sqExprKindMap[sqExpr.kind](facetsVisual, sqExprKindMap, sqExpr);
+}
+
+export function bookmarkHandler(ids: ISelectionId[]) {
+    this.clearFilters();
+    this.selectedInstances = [];
+    this.bookmarkSelection = null;
+
+    if (ids.length) {
+        const dataMap = ids[0]['selectorsByColumn'].dataMap[''][0];
+        parseSQExpr(dataMap, this);
+        this.bookmarkSelection = {
+            range: this.filter && this.filter.range,
+            selectedInstances: this.selectedInstances
+        };
+        loadSelectionFromBookmarks(this);
+    }
+}
+
+export function loadSelectionFromBookmarks(facetsVisual) {
+    if (facetsVisual.bookmarkSelection) {
+        facetsVisual.selectedInstances = facetsVisual.bookmarkSelection.selectedInstances;
+        if (facetsVisual.bookmarkSelection.range) {
+            facetsVisual.filter = facetsVisual.filter || {};
+            facetsVisual.filter.range = facetsVisual.bookmarkSelection.range;
+            facetsVisual.hasFilter() && (facetsVisual.data = facetsVisual.filterData(facetsVisual.data));
+        }
+        facetsVisual.updateFacetsSelection(facetsVisual.selectedInstances);
+    }
+}
