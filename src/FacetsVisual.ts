@@ -225,9 +225,6 @@ export default class FacetsVisual implements IVisual {
                 : this.updateFacets();
         }
         isFreshData ? this.updateFacets() : this.syncFacets();
-
-        loadSelectionFromBookmarks(this);
-
         return shouldLoadMoreData && this.loadMoreData();
     }
 
@@ -349,6 +346,7 @@ export default class FacetsVisual implements IVisual {
     private updateFacets() {
         this.toggleLoadingSpinner(false);
         this.resetFacets();
+        loadSelectionFromBookmarks(this);
         this.data.hasHighlight && this.facets.select(this.data.facetsSelectionData);
     }
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016 Uncharted Software Inc.
+ * Copyright (c) 2018 Uncharted Software Inc.
  * http://www.uncharted.software/
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -27,10 +27,10 @@ import SQExprBuilder = powerbi.data.SQExprBuilder;
 import { safeKey } from './utils';
 
 const SQ_ENTITY = SQExprBuilder.entity(undefined, undefined);
+const SQ_KIND_AND = SQExprBuilder.and(SQ_ENTITY, SQ_ENTITY).kind;
+const SQ_KIND_BETWEEN = SQExprBuilder.between(SQ_ENTITY, SQ_ENTITY, SQ_ENTITY).kind;
 const SQ_KIND_OR = SQExprBuilder.or(SQ_ENTITY, SQ_ENTITY).kind;
 const SQ_KIND_EQUAL = SQExprBuilder.equal(undefined, undefined).kind;
-const SQ_KIND_BETWEEN = SQExprBuilder.between(SQ_ENTITY, SQ_ENTITY, SQ_ENTITY).kind;
-
 
 function parseBinarySQExprNode(facetsVisual, sqExprMap, node) {
     sqExprMap[node.left._kind](facetsVisual, sqExprMap, node.left);
@@ -43,29 +43,67 @@ function parseSQExprAndNode(facetsVisual, sqExprMap, node) {
     // b) Low level: Facet AND Instance
     // c) Low level: composing ranges
     switch (node.left._kind) {
-        case SQ_KIND_OR:
-            // a) High level: Range filter AND Facet selection
-            parseBinarySQExprNode(facetsVisual, sqExprMap, node);
-            break;
         case SQ_KIND_EQUAL:
             // b) Low level: Facet AND Instance
             const facet = node.right.right.value;
             const instance = node.left.right.value;
-            const key = safeKey(facet);
+            const key = safeKey(String(facet || ' '));
             const dataPoint = _.find(facetsVisual.data.aggregatedData.dataPointsMap[key],
                 (dp: DataPoint) => dp.facetKey === key && dp.rows[0].facetInstance === instance);
-            facetsVisual.selectedInstances.push(dataPoint);
+            if (dataPoint) {
+                facetsVisual.selectedInstances.push(dataPoint);
+            }
             break;
-        case SQ_KIND_BETWEEN:
-            // c) Low level: composing ranges
+        default:
             parseBinarySQExprNode(facetsVisual, sqExprMap, node);
-            break;
     }
+}
+
+function parseSQExprBetweenNode(facetsVisual, sqExprMap, node) {
+    facetsVisual.filter = {
+        range: {},
+    };
+    facetsVisual.filter.range[node.arg.arg.ref] = <FacetRangeObject>{
+        // tslint:disable-next-line
+        from: {
+            index: undefined,
+            label: [
+                String(node.lower.value),
+                String(node.lower.value),
+            ],
+            metadata: [{
+                rangeValue: node.lower.value,
+                isFirst: false,
+                isLast: false,
+            }, {
+            rangeValue: node.lower.value,
+                isFirst: false,
+                isLast: false,
+            }],
+        },
+        to: {
+            index: undefined,
+            label: [
+                String(node.upper.value),
+                String(node.upper.value),
+            ],
+            metadata: [{
+                rangeValue: node.upper.value,
+                isFirst: false,
+                isLast: false,
+            }, {
+                rangeValue: node.upper.value,
+                isFirst: false,
+                isLast: false,
+            }],
+        },
+    };
 }
 
 function passThroughSQExprNode(facetsVisual, sqExprMap, node) {
     sqExprMap[node._expr._kind](facetsVisual, sqExprMap, node._expr);
 }
+
 
 function getSQExprKindMap(facetsVisual) {
     if (!facetsVisual.sqExprTypeMap) {
@@ -73,27 +111,9 @@ function getSQExprKindMap(facetsVisual) {
         facetsVisual.sqExprTypeMap[SQ_ENTITY.kind] = passThroughSQExprNode;
         facetsVisual.sqExprTypeMap[SQExprBuilder.columnRef(SQ_ENTITY, '').kind] = passThroughSQExprNode;
         facetsVisual.sqExprTypeMap[SQExprBuilder['subqueryRef']().kind] = passThroughSQExprNode;
-        facetsVisual.sqExprTypeMap[SQExprBuilder.and(SQ_ENTITY, SQ_ENTITY).kind] = parseSQExprAndNode;
+        facetsVisual.sqExprTypeMap[SQ_KIND_AND] = parseSQExprAndNode;
         facetsVisual.sqExprTypeMap[SQ_KIND_OR] = parseBinarySQExprNode;
-        facetsVisual.sqExprTypeMap[SQ_KIND_BETWEEN] = (facetsVisual, sqExprMap, node) => {
-            this.filter = this.filter || {};
-            this.filter.range = this.filter.range || {};
-            this.filter.range[node.arg.arg.ref] = <FacetRangeObject>{
-                // tslint:disable-next-line
-                from: {
-                    metadata: [{
-                        rangeValue: node.lower.value,
-                        isFirst: true
-                    }],
-                },
-                to: {
-                    metadata: [{
-                        rangeValue: node.upper.value,
-                    }],
-                },
-            };
-        };
-
+        facetsVisual.sqExprTypeMap[SQ_KIND_BETWEEN] = parseSQExprBetweenNode;
     }
 
     return facetsVisual.sqExprTypeMap;
@@ -117,7 +137,7 @@ export function bookmarkHandler(ids: ISelectionId[]) {
         parseSQExpr(dataMap, this);
         this.bookmarkSelection = {
             range: this.filter && this.filter.range,
-            selectedInstances: this.selectedInstances
+            selectedInstances: this.selectedInstances,
         };
         loadSelectionFromBookmarks(this);
     }
@@ -129,8 +149,24 @@ export function loadSelectionFromBookmarks(facetsVisual) {
         if (facetsVisual.bookmarkSelection.range) {
             facetsVisual.filter = facetsVisual.filter || {};
             facetsVisual.filter.range = facetsVisual.bookmarkSelection.range;
-            facetsVisual.hasFilter() && (facetsVisual.data = facetsVisual.filterData(facetsVisual.data));
+            const rangeFacets = facetsVisual.data.facetsData.filter((group: any) => group.isRange);
+            rangeFacets.forEach((facetData: any) => {
+                const group = facetsVisual.facets._getGroup(facetData.key);
+                const range = facetsVisual.bookmarkSelection.range[facetData.key];
+                if (range) {
+                    facetData.facets[0].selection['range'] = {
+                        from: range.from.label[0],
+                        to: range.to.label[range.to.label.length - 1],
+                    };
+                    group.replace(facetData);
+                }
+            });
         }
-        facetsVisual.updateFacetsSelection(facetsVisual.selectedInstances);
+
+        if (facetsVisual.data.hasHighlight) {
+            facetsVisual.facets.select(facetsVisual.data.facetsSelectionData);
+        } else {
+            facetsVisual.runWithNoAnimation(facetsVisual.updateFacetsSelection, facetsVisual, facetsVisual.selectedInstances);
+        }
     }
 }
