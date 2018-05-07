@@ -60,9 +60,8 @@ function parseSQExprAndNode(facetsVisual, sqExprMap, node) {
 }
 
 function parseSQExprBetweenNode(facetsVisual, sqExprMap, node) {
-    facetsVisual.filter = {
-        range: {},
-    };
+    facetsVisual.filter.range = facetsVisual.filter.range || {};
+
     facetsVisual.filter.range[node.arg.arg.ref] = <FacetRangeObject>{
         // tslint:disable-next-line
         from: {
@@ -154,9 +153,11 @@ export function loadSelectionFromBookmarks(facetsVisual) {
                 const group = facetsVisual.facets._getGroup(facetData.key);
                 const range = facetsVisual.bookmarkSelection.range[facetData.key];
                 if (range) {
+                    range.from.index = facetData.facets[0].histogram.slices.findIndex(slice => slice.label === range.from.label[0]);
+                    range.to.index = facetData.facets[0].histogram.slices.findIndex(slice => slice.label === range.to.label[0]);
                     facetData.facets[0].selection['range'] = {
-                        from: range.from.label[0],
-                        to: range.to.label[range.to.label.length - 1],
+                        from: range.from.index,
+                        to: range.to.index,
                     };
                     group.replace(facetData);
                 }
