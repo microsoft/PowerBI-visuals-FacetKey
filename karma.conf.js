@@ -21,6 +21,7 @@ module.exports = function(config) {
             'src/**/*.spec.ts': ['webpack', 'sourcemap']
         },
         webpack: {
+            entry: webpackConfig.entry,
             module: {
                 preLoaders: webpackConfig.module.preLoaders,
                 loaders: [
@@ -30,7 +31,6 @@ module.exports = function(config) {
                     },
                 ]
             },
-            tslint: webpackConfig.tslint,
             resolve: webpackConfig.resolve,
             externals: [
                 {
