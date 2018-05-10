@@ -62,7 +62,8 @@ function parseSQExprAndNode(facetsVisual, sqExprMap, node) {
 function parseSQExprBetweenNode(facetsVisual, sqExprMap, node) {
     facetsVisual.filter.range = facetsVisual.filter.range || {};
 
-    facetsVisual.filter.range[node.arg.arg.ref] = <FacetRangeObject>{
+    const ref = node.arg.ref || node.arg.arg.ref;
+    facetsVisual.filter.range[ref] = <FacetRangeObject>{
         // tslint:disable-next-line
         from: {
             index: undefined,
@@ -142,6 +143,12 @@ export function bookmarkHandler(ids: ISelectionId[]) {
     }
 }
 
+function compareValues(valueA, valueB) {
+    const a = valueA.getTime ? valueA.getTime() : valueA;
+    const b = valueB.getTime ? valueB.getTime() : valueB;
+    return a === b;
+}
+
 export function loadSelectionFromBookmarks(facetsVisual) {
     if (facetsVisual.bookmarkSelection) {
         facetsVisual.selectedInstances = facetsVisual.bookmarkSelection.selectedInstances;
@@ -153,8 +160,10 @@ export function loadSelectionFromBookmarks(facetsVisual) {
                 const group = facetsVisual.facets._getGroup(facetData.key);
                 const range = facetsVisual.bookmarkSelection.range[facetData.key];
                 if (range) {
-                    range.from.index = facetData.facets[0].histogram.slices.findIndex(slice => slice.label === range.from.label[0]);
-                    range.to.index = facetData.facets[0].histogram.slices.findIndex(slice => slice.label === range.to.label[0]);
+                    range.from.index = facetData.facets[0].histogram.slices.findIndex(
+                            slice => compareValues(slice.metadata.rangeValue, range.from.metadata[0].rangeValue));
+                    range.to.index = facetData.facets[0].histogram.slices.findIndex(
+                            slice => compareValues(slice.metadata.rangeValue, range.to.metadata[0].rangeValue));
                     facetData.facets[0].selection['range'] = {
                         from: range.from.index,
                         to: range.to.index,
