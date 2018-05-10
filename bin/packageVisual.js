@@ -38,14 +38,9 @@ const webpackConfig = require('../webpack.config');
 const buildOSSReport = require('./buildOSSReport.js');
 
 const packagingWebpackConfig = {
-    tslint: {
-        emitErrors: true,
-        failOnHint: true,
-        typeCheck: true,
-    },
     output: {
         filename: 'visual.js', path: '/'
-    }
+    },
 };
 
 const _buildLegacyPackageJson = () => {
