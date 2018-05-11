@@ -175,8 +175,7 @@ export function loadSelectionFromBookmarks(facetsVisual) {
 
         if (facetsVisual.data.hasHighlight) {
             facetsVisual.facets.select(facetsVisual.data.facetsSelectionData);
-        } else {
-            facetsVisual.runWithNoAnimation(facetsVisual.updateFacetsSelection, facetsVisual, facetsVisual.selectedInstances);
         }
+        facetsVisual.runWithNoAnimation(facetsVisual.updateFacetsSelection, facetsVisual, facetsVisual.selectedInstances);
     }
 }
