@@ -127,6 +127,12 @@ function parseSQExpr(sqExpr, facetsVisual) {
     sqExprKindMap[sqExpr.kind](facetsVisual, sqExprKindMap, sqExpr);
 }
 
+function compareValues(valueA, valueB) {
+    const a = valueA.getTime ? valueA.getTime() : valueA;
+    const b = valueB.getTime ? valueB.getTime() : valueB;
+    return a === b;
+}
+
 export function bookmarkHandler(ids: ISelectionId[]) {
     this.clearFilters();
     this.selectedInstances = [];
@@ -143,15 +149,9 @@ export function bookmarkHandler(ids: ISelectionId[]) {
     }
 }
 
-function compareValues(valueA, valueB) {
-    const a = valueA.getTime ? valueA.getTime() : valueA;
-    const b = valueB.getTime ? valueB.getTime() : valueB;
-    return a === b;
-}
-
 export function loadSelectionFromBookmarks(facetsVisual) {
     if (facetsVisual.bookmarkSelection) {
-        facetsVisual.selectedInstances = facetsVisual.bookmarkSelection.selectedInstances;
+        facetsVisual.selectedInstances = facetsVisual.bookmarkSelection.selectedInstances || [];
         if (facetsVisual.bookmarkSelection.range) {
             facetsVisual.filter = facetsVisual.filter || {};
             facetsVisual.filter.range = facetsVisual.bookmarkSelection.range;

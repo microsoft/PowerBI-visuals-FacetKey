@@ -251,6 +251,13 @@ export default class FacetsVisual implements IVisual {
         return instances;
     }
 
+    private getSelectedInstances() {
+        if (!this.selectedInstances) {
+            this.selectedInstances = [];
+        }
+        return this.selectedInstances;
+    }
+
     /**
      * Validates the user input for the setting object from the powerbi formatting pane.
      * At the moment, it only validates the facetCount object.
@@ -438,15 +445,16 @@ export default class FacetsVisual implements IVisual {
 
         this.facets.on('facet-group:collapse', (e: any, key: string) => {
             const facetGroup = this.getFacetGroup(key);
+            const selectedInstances = this.getSelectedInstances();
             if (facetGroup.isRange) {
                 this.filter.range && this.filter.range[key] && (this.filter.range[key] = undefined);
                 this.filterFacets(true);
-                this.applySelection(this.selectedInstances);
+                this.applySelection(selectedInstances);
                 this.facets._getGroup(key).collapsed = true;
             } else {
-                const deselected = _.remove(this.selectedInstances, (selected) => selected.facetKey === key);
-                this.applySelection(this.selectedInstances);
-                this.updateFacetsSelection(this.selectedInstances);
+                const deselected = _.remove(selectedInstances, (selected) => selected.facetKey === key);
+                this.applySelection(selectedInstances);
+                this.updateFacetsSelection(selectedInstances);
             }
             facetGroup.collapsed = true;
             this.saveFacetState();
@@ -473,7 +481,7 @@ export default class FacetsVisual implements IVisual {
             !this.filter.range && (this.filter.range = {});
             this.filter.range[key] = isFullRange ? undefined : range;
             this.data.hasHighlight ? (this.retainFilters = true) : this.filterFacets(true);
-            this.applySelection(this.selectedInstances);
+            this.applySelection(this.getSelectedInstances());
         });
     }
 
@@ -493,7 +501,7 @@ export default class FacetsVisual implements IVisual {
         this.resetGroup(key);
         if (!this.data.hasHighlight) {
             _.remove(this.selectedInstances, (selected) => selected.facetKey === key && !_.find(facets, {'value': selected.instanceValue}));
-            this.applySelection(this.selectedInstances);
+            this.applySelection(this.getSelectedInstances());
             this.runWithNoAnimation(this.updateFacetsSelection, this, this.selectedInstances);
         }
     }
@@ -525,7 +533,7 @@ export default class FacetsVisual implements IVisual {
 
         this.data.hasHighlight
             ? this.facets.select(this.data.facetsSelectionData)
-            : this.runWithNoAnimation(this.updateFacetsSelection, this, this.selectedInstances);
+            : this.runWithNoAnimation(this.updateFacetsSelection, this, this.getSelectedInstances());
     }
 
     /**
@@ -647,10 +655,11 @@ export default class FacetsVisual implements IVisual {
      */
     private toggleFacetSelection(key: string, value: string) {
         const dataPoint = _.find(this.data.aggregatedData.dataPointsMap[key], (dp: DataPoint) => dp.facetKey === key && dp.instanceValue === value);
-        const deselected = _.remove(this.selectedInstances, (selected) => selected.facetKey === key && selected.instanceValue === value);
-        deselected.length === 0 && this.selectedInstances.push(dataPoint);
-        this.applySelection(this.selectedInstances);
-        this.updateFacetsSelection(this.selectedInstances);
+        const selectedInstances = this.getSelectedInstances();
+        const deselected = _.remove(selectedInstances, (selected) => selected.facetKey === key && selected.instanceValue === value);
+        deselected.length === 0 && selectedInstances.push(dataPoint);
+        this.applySelection(selectedInstances);
+        this.updateFacetsSelection(selectedInstances);
     }
 
     /**
