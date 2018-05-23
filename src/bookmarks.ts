@@ -76,7 +76,7 @@ function parseSQExprBetweenNode(facetsVisual, sqExprMap, node) {
                 isFirst: false,
                 isLast: false,
             }, {
-            rangeValue: node.lower.value,
+                rangeValue: node.lower.value,
                 isFirst: false,
                 isLast: false,
             }],
@@ -157,18 +157,22 @@ export function loadSelectionFromBookmarks(facetsVisual) {
             facetsVisual.filter.range = facetsVisual.bookmarkSelection.range;
             const rangeFacets = facetsVisual.data.facetsData.filter((group: any) => group.isRange);
             rangeFacets.forEach((facetData: any) => {
-                const group = facetsVisual.facets._getGroup(facetData.key);
                 const range = facetsVisual.bookmarkSelection.range[facetData.key];
                 if (range) {
-                    range.from.index = facetData.facets[0].histogram.slices.findIndex(
-                            slice => compareValues(slice.metadata.rangeValue, range.from.metadata[0].rangeValue));
-                    range.to.index = facetData.facets[0].histogram.slices.findIndex(
-                            slice => compareValues(slice.metadata.rangeValue, range.to.metadata[0].rangeValue));
-                    facetData.facets[0].selection['range'] = {
-                        from: range.from.index,
-                        to: range.to.index,
-                    };
-                    group.replace(facetData);
+                    const group = facetsVisual.facets._getGroup(facetData.key);
+                    const facet = group.facets.find(f => f.key === facetData.key);
+                    if (facet) {
+                        const bars = facet._histogram._bars;
+                        range.from.index = bars.findIndex(bar => bar.metadata.find(datum =>
+                            compareValues(datum.metadata.rangeValue, range.from.metadata[0].rangeValue)));
+                        range.to.index = bars.findIndex(bar => bar.metadata.find(datum =>
+                            compareValues(datum.metadata.rangeValue, range.to.metadata[0].rangeValue)));
+                        facetData.facets[0].selection['range'] = {
+                            from: range.from.index,
+                            to: range.to.index,
+                        };
+                        group.replace(facetData);
+                    }
                 }
             });
         }

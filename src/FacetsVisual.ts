@@ -353,8 +353,8 @@ export default class FacetsVisual implements IVisual {
     private updateFacets() {
         this.toggleLoadingSpinner(false);
         this.resetFacets();
-        loadSelectionFromBookmarks(this);
         this.data.hasHighlight && this.facets.select(this.data.facetsSelectionData);
+        loadSelectionFromBookmarks(this);
     }
 
     /**
