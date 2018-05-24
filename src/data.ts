@@ -52,7 +52,6 @@ const MAX_NUM_FACET_GROUPS = 100;
  * @return {DataPointsMapData}          Converted data.
  */
 export function convertToDataPointsMap(dataView: DataView): DataPointsMapData {
-    const viz = powerbi.visuals;
     const formatting = powerbi.extensibility.utils.formatting;
     const category = dataView.categorical.categories && dataView.categorical.categories[0];
     const values = dataView.categorical.values || <powerbi.DataViewValueColumn[]>[];
@@ -71,8 +70,6 @@ export function convertToDataPointsMap(dataView: DataView): DataPointsMapData {
     const countFormatter = (countColumn && countColumn.format) &&  formatting.valueFormatter.create({format: countColumn.format});
     const facetFormatter = (facetColumn && facetColumn.format) && formatting.valueFormatter.create({format: facetColumn.format});
     const instanceFormatter = (instanceColumn && instanceColumn.format) && formatting.valueFormatter.create({format: instanceColumn.format});
-    const rangeValueFormatter = (rangeValueColumns && rangeValueColumns[0].format)
-        && formatting.valueFormatter.create({format: rangeValueColumns[0].format});
 
     const dataPointsMap = {};
 
@@ -302,8 +299,8 @@ function createBucket(targetObj: any, dp: DataPoint, bucketName: string) {
  * @return {string}                           A formatted value.
  */
 function formatValue(defaultFormatter: IValueFormatter, value: any, defaultValue: any = '') {
-    const smallFormatter = powerbi.extensibility.utils.formatting.valueFormatter.create({format: 'O', value: 0});
-    const bigFormatter = powerbi.extensibility.utils.formatting.valueFormatter.create({format: 'O', value: 1e6});
+    const smallFormatter = powerbi.extensibility.utils.formatting.valueFormatter.create({format: 'D', value: 0});
+    const bigFormatter = powerbi.extensibility.utils.formatting.valueFormatter.create({format: 'D', value: 1e6});
     if (value) {
         if (defaultFormatter) {
             return defaultFormatter.format(value);

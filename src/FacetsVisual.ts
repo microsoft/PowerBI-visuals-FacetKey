@@ -36,8 +36,10 @@ import EnumerateVisualObjectInstancesOptions = powerbi.EnumerateVisualObjectInst
 import SQExprBuilder = powerbi.data.SQExprBuilder;
 import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
 import DataViewScopeIdentity = powerbi.DataViewScopeIdentity;
+import ISelectionManager = powerbi.extensibility.ISelectionManager;
 import { convertToDataPointsMap, aggregateDataPointsMap, convertToFacetsVisualData } from './data';
 import { safeKey, findColumn, hexToRgba, otherLabelTemplate, createSegments, HIGHLIGHT_COLOR, hasColumns, createTimeSeries } from './utils';
+import { bookmarkHandler, loadSelectionFromBookmarks } from './bookmarks';
 
 const Facets = require('../lib/@uncharted.software/stories-facets/src/main');
 
@@ -104,6 +106,9 @@ export default class FacetsVisual implements IVisual {
                 : this.updateFacetsSelection(this.selectedInstances);
         }
     }, 500);
+    private selectionManager: ISelectionManager;
+    public sqExprTypeMap: any = null;
+    public bookmarkSelection: any = null;
 
     /**
      * Initializes an instance of the IVisual.
@@ -115,7 +120,8 @@ export default class FacetsVisual implements IVisual {
         this.settings = DEFAULT_SETTINGS;
 
         this.host = options.host;
-        this.hostServices = options.host.createSelectionManager()['hostServices'];
+        this.selectionManager = options.host.createSelectionManager();
+        this.hostServices = this.selectionManager['hostServices'];
         this.colors = this.host.colors;
 
         this.facets = new Facets(this.facetsContainer, []);
@@ -140,6 +146,7 @@ export default class FacetsVisual implements IVisual {
             } : null;
         };
         this.loadMoreData = findApi('loadMoreData') || function () {};
+        this.selectionManager['registerOnSelectCallback'](bookmarkHandler.bind(this));
     }
 
     /**
@@ -159,7 +166,6 @@ export default class FacetsVisual implements IVisual {
         });
         return _.extend({ dataPointsMapData: dataPointsMapData }, facetsData);
     }
-
 
     /**
      * Notifies the IVisual of an update (data, viewmode, size change).
@@ -243,6 +249,13 @@ export default class FacetsVisual implements IVisual {
                 break;
         }
         return instances;
+    }
+
+    private getSelectedInstances() {
+        if (!this.selectedInstances) {
+            this.selectedInstances = [];
+        }
+        return this.selectedInstances;
     }
 
     /**
@@ -341,6 +354,7 @@ export default class FacetsVisual implements IVisual {
         this.toggleLoadingSpinner(false);
         this.resetFacets();
         this.data.hasHighlight && this.facets.select(this.data.facetsSelectionData);
+        loadSelectionFromBookmarks(this);
     }
 
     /**
@@ -431,15 +445,16 @@ export default class FacetsVisual implements IVisual {
 
         this.facets.on('facet-group:collapse', (e: any, key: string) => {
             const facetGroup = this.getFacetGroup(key);
+            const selectedInstances = this.getSelectedInstances();
             if (facetGroup.isRange) {
                 this.filter.range && this.filter.range[key] && (this.filter.range[key] = undefined);
                 this.filterFacets(true);
-                this.applySelection(this.selectedInstances);
+                this.applySelection(selectedInstances);
                 this.facets._getGroup(key).collapsed = true;
             } else {
-                const deselected = _.remove(this.selectedInstances, (selected) => selected.facetKey === key);
-                this.applySelection(this.selectedInstances);
-                this.updateFacetsSelection(this.selectedInstances);
+                const deselected = _.remove(selectedInstances, (selected) => selected.facetKey === key);
+                this.applySelection(selectedInstances);
+                this.updateFacetsSelection(selectedInstances);
             }
             facetGroup.collapsed = true;
             this.saveFacetState();
@@ -466,7 +481,7 @@ export default class FacetsVisual implements IVisual {
             !this.filter.range && (this.filter.range = {});
             this.filter.range[key] = isFullRange ? undefined : range;
             this.data.hasHighlight ? (this.retainFilters = true) : this.filterFacets(true);
-            this.applySelection(this.selectedInstances);
+            this.applySelection(this.getSelectedInstances());
         });
     }
 
@@ -486,7 +501,7 @@ export default class FacetsVisual implements IVisual {
         this.resetGroup(key);
         if (!this.data.hasHighlight) {
             _.remove(this.selectedInstances, (selected) => selected.facetKey === key && !_.find(facets, {'value': selected.instanceValue}));
-            this.applySelection(this.selectedInstances);
+            this.applySelection(this.getSelectedInstances());
             this.runWithNoAnimation(this.updateFacetsSelection, this, this.selectedInstances);
         }
     }
@@ -518,7 +533,7 @@ export default class FacetsVisual implements IVisual {
 
         this.data.hasHighlight
             ? this.facets.select(this.data.facetsSelectionData)
-            : this.runWithNoAnimation(this.updateFacetsSelection, this, this.selectedInstances);
+            : this.runWithNoAnimation(this.updateFacetsSelection, this, this.getSelectedInstances());
     }
 
     /**
@@ -604,7 +619,12 @@ export default class FacetsVisual implements IVisual {
             sqExpr = sqExpr ? SQExprBuilder.and(sqExpr, rangeExpr) : rangeExpr;
         }
 
-        this.sendSelectionToHost(sqExpr ? [powerbi.data.createDataViewScopeIdentity(sqExpr)] : undefined);
+        this.bookmarkSelection = powerbi.data.createDataViewScopeIdentity(sqExpr);
+        if (sqExpr) {
+            this.sendSelectionToHost([this.bookmarkSelection]);
+        } else {
+            this.selectionManager.clear();
+        }
     }
 
     /**
@@ -635,10 +655,11 @@ export default class FacetsVisual implements IVisual {
      */
     private toggleFacetSelection(key: string, value: string) {
         const dataPoint = _.find(this.data.aggregatedData.dataPointsMap[key], (dp: DataPoint) => dp.facetKey === key && dp.instanceValue === value);
-        const deselected = _.remove(this.selectedInstances, (selected) => selected.facetKey === key && selected.instanceValue === value);
-        deselected.length === 0 && this.selectedInstances.push(dataPoint);
-        this.applySelection(this.selectedInstances);
-        this.updateFacetsSelection(this.selectedInstances);
+        const selectedInstances = this.getSelectedInstances();
+        const deselected = _.remove(selectedInstances, (selected) => selected.facetKey === key && selected.instanceValue === value);
+        deselected.length === 0 && selectedInstances.push(dataPoint);
+        this.applySelection(selectedInstances);
+        this.updateFacetsSelection(selectedInstances);
     }
 
     /**
