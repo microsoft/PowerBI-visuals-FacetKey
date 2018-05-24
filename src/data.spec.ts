@@ -26,11 +26,15 @@ window['powerbi'] = {
     DataViewObjects: {
         getValue: () => undefined,
     },
-    visuals: {
-        valueFormatter: {
-            create: (obj) => ({ format: (value) => obj.format + value })
+    extensibility: {
+        utils: {
+            formatting: {
+                valueFormatter: {
+                    create: (obj) => ({ format: (value) => obj.format + value })
+                },
+            },
         }
-    }
+    },
 };
 const logObj = (obj) => console.log(JSON.stringify(obj, null, 2));
 
@@ -44,7 +48,6 @@ import * as dataConversion from './data';
 import mockDataView from './test_data/mockdataview';
 import mockDataPointsMap from './test_data/mockDataPointsMap';
 import mockAggregatedData from './test_data/mockAggregatedData';
-import DataViewObjects = powerbi.DataViewObjects;
 
 describe('Data Conversion Functions', () => {
 

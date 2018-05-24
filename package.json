@@ -1,6 +1,6 @@
 {
   "name": "essex.widget.facetkey",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "PowerBI custom visual.",
   "main": "src/index.js",
   "repository": {
@@ -15,6 +15,7 @@
     "preinstall:submodules": "node bin/downloadPrivateSubmodules",
     "preinstall:dependencies": "node bin/installSubmoduleDeps",
     "preinstall": "npm run preinstall:prereq && npm run preinstall:submodules && npm run preinstall:dependencies",
+    "postinstall": "node bin/createSymLink",
     "install-certificate": "node bin/openCert",
     "start": "npm run compiletemplates && npm-run-all --parallel dev watch:templates",
     "tdd": "npm-run-all --parallel start test:tdd",
@@ -39,8 +40,8 @@
     "@uncharted.software/stories-facets": "2.12.1"
   },
   "devDependencies": {
-    "@types/jquery": "^2.0.33",
-    "@types/lodash": "^4.14.37",
+    "@types/jquery": "^3.3.0",
+    "@types/lodash": "^3.10.1",
     "@types/mocha": "^2.2.32",
     "@types/requirejs": "^2.1.28",
     "@types/sinon": "^1.16.31",
@@ -50,6 +51,7 @@
     "clean-css": "^4.0.5",
     "connect": "^3.5.0",
     "handlebars": "^4.0.11",
+    "handlebars-loader": "^1.6.0",
     "json": "^9.0.4",
     "karma": "^1.3.0",
     "karma-chrome-launcher": "^2.0.0",
@@ -71,16 +73,20 @@
     "serve-static": "^1.11.1",
     "sinon": "^2.1.0",
     "sinon-chai": "^2.8.0",
+    "string-replace-loader": "^1.3.0",
     "targz": "^1.0.1",
     "ts-loader": "^2.0.3",
     "tslint": "^5.8.0",
     "tslint-loader": "^3.5.3",
     "tslint-microsoft-contrib": "^5.0.1",
     "typescript": "^2.6.2",
-    "webpack": "^1.13.2"
+    "webpack": "^3.4.1"
   },
   "dependencies": {
-    "jquery": "^3.1.1",
-    "lodash": "^3.10.1"
+    "lodash": "3.10.1",
+    "jquery": "^3.3.1",
+    "powerbi-visuals-utils-dataviewutils": "^1.4.1",
+    "powerbi-visuals-utils-formattingutils": "^3.0.1",
+    "powerbi-visuals-utils-typeutils": "^1.1.0"
   }
 }
