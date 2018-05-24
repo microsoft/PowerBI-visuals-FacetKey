@@ -134,30 +134,31 @@ function compareValues(valueA, valueB) {
 }
 
 export function bookmarkHandler(ids: ISelectionId[]) {
-    this.clearFilters();
-    this.selectedInstances = [];
     this.bookmarkSelection = null;
 
     if (ids.length) {
-        const dataMap = ids[0]['selectorsByColumn'].dataMap[''][0];
-        parseSQExpr(dataMap, this);
-        this.bookmarkSelection = {
-            range: this.filter && this.filter.range,
-            selectedInstances: this.selectedInstances,
-        };
-        loadSelectionFromBookmarks(this);
+        this.bookmarkSelection = ids[0]['selectorsByColumn'].dataMap[''][0];
     }
+
+    loadSelectionFromBookmarks(this);
 }
 
 export function loadSelectionFromBookmarks(facetsVisual) {
+    facetsVisual.clearFilters();
+    facetsVisual.selectedInstances = [];
+
     if (facetsVisual.bookmarkSelection) {
-        facetsVisual.selectedInstances = facetsVisual.bookmarkSelection.selectedInstances || [];
-        if (facetsVisual.bookmarkSelection.range) {
+        parseSQExpr(facetsVisual.bookmarkSelection, facetsVisual);
+        const selection = {
+            range: facetsVisual.filter && facetsVisual.filter.range,
+            selectedInstances: facetsVisual.selectedInstances || [],
+        };
+        if (selection.range) {
             facetsVisual.filter = facetsVisual.filter || {};
-            facetsVisual.filter.range = facetsVisual.bookmarkSelection.range;
+            facetsVisual.filter.range = selection.range;
             const rangeFacets = facetsVisual.data.facetsData.filter((group: any) => group.isRange);
             rangeFacets.forEach((facetData: any) => {
-                const range = facetsVisual.bookmarkSelection.range[facetData.key];
+                const range = selection.range[facetData.key];
                 if (range) {
                     const group = facetsVisual.facets._getGroup(facetData.key);
                     const facet = group.facets.find(f => f.key === facetData.key);

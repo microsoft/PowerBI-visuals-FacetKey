@@ -619,9 +619,9 @@ export default class FacetsVisual implements IVisual {
             sqExpr = sqExpr ? SQExprBuilder.and(sqExpr, rangeExpr) : rangeExpr;
         }
 
-        this.bookmarkSelection = [powerbi.data.createDataViewScopeIdentity(sqExpr)];
+        this.bookmarkSelection = powerbi.data.createDataViewScopeIdentity(sqExpr);
         if (sqExpr) {
-            this.sendSelectionToHost(this.bookmarkSelection);
+            this.sendSelectionToHost([this.bookmarkSelection]);
         } else {
             this.selectionManager.clear();
         }
