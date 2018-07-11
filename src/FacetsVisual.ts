@@ -122,7 +122,7 @@ export default class FacetsVisual implements IVisual {
         this.host = options.host;
         this.selectionManager = options.host.createSelectionManager();
         this.hostServices = this.selectionManager['hostServices'];
-        this.colors = this.host.colors;
+        this.colors = this.host['colorPalette']['colors'];
 
         this.facets = new Facets(this.facetsContainer, []);
         this.facetsContainer.prepend(`
