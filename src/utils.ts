@@ -22,6 +22,7 @@
  */
 
 import DataView = powerbi.DataView;
+import * as _ from 'lodash';
 
 export const COLOR_PALETTE = ['#FF001F', '#FF8000', '#AC8000', '#95AF00', '#1BBB6A', '#B44AE7', '#DB00B0'];
 export const HIGHLIGHT_COLOR = '#00c6e1';
