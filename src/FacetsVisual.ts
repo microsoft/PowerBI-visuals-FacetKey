@@ -40,6 +40,7 @@ import ISelectionManager = powerbi.extensibility.ISelectionManager;
 import { convertToDataPointsMap, aggregateDataPointsMap, convertToFacetsVisualData } from './data';
 import { safeKey, findColumn, hexToRgba, otherLabelTemplate, createSegments, HIGHLIGHT_COLOR, hasColumns, createTimeSeries } from './utils';
 import { bookmarkHandler, loadSelectionFromBookmarks } from './bookmarks';
+import * as _ from 'lodash';
 
 const Facets = require('../lib/@uncharted.software/stories-facets/src/main');
 
