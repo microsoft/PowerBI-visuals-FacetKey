@@ -23,7 +23,6 @@ module.exports = function(config) {
         webpack: {
             entry: webpackConfig.entry,
             module: {
-                preLoaders: webpackConfig.module.preLoaders,
                 loaders: [
                     {
                         test: /\.ts?$/,

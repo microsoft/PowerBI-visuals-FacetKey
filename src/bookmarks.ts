@@ -25,6 +25,7 @@
 import ISelectionId = powerbi.extensibility.ISelectionId;
 import SQExprBuilder = powerbi.data.SQExprBuilder;
 import { safeKey } from './utils';
+import * as _ from 'lodash';
 
 const SQ_ENTITY = SQExprBuilder.entity(undefined, undefined);
 const SQ_KIND_AND = SQExprBuilder.and(SQ_ENTITY, SQ_ENTITY).kind;
