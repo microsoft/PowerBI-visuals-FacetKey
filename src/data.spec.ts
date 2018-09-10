@@ -40,8 +40,9 @@ const logObj = (obj) => console.log(JSON.stringify(obj, null, 2));
 
 import * as sinon from 'sinon';
 import { expect } from 'chai';
-import * as $ from 'jquery';
-import * as _ from 'lodash';
+import assign from 'lodash-es/assign';
+import cloneDeep from 'lodash-es/cloneDeep';
+import find from 'lodash-es/find';
 
 import * as utils from './utils';
 import * as dataConversion from './data';
@@ -55,7 +56,7 @@ describe('.convertToDataPointsMap', () => {
     let dataView;
 
     beforeEach(() => {
-        dataView = _.cloneDeep(mockDataView);
+        dataView = cloneDeep(mockDataView);
     });
 
     it('should group rows by its facet value', () => {
@@ -196,7 +197,7 @@ describe('.aggregateDataPointsMap', () => {
     };
 
     beforeEach(() => {
-        data = { dataPointsMap: _.cloneDeep(mockDataPointsMap) };
+        data = { dataPointsMap: cloneDeep(mockDataPointsMap) };
     });
 
     it('should return hasHighlight flag', () => {
@@ -474,11 +475,11 @@ describe('.convertToFacetsVisualData', () => {
     let result;
 
     const replaceVariable = (obj, variableName, value) => (obj[variableName] = value);
-    const getFacetGroup = (facetsData, key) => _.find(facetsData, obj => obj['key'] === key);
+    const getFacetGroup = (facetsData, key) => find(facetsData, obj => obj['key'] === key);
 
     beforeEach(() => {
         replaceVariable(utils, '__restore_COLOR_PALETTE', utils.COLOR_PALETTE);
-        aggregatedData = _.cloneDeep(mockAggregatedData);
+        aggregatedData = cloneDeep(mockAggregatedData);
     });
     afterEach(() => {
         replaceVariable(utils, 'COLOR_PALETTE', utils['__restore_COLOR_PALETTE']);
@@ -545,7 +546,7 @@ describe('.convertToFacetsVisualData', () => {
         sinon.stub(utils, 'getSegmentColor', (baseColor) => baseColor);
         const locationDps = aggregatedData.dataPointsMap.location;
         locationDps.forEach((dp) => { delete dp.bucket; });
-        locationDps.push(...(_.cloneDeep(locationDps)));
+        locationDps.push(...(cloneDeep(locationDps)));
         locationDps.map((dp: DataPoint) => (dp.instanceColor = undefined) && dp);
 
         replaceVariable(utils, 'COLOR_PALETTE', ['#000000', '#000000']);
@@ -594,7 +595,7 @@ describe('.convertToFacetsVisualData', () => {
     it('should limit the number of facets by initial facetCountSetting', () => {
         result = dataConversion.convertToFacetsVisualData(aggregatedData, {
             colors: [],
-            settings: _.assign({}, DEFAULT_SETTINGS, { facetCount: {initial: 1, increment: 50}})
+            settings: assign({}, DEFAULT_SETTINGS, { facetCount: {initial: 1, increment: 50}})
         });
         const facetsData = result.facetsData;
         const locGroup = <FacetGroup>getFacetGroup(facetsData, 'location');
@@ -605,7 +606,7 @@ describe('.convertToFacetsVisualData', () => {
         sinon.stub(utils, 'otherLabelTemplate').withArgs(1).returns('Label1');
         result = dataConversion.convertToFacetsVisualData(aggregatedData, {
             colors: [],
-            settings: _.assign({}, DEFAULT_SETTINGS, { facetCount: {initial: 1, increment: 50}})
+            settings: assign({}, DEFAULT_SETTINGS, { facetCount: {initial: 1, increment: 50}})
         });
         const facetsData = result.facetsData;
         const locGroup = <FacetGroup>getFacetGroup(facetsData, 'location');
@@ -631,7 +632,7 @@ describe('.convertToFacetsVisualData', () => {
         };
         result = dataConversion.convertToFacetsVisualData(aggregatedData, {
             colors: [],
-            settings: _.assign({}, DEFAULT_SETTINGS, { facetState: facetState })
+            settings: assign({}, DEFAULT_SETTINGS, { facetState: facetState })
         });
         const facetsData = result.facetsData;
         expect(facetsData[0].key).to.equal('icon_class');
@@ -646,7 +647,7 @@ describe('.convertToFacetsVisualData', () => {
         };
         result = dataConversion.convertToFacetsVisualData(aggregatedData, {
             colors: [],
-            settings: _.assign({}, DEFAULT_SETTINGS, { facetState: facetState })
+            settings: assign({}, DEFAULT_SETTINGS, { facetState: facetState })
         });
         const facetsData = result.facetsData;
         expect(facetsData[1].key).to.equal('location');
@@ -679,7 +680,7 @@ describe('.convertToFacetsVisualData', () => {
     it('should populate facets selection data with selction count label', () => {
         result = dataConversion.convertToFacetsVisualData(aggregatedData, {
             colors: [],
-            settings: _.assign({}, DEFAULT_SETTINGS, { display: { selectionCount: true}})
+            settings: assign({}, DEFAULT_SETTINGS, { display: { selectionCount: true}})
         });
         const selectionData = result.facetsSelectionData;
         const orgGroup = <any>getFacetGroup(selectionData, 'organization');
@@ -710,7 +711,7 @@ describe('.convertToFacetsVisualData', () => {
     });
     it('should convert selected datapoints to facets data and prepend them to facets list in descending order', () => {
         const locationDps = aggregatedData.dataPointsMap.location;
-        locationDps.push(...(_.cloneDeep(locationDps)));
+        locationDps.push(...(cloneDeep(locationDps)));
         locationDps[2].instanceValue = 'prepend1';
         locationDps[2].instanceLabel = 'prepend1';
         locationDps[2].instanceCount = 10;
@@ -721,7 +722,7 @@ describe('.convertToFacetsVisualData', () => {
 
         result = dataConversion.convertToFacetsVisualData(aggregatedData, {
             colors: [],
-            settings: _.assign({}, DEFAULT_SETTINGS, { facetCount: {initial: 1, increment: 50}})
+            settings: assign({}, DEFAULT_SETTINGS, { facetCount: {initial: 1, increment: 50}})
         });
         const facetsData = result.facetsData;
         const locGroup = <FacetGroup>getFacetGroup(facetsData, 'location');
@@ -755,7 +756,7 @@ describe('.convertToFacetsVisualData', () => {
         sinon.stub(utils, 'getSegmentColor', (arg1, arg2, arg3, arg4, arg5) => '' + arg1 + arg2 + arg3 + arg4 + arg5);
 
         const locationDps = aggregatedData.dataPointsMap.location;
-        locationDps.push(...(_.cloneDeep(locationDps)));
+        locationDps.push(...(cloneDeep(locationDps)));
         locationDps.forEach(dp => delete dp.instanceColor);
         delete aggregatedData.dataPointsMap.organization;
 
@@ -786,7 +787,7 @@ describe('.convertToFacetsVisualData', () => {
         };
         result = dataConversion.convertToFacetsVisualData(aggregatedData, {
             colors: [],
-            settings: _.assign({}, DEFAULT_SETTINGS, { facetState: facetState })
+            settings: assign({}, DEFAULT_SETTINGS, { facetState: facetState })
         });
         const facetsData = result.facetsData;
         const dateGroup = <FacetGroup>getFacetGroup(facetsData, 'date');

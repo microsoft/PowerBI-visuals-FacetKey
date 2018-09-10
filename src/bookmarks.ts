@@ -25,7 +25,7 @@
 import ISelectionId = powerbi.extensibility.ISelectionId;
 import SQExprBuilder = powerbi.data.SQExprBuilder;
 import { safeKey } from './utils';
-import * as _ from 'lodash';
+import find from 'lodash-es/find';
 
 const SQ_ENTITY = SQExprBuilder.entity(undefined, undefined);
 const SQ_KIND_AND = SQExprBuilder.and(SQ_ENTITY, SQ_ENTITY).kind;
@@ -49,7 +49,7 @@ function parseSQExprAndNode(facetsVisual, sqExprMap, node) {
             const facet = node.right.right.value;
             const instance = node.left.right.value;
             const key = safeKey(String(facet || ' '));
-            const dataPoint = _.find(facetsVisual.data.aggregatedData.dataPointsMap[key],
+            const dataPoint = find(facetsVisual.data.aggregatedData.dataPointsMap[key],
                 (dp: DataPoint) => dp.facetKey === key && dp.rows[0].facetInstance === instance);
             if (dataPoint) {
                 facetsVisual.selectedInstances.push(dataPoint);

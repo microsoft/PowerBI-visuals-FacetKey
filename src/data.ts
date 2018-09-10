@@ -39,7 +39,11 @@ import {
     HIGHLIGHT_COLOR,
     COLOR_PALETTE
 } from './utils';
-import * as _ from 'lodash';
+import isString from 'lodash-es/isString';
+import uniq from 'lodash-es/uniq';
+import sortBy from 'lodash-es/sortBy';
+import find from 'lodash-es/find';
+import escape from 'lodash-es/escape';
 
 /**
  * Maximum number of facet groups to be rendered.
@@ -104,8 +108,8 @@ export function convertToDataPointsMap(dataView: DataView): DataPointsMapData {
         });
         const { facet, facetInstance, count, facetInstanceColor, iconClass, rangeValues } = rowObj;
         const facetKey = safeKey(String(facet || ' '));
-        const facetLabel = _.escape(formatValue(facetFormatter, (_.isString(facet) ? facet.charAt(0).toUpperCase() + facet.slice(1) : facet)));
-        const instanceLabel = _.escape(formatValue(instanceFormatter, facetInstance));
+        const facetLabel = escape(formatValue(facetFormatter, (isString(facet) ? facet.charAt(0).toUpperCase() + facet.slice(1) : facet)));
+        const instanceLabel = escape(formatValue(instanceFormatter, facetInstance));
         const instanceValue = instanceLabel !== '' ? instanceLabel + index : '';
         const instanceCount = Math.max(count, highlight) || 0;
         const instanceCountFormatter = countFormatter;
@@ -180,7 +184,7 @@ export function aggregateDataPointsMap(data: DataPointsMapData, filter: DataPoin
 
         dataPoints.forEach(dp => sparklineXValues.push(...Object.keys(dp['sparklineData'] || {})));
     });
-    aggregatedData.sparklineXDomain = _.uniq(sparklineXValues).sort(compareRangeValue);
+    aggregatedData.sparklineXDomain = uniq(sparklineXValues).sort(compareRangeValue);
     return aggregatedData;
 }
 
@@ -201,7 +205,7 @@ export function convertToFacetsVisualData(aggregatedData: AggregatedData, option
     };
 
     data.facetsSelectionData.push(...createFacetsSelectionData(aggregatedData, options));
-    data.facetsData = _.sortBy([...createRangeFacetsData(aggregatedData, options), ...createFacetsData(aggregatedData, options)], 'order')
+    data.facetsData = sortBy([...createRangeFacetsData(aggregatedData, options), ...createFacetsData(aggregatedData, options)], 'order')
         .slice(0, MAX_NUM_FACET_GROUPS);
     return data;
 }
@@ -268,7 +272,7 @@ function checkKeywordFilter(keyword: string, dataPoint: DataPoint) {
  * @return {boolean}
  */
 function isInSelectedDataPoints(dataPoint: DataPoint, selectedDataPoints: DataPoint[]) {
-    return Boolean(_.find(selectedDataPoints, (selectedDp: DataPoint) => selectedDp.instanceLabel === dataPoint.instanceLabel && selectedDp.facetKey === dataPoint.facetKey));
+    return Boolean(find(selectedDataPoints, (selectedDp: DataPoint) => selectedDp.instanceLabel === dataPoint.instanceLabel && selectedDp.facetKey === dataPoint.facetKey));
 }
 
 /**

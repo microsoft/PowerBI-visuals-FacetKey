@@ -40,7 +40,11 @@ import ISelectionManager = powerbi.extensibility.ISelectionManager;
 import { convertToDataPointsMap, aggregateDataPointsMap, convertToFacetsVisualData } from './data';
 import { safeKey, findColumn, hexToRgba, otherLabelTemplate, createSegments, HIGHLIGHT_COLOR, hasColumns, createTimeSeries } from './utils';
 import { bookmarkHandler, loadSelectionFromBookmarks } from './bookmarks';
-import * as _ from 'lodash';
+import debounce from 'lodash-es/debounce';
+import extend from 'lodash-es/extend';
+import remove from 'lodash-es/remove';
+import find from 'lodash-es/find';
+import * as $ from 'jquery';
 
 const Facets = require('../lib/@uncharted.software/stories-facets/src/main');
 
@@ -85,7 +89,7 @@ export default class FacetsVisual implements IVisual {
     private selectionInHighlightedState: boolean;
     private selectedInstances: DataPoint[] = [];
     private loadMoreCount: number;
-    private reDrawRangeFilter: any = _.debounce(() => {
+    private reDrawRangeFilter: any = debounce(() => {
         const rangeFacets = this.data.facetsData.filter((group: any) => group.isRange);
         rangeFacets.forEach((facetData: any) => {
             const group = this.facets._getGroup(facetData.key);
@@ -99,7 +103,7 @@ export default class FacetsVisual implements IVisual {
             }
         });
     }, 500);
-    private updateSparklines: any = _.debounce(() => {
+    private updateSparklines: any = debounce(() => {
         if (this.data.aggregatedData.sparklineXDomain.length > 0) {
             // updating selection triggers redrawing of the sparklines
             this.data.hasHighlight
@@ -165,7 +169,7 @@ export default class FacetsVisual implements IVisual {
             settings: settings,
             colors: colors,
         });
-        return _.extend({ dataPointsMapData: dataPointsMapData }, facetsData);
+        return extend({ dataPointsMapData: dataPointsMapData }, facetsData);
     }
 
     /**
@@ -408,7 +412,7 @@ export default class FacetsVisual implements IVisual {
         this.filter.selectedDataPoints = this.selectedInstances;
         if (data) {
             const aggregatedData = aggregateDataPointsMap(data.dataPointsMapData, this.filter);
-            const result: any =  _.extend({}, data, convertToFacetsVisualData(aggregatedData, {
+            const result: any =  extend({}, data, convertToFacetsVisualData(aggregatedData, {
                 settings: this.settings,
                 colors: this.colors,
                 selectedRange: this.filter.range,
@@ -427,7 +431,7 @@ export default class FacetsVisual implements IVisual {
      * @return {FacetGroup} A facet group data.
      */
     private getFacetGroup(key: string): FacetGroup {
-        return _.find(this.data.facetsData, (group: any) => key === group.key);
+        return find(this.data.facetsData, (group: any) => key === group.key);
     }
 
     /**
@@ -437,7 +441,7 @@ export default class FacetsVisual implements IVisual {
         // If the mouse leaves the container while dragging, cancel it by triggering a mouseup event.
         this.facetsContainer.on('mouseleave', (evt) => this.facetsContainer.trigger('mouseup'));
 
-        this.searchBox.on('input', _.debounce((e: any) => this.filterFacets(), 500));
+        this.searchBox.on('input', debounce((e: any) => this.filterFacets(), 500));
 
         this.facets.on('facet:click', (e: any, key: string, value: string) => this.toggleFacetSelection(key, value));
 
@@ -453,7 +457,7 @@ export default class FacetsVisual implements IVisual {
                 this.applySelection(selectedInstances);
                 this.facets._getGroup(key).collapsed = true;
             } else {
-                const deselected = _.remove(selectedInstances, (selected) => selected.facetKey === key);
+                const deselected = remove(selectedInstances, (selected) => selected.facetKey === key);
                 this.applySelection(selectedInstances);
                 this.updateFacetsSelection(selectedInstances);
             }
@@ -501,7 +505,7 @@ export default class FacetsVisual implements IVisual {
         const facets = this.getFacetGroup(key).facets;
         this.resetGroup(key);
         if (!this.data.hasHighlight) {
-            _.remove(this.selectedInstances, (selected) => selected.facetKey === key && !_.find(facets, {'value': selected.instanceValue}));
+            remove(this.selectedInstances, (selected) => selected.facetKey === key && !find(facets, {'value': selected.instanceValue}));
             this.applySelection(this.getSelectedInstances());
             this.runWithNoAnimation(this.updateFacetsSelection, this, this.selectedInstances);
         }
@@ -582,7 +586,7 @@ export default class FacetsVisual implements IVisual {
         const rangeValueColumns = findColumn(this.dataView, 'rangeValue', true);
         let sqExpr: any;
         Object.keys(rangeFilter).forEach((key: string) => {
-            const column = _.find(rangeValueColumns, (column: any) => safeKey(column.displayName) === key);
+            const column = find(rangeValueColumns, (column: any) => safeKey(column.displayName) === key);
             const filter = rangeFilter[key];
             if (filter) {
                 const rangeFrom = filter.from.metadata[0].rangeValue;
@@ -655,9 +659,9 @@ export default class FacetsVisual implements IVisual {
      * @param {string} value A facet instance value.
      */
     private toggleFacetSelection(key: string, value: string) {
-        const dataPoint = _.find(this.data.aggregatedData.dataPointsMap[key], (dp: DataPoint) => dp.facetKey === key && dp.instanceValue === value);
+        const dataPoint = find(this.data.aggregatedData.dataPointsMap[key], (dp: DataPoint) => dp.facetKey === key && dp.instanceValue === value);
         const selectedInstances = this.getSelectedInstances();
-        const deselected = _.remove(selectedInstances, (selected) => selected.facetKey === key && selected.instanceValue === value);
+        const deselected = remove(selectedInstances, (selected) => selected.facetKey === key && selected.instanceValue === value);
         deselected.length === 0 && selectedInstances.push(dataPoint);
         this.applySelection(selectedInstances);
         this.updateFacetsSelection(selectedInstances);
