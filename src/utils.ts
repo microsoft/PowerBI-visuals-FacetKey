@@ -22,7 +22,8 @@
  */
 
 import DataView = powerbi.DataView;
-import * as _ from 'lodash';
+import filter from 'lodash-es/filter';
+import sortBy from 'lodash-es/sortBy';
 
 export const COLOR_PALETTE = ['#FF001F', '#FF8000', '#AC8000', '#95AF00', '#1BBB6A', '#B44AE7', '#DB00B0'];
 export const HIGHLIGHT_COLOR = '#00c6e1';
@@ -103,7 +104,7 @@ export function convertToHSL(colorString: string) {
  */
 export function findColumn(dataView: DataView, dataRoleName: string, multi?: boolean): any {
     const columns = dataView.metadata.columns;
-    const result =  _.filter(columns || [], (col: any) => col && col.roles[dataRoleName]);
+    const result = filter(columns || [], (col: any) => col && col.roles[dataRoleName]);
     return multi
         ? (result[0] && result)
         : result[0];
@@ -158,7 +159,7 @@ export function getSegmentColor(baseColor: string, opacity: number = 100, segmen
   */
 export function createSegments(bucket: any, mainColor: string, isHighlight: boolean, opacity: number = 100, useHighlightColor?: boolean) {
     const countType = isHighlight ? 'highlight' : 'instanceCount';
-    return _.sortBy(Object.keys(bucket), (key: string) => {
+    return sortBy(Object.keys(bucket), (key: string) => {
         const parsedDate = Date.parse(key);
         return !isNaN(<any>key) ? Number(key) : (isNaN(parsedDate) ? key : parsedDate);
     })
