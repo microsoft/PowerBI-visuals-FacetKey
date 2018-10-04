@@ -33,7 +33,7 @@
     "tmpProd": "./.tmp/prod"
   },
   "keywords": [],
-  "author": "Microsoft (experimental)",
+  "author": "Microsoft",
   "license": "SEE LICENSE IN LICENSE",
   "privacyTerms": "https://privacy.microsoft.com/en-US/privacystatement/",
   "privateSubmodules": {
