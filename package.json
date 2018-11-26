@@ -33,7 +33,7 @@
     "tmpProd": "./.tmp/prod"
   },
   "keywords": [],
-  "author": "Microsoft (experimental)",
+  "author": "Microsoft",
   "license": "SEE LICENSE IN LICENSE",
   "privacyTerms": "https://privacy.microsoft.com/en-US/privacystatement/",
   "privateSubmodules": {
@@ -67,7 +67,7 @@
     "mv": "^2.1.1",
     "node-sass": "^3.10.0",
     "node-zip": "^1.1.1",
-    "npm-run-all": "^3.1.0",
+    "npm-run-all": "^4.1.5",
     "onchange": "^3.0.2",
     "powerbi-visuals": "^0.6.0",
     "serve-static": "^1.11.1",
