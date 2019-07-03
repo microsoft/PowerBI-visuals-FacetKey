@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for src/templates/facetVertical.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../../index.html">all files</a> / <a href="index.html">src/templates/</a> facetVertical.js
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">73.91% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>17/23</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">34.17% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>41/120</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">72.73% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>8/11</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">72.73% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>16/22</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line medium'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77</td><td class="line-coverage quiet"><span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">63×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">223×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">223×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">223×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">223×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">164×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">164×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">24×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">24×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">199×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">199×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">199×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">199×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">223×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">223×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">var Handlebars = require("handlebars");module.exports = Handlebars.template({"1":function(container,depth0,helpers,partials,data) {
+    return "	facets-facet-vertical-hidden\n";
+},"3":<span class="fstat-no" title="function not covered" >function(container,depth0,helpers,partials,data) {</span>
+<span class="cstat-no" title="statement not covered" >    var stack1;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  return "			&lt;div class=\"facet-sparkline-container\"&gt;\n"</span>
+    + ((stack1 = container.invokePartial(partials.facetVertical_sparkline,depth0,{"name":"facetVertical_sparkline","data":data,"indent":"\t\t\t\t","helpers":helpers,"partials":partials,"decorators":container.decorators})) != null ? stack1 : "")
+    + "			&lt;/div&gt;\n";
+},"5":function(container,depth0,helpers,partials,data) {
+    var stack1;
+&nbsp;
+  return "            &lt;div class=\"facet-bar-container\"&gt;\n"
+    + ((stack1 = container.invokePartial(partials.facetVertical_bar,depth0,{"name":"facetVertical_bar","data":data,"indent":"\t\t\t\t","helpers":helpers,"partials":partials,"decorators":container.decorators})) != null ? stack1 : <span class="branch-1 cbranch-no" title="branch not covered" >"")</span>
+    + "            &lt;/div&gt;\n";
+},"7":<span class="fstat-no" title="function not covered" >function(container,depth0,helpers,partials,data) {</span>
+<span class="cstat-no" title="statement not covered" >    var stack1, helper;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  return "                    "</span>
+    + ((stack1 = ((helper = (helper = helpers.countLabel || (depth0 != null ? depth0.countLabel : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0 != null ? depth0 : (container.nullContext || {}),{"name":"countLabel","hash":{},"data":data}) : helper))) != null ? stack1 : "")
+    + "\n";
+},"9":function(container,depth0,helpers,partials,data) {
+    var helper;
+&nbsp;
+  return "					"
+    + container.escapeExpression(((helper = (helper = helpers.count || (depth0 != null ? depth0.count : <span class="branch-1 cbranch-no" title="branch not covered" >depth0)</span>) != null ? helper : <span class="branch-1 cbranch-no" title="branch not covered" >helpers.helperMissing)</span>,(typeof helper === "function" ? <span class="branch-0 cbranch-no" title="branch not covered" >helper.call(depth0 != null ? depth0 : (container.nullContext || {}),{"name":"count","hash":{},"data":data}) </span>: helper)))
+    + "\n";
+},"11":function(container,depth0,helpers,partials,data) {
+    var stack1;
+&nbsp;
+  return "				&lt;span class=\"facet-links\"&gt;\n"
+    + ((stack1 = container.invokePartial(partials.facetVertical_links,depth0,{"name":"facetVertical_links","data":data,"indent":"\t\t\t\t ","helpers":helpers,"partials":partials,"decorators":container.decorators})) != null ? stack1 : <span class="branch-1 cbranch-no" title="branch not covered" >"")</span>
+    + "			 &lt;/span&gt;\n";
+},"13":function(container,depth0,helpers,partials,data) {
+    var stack1, helper;
+&nbsp;
+  return "					"
+    + ((stack1 = ((helper = (helper = helpers.displayValue || (depth0 != null ? depth0.displayValue : <span class="branch-1 cbranch-no" title="branch not covered" >depth0)</span>) != null ? helper : <span class="branch-1 cbranch-no" title="branch not covered" >helpers.helperMissing)</span>,(typeof helper === "function" ? <span class="branch-0 cbranch-no" title="branch not covered" >helper.call(depth0 != null ? depth0 : (container.nullContext || {}),{"name":"displayValue","hash":{},"data":data}) </span>: helper))) != null ? stack1 : <span class="branch-1 cbranch-no" title="branch not covered" >"")</span>
+    + "\n";
+},"15":function(container,depth0,helpers,partials,data) {
+    var stack1;
+&nbsp;
+  return ((stack1 = helpers["if"].call(depth0 != null ? depth0 : (<span class="branch-1 cbranch-no" title="branch not covered" >container.nullContext || {})</span>,(depth0 != null ? depth0.label : <span class="branch-1 cbranch-no" title="branch not covered" >depth0)</span>,{"name":"if","hash":{},"fn":container.program(16, data, 0),"inverse":container.program(18, data, 0),"data":data})) != null ? stack1 : <span class="branch-1 cbranch-no" title="branch not covered" >"")</span>;
+},"16":<span class="fstat-no" title="function not covered" >function(container,depth0,helpers,partials,data) {</span>
+<span class="cstat-no" title="statement not covered" >    var stack1, helper;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  return "					"</span>
+    + ((stack1 = ((helper = (helper = helpers.label || (depth0 != null ? depth0.label : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0 != null ? depth0 : (container.nullContext || {}),{"name":"label","hash":{},"data":data}) : helper))) != null ? stack1 : "")
+    + "\n";
+},"18":function(container,depth0,helpers,partials,data) {
+    var stack1, helper;
+&nbsp;
+  return "					"
+    + ((stack1 = ((helper = (helper = helpers.value || (depth0 != null ? depth0.value : <span class="branch-1 cbranch-no" title="branch not covered" >depth0)</span>) != null ? helper : <span class="branch-1 cbranch-no" title="branch not covered" >helpers.helperMissing)</span>,(typeof helper === "function" ? <span class="branch-0 cbranch-no" title="branch not covered" >helper.call(depth0 != null ? depth0 : (container.nullContext || {}),{"name":"value","hash":{},"data":data}) </span>: helper))) != null ? stack1 : <span class="branch-1 cbranch-no" title="branch not covered" >"")</span>
+    + "\n				";
+},"compiler":[7,"&gt;= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
+    var stack1, helper, alias1=depth0 != null ? depth0 : (<span class="branch-1 cbranch-no" title="branch not covered" >container.nullContext || {})</span>;
+&nbsp;
+  return "&lt;div id=\""
+    + container.escapeExpression(((helper = (helper = helpers.id || (depth0 != null ? depth0.id : <span class="branch-1 cbranch-no" title="branch not covered" >depth0)</span>) != null ? helper : <span class="branch-1 cbranch-no" title="branch not covered" >helpers.helperMissing)</span>,(typeof helper === "function" ? <span class="branch-0 cbranch-no" title="branch not covered" >helper.call(alias1,{"name":"id","hash":{},"data":data}) </span>: helper)))
+    + "\" class=\"facets-facet-base facets-facet-vertical\n"
+    + ((stack1 = helpers["if"].call(alias1,(depth0 != null ? depth0.hidden : <span class="branch-1 cbranch-no" title="branch not covered" >depth0)</span>,{"name":"if","hash":{},"fn":container.program(1, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : <span class="branch-1 cbranch-no" title="branch not covered" >"")</span>
+    + "\"&gt;\n    &lt;div class=\"facet-icon\"&gt;\n"
+    + ((stack1 = container.invokePartial(partials.facetVertical_icon,depth0,{"name":"facetVertical_icon","data":data,"indent":"\t\t","helpers":helpers,"partials":partials,"decorators":container.decorators})) != null ? stack1 : <span class="branch-1 cbranch-no" title="branch not covered" >"")</span>
+    + "    &lt;/div&gt;\n    &lt;div class=\"facet-block\"&gt;\n"
+    + ((stack1 = helpers["if"].call(alias1,(depth0 != null ? depth0.timeseries : <span class="branch-1 cbranch-no" title="branch not covered" >depth0)</span>,{"name":"if","hash":{},"fn":container.program(3, data, 0),"inverse":container.program(5, data, 0),"data":data})) != null ? stack1 : <span class="branch-1 cbranch-no" title="branch not covered" >"")</span>
+    + "\n\n        &lt;div class=\"facet-label-container\"&gt;\n            &lt;span class=\"facet-label-count\"&gt;\n"
+    + ((stack1 = helpers["if"].call(alias1,(depth0 != null ? depth0.countLabel : <span class="branch-1 cbranch-no" title="branch not covered" >depth0)</span>,{"name":"if","hash":{},"fn":container.program(7, data, 0),"inverse":container.program(9, data, 0),"data":data})) != null ? stack1 : <span class="branch-1 cbranch-no" title="branch not covered" >"")</span>
+    + "			&lt;/span&gt;\n			&lt;span class=\"facet-query-close\"&gt;\n"
+    + ((stack1 = container.invokePartial(partials.facetVertical_queryClose,depth0,{"name":"facetVertical_queryClose","data":data,"indent":"\t        ","helpers":helpers,"partials":partials,"decorators":container.decorators})) != null ? stack1 : <span class="branch-1 cbranch-no" title="branch not covered" >"")</span>
+    + "	    &lt;/span&gt;\n"
+    + ((stack1 = helpers.unless.call(alias1,(depth0 != null ? depth0.isQuery : <span class="branch-1 cbranch-no" title="branch not covered" >depth0)</span>,{"name":"unless","hash":{},"fn":container.program(11, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : <span class="branch-1 cbranch-no" title="branch not covered" >"")</span>
+    + "			&lt;span class=\"facet-search-container\"&gt;\n"
+    + ((stack1 = container.invokePartial(partials.facetVertical_search,depth0,{"name":"facetVertical_search","data":data,"indent":"\t\t\t\t","helpers":helpers,"partials":partials,"decorators":container.decorators})) != null ? stack1 : <span class="branch-1 cbranch-no" title="branch not covered" >"")</span>
+    + "			&lt;/span&gt;\n			&lt;span class=\"facet-label\"&gt;\n"
+    + ((stack1 = helpers["if"].call(alias1,(depth0 != null ? depth0.displayValue : <span class="branch-1 cbranch-no" title="branch not covered" >depth0)</span>,{"name":"if","hash":{},"fn":container.program(13, data, 0),"inverse":container.program(15, data, 0),"data":data})) != null ? stack1 : <span class="branch-1 cbranch-no" title="branch not covered" >"")</span>
+    + "			&lt;/span&gt;\n      &lt;/div&gt;\n\n    &lt;/div&gt;\n&lt;/div&gt;\n";
+},"usePartial":true,"useData":true});</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Wed Dec 20 2017 19:00:33 GMT+0000 (UTC)
+</div>
+</div>
+<script src="../../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../../sorter.js"></script>
+</body>
+</html>

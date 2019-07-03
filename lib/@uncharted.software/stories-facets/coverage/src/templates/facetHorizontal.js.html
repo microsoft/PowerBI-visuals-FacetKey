@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for src/templates/facetHorizontal.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../../index.html">all files</a> / <a href="index.html">src/templates/</a> facetHorizontal.js
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">25% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>2/8</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>0/60</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>0/4</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">14.29% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>1/7</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line low'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29</td><td class="line-coverage quiet"><span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">var Handlebars = require("handlebars");module.exports = Handlebars.template({"1":<span class="fstat-no" title="function not covered" >function(container,depth0,helpers,partials,data) {</span>
+<span class="cstat-no" title="statement not covered" >    return "	facets-facet-horizontal-hidden\n";</span>
+},"3":<span class="fstat-no" title="function not covered" >function(container,depth0,helpers,partials,data) {</span>
+<span class="cstat-no" title="statement not covered" >    return "			&lt;div class=\"facet-range-filter facet-range-filter-init\"&gt;\n				&lt;div class=\"facet-range-filter-slider facet-range-filter-left\"&gt;\n				&lt;/div&gt;\n				&lt;div class=\"facet-range-filter-slider facet-range-filter-right\"&gt;\n				&lt;/div&gt;\n			&lt;/div&gt;\n";</span>
+},"5":<span class="fstat-no" title="function not covered" >function(container,depth0,helpers,partials,data) {</span>
+<span class="cstat-no" title="statement not covered" >    var helper, alias1=depth0 != null ? depth0 : (container.nullContext || {}), alias2=helpers.helperMissing, alias3="function", alias4=container.escapeExpression;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  return "		&lt;div class=\"facet-range-controls\"&gt;\n			&lt;div class=\"facet-page-left facet-page-ctrl\"&gt;\n				&lt;i class=\"fa fa-chevron-left\"&gt;&lt;/i&gt;\n			&lt;/div&gt;\n			&lt;div class=\"facet-range-current\"&gt;\n				"</span>
+    + alias4(((helper = (helper = helpers.leftRangeLabel || (depth0 != null ? depth0.leftRangeLabel : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"leftRangeLabel","hash":{},"data":data}) : helper)))
+    + " - "
+    + alias4(((helper = (helper = helpers.rightRangeLabel || (depth0 != null ? depth0.rightRangeLabel : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"rightRangeLabel","hash":{},"data":data}) : helper)))
+    + "\n			&lt;/div&gt;\n			&lt;div class=\"facet-page-right facet-page-ctrl\"&gt;\n				&lt;i class=\"fa fa-chevron-right\"&gt;&lt;/i&gt;\n			&lt;/div&gt;\n		&lt;/div&gt;\n";
+},"compiler":[7,"&gt;= 4.0.0"],"main":<span class="fstat-no" title="function not covered" >function(container,depth0,helpers,partials,data) {</span>
+<span class="cstat-no" title="statement not covered" >    var stack1, helper, alias1=depth0 != null ? depth0 : (container.nullContext || {}), alias2=helpers.helperMissing, alias3="function", alias4=container.escapeExpression;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  return "&lt;div id=\""</span>
+    + alias4(((helper = (helper = helpers.id || (depth0 != null ? depth0.id : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"id","hash":{},"data":data}) : helper)))
+    + "\" class=\"facets-facet-base facets-facet-horizontal\n"
+    + ((stack1 = helpers["if"].call(alias1,(depth0 != null ? depth0.hidden : depth0),{"name":"if","hash":{},"fn":container.program(1, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
+    + "\"&gt;\n	&lt;div class=\"facet-range\"&gt;\n		&lt;svg class=\"facet-histogram\"&gt;&lt;/svg&gt;\n"
+    + ((stack1 = helpers["if"].call(alias1,(depth0 != null ? depth0.filterable : depth0),{"name":"if","hash":{},"fn":container.program(3, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
+    + "	&lt;/div&gt;\n	&lt;div class=\"facet-range-labels\"&gt;\n		&lt;div class=\"facet-range-label\"&gt;"
+    + alias4(((helper = (helper = helpers.leftRangeLabel || (depth0 != null ? depth0.leftRangeLabel : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"leftRangeLabel","hash":{},"data":data}) : helper)))
+    + "&lt;/div&gt;\n		&lt;div class=\"facet-range-label\"&gt;"
+    + alias4(((helper = (helper = helpers.rightRangeLabel || (depth0 != null ? depth0.rightRangeLabel : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"rightRangeLabel","hash":{},"data":data}) : helper)))
+    + "&lt;/div&gt;\n	&lt;/div&gt;\n"
+    + ((stack1 = helpers["if"].call(alias1,(depth0 != null ? depth0.filterable : depth0),{"name":"if","hash":{},"fn":container.program(5, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
+    + "&lt;/div&gt;\n";
+},"useData":true});</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Wed Dec 20 2017 19:00:33 GMT+0000 (UTC)
+</div>
+</div>
+<script src="../../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../../sorter.js"></script>
+</body>
+</html>
