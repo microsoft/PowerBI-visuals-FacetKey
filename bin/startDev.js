@@ -39,8 +39,8 @@ const config = {
     tmpDropDir: '.tmp/drop',
     sassEntry: pbivizJson.style,
     server: {
-        cert: 'certs/PowerBICustomVisualTest_public.crt', 
-        key: 'certs/PowerBICustomVisualTest_private.key',
+        cert: 'node_modules/powerbi-visuals-tools/certs/PowerBICustomVisualTest_public.crt', 
+        key: 'node_modules/powerbi-visuals-tools/certs/PowerBICustomVisualTest_private.key',
         port: 8080
     }
 };

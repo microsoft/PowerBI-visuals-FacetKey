@@ -3,6 +3,9 @@
 # Facet Key Powerbi Custom Visual
 ![Alt text](assets/screenshot.png?raw=true "Facet Key")
 
+## Install
+* Run `npm install`
+
 ## Debugging
 
 * Install ssl certificate by running `npm run install-certificate` and following the steps from: [https://github.com/Microsoft/PowerBI-visuals/blob/master/tools/CertificateSetup.md](https://github.com/Microsoft/PowerBI-visuals/blob/master/tools/CertificateSetup.md)
