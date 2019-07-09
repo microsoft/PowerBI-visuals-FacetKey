@@ -1,6 +1,6 @@
 {
   "name": "essex.widget.facetkey",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "PowerBI custom visual.",
   "main": "src/index.js",
   "repository": {
@@ -16,7 +16,7 @@
     "preinstall:dependencies": "node bin/installSubmoduleDeps",
     "preinstall": "npm run preinstall:prereq && npm run preinstall:submodules && npm run preinstall:dependencies",
     "postinstall": "node bin/createSymLink",
-    "install-certificate": "node bin/openCert",
+    "install-certificate": "pbiviz --install-cert",
     "start": "npm run compiletemplates && npm-run-all --parallel dev watch:templates",
     "tdd": "npm-run-all --parallel start test:tdd",
     "dev": "node bin/startDev",
@@ -31,6 +31,10 @@
   "config": {
     "tmpDrop": "./.tmp/drop",
     "tmpProd": "./.tmp/prod"
+  },
+  "engines": {
+    "node": ">=10",
+    "npm": ">=6.5.0"
   },
   "keywords": [],
   "author": "Microsoft",
@@ -70,6 +74,7 @@
     "npm-run-all": "^4.1.5",
     "onchange": "^3.0.2",
     "powerbi-visuals": "^0.6.0",
+    "powerbi-visuals-tools": "^3.1.2",
     "serve-static": "^1.11.1",
     "sinon": "^2.1.0",
     "sinon-chai": "^2.8.0",
