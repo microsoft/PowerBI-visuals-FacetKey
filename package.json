@@ -54,7 +54,7 @@
     "chokidar": "^1.6.1",
     "clean-css": "^4.0.5",
     "connect": "^3.5.0",
-    "handlebars": "^4.0.11",
+    "handlebars": "^4.5.3",
     "handlebars-loader": "^1.6.0",
     "json": "^9.0.4",
     "karma": "^3.0.0",
