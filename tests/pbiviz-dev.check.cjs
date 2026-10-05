@@ -24,16 +24,20 @@ async function availablePort() {
 }
 
 function request(port, requestPath, headers = {}) {
-    return new Promise((resolve, reject) => {
-        // Only this isolated test's local, self-signed certificate is untrusted.
-        const req = https.get({ hostname: '127.0.0.1', port, path: requestPath, headers, rejectUnauthorized: false }, (res) => {
-            let body = '';
-            res.setEncoding('utf8');
-            res.on('data', (chunk) => { body += chunk; });
-            res.on('end', () => resolve({ status: res.statusCode, headers: res.headers, body }));
-        });
-        req.setTimeout(2000, () => req.destroy(new Error('Request timed out')));
-        req.on('error', reject);
+    return new Promise(async (resolve, reject) => {
+        try {
+            const ca = await fs.readFile(path.join(ROOT, 'certs', 'localhost.crt'));
+            const req = https.get({ hostname: '127.0.0.1', port, path: requestPath, headers, ca, rejectUnauthorized: true }, (res) => {
+                let body = '';
+                res.setEncoding('utf8');
+                res.on('data', (chunk) => { body += chunk; });
+                res.on('end', () => resolve({ status: res.statusCode, headers: res.headers, body }));
+            });
+            req.setTimeout(2000, () => req.destroy(new Error('Request timed out')));
+            req.on('error', reject);
+        } catch (error) {
+            reject(error);
+        }
     });
 }
 
