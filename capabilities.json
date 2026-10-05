@@ -2,19 +2,19 @@
   "dataRoles": [
     {
       "name": "facet",
-      "kind": 0,
+      "kind": "Grouping",
       "displayName": "Facet",
       "description": "Facet instances are grouped by this field."
     },
     {
       "name": "facetInstance",
-      "kind": 0,
+      "kind": "Grouping",
       "displayName": "Instance",
       "description": "Facet instance."
     },
     {
       "name": "count",
-      "kind": 1,
+      "kind": "Measure",
       "displayName": "Count",
       "description": "Count of the facet instance.",
       "requiredTypes": [
@@ -28,31 +28,31 @@
     },
     {
       "name": "rangeValue",
-      "kind": 2,
+      "kind": "GroupingOrMeasure",
       "displayName": "Range Value",
       "description": "Value to be used as the horizontal axis of the histogram with Count as the vertical axis."
     },
     {
       "name": "bucket",
-      "kind": 0,
+      "kind": "Grouping",
       "displayName": "Segmented By",
       "description": "Each facet instance is segmented by this field."
     },
     {
       "name": "sparklineData",
-      "kind": 0,
+      "kind": "Grouping",
       "displayName": "Sparkline Axis",
       "description": "A field to render on the horizontal axis as a sparkline."
     },
     {
       "name": "facetInstanceColor",
-      "kind": 0,
+      "kind": "Grouping",
       "displayName": "Color",
       "description": "Color of each facet instance."
     },
     {
       "name": "iconClass",
-      "kind": 0,
+      "kind": "Grouping",
       "displayName": "Icon Class",
       "description": "CSS Class for each facet instance icon."
     }
@@ -137,14 +137,6 @@
               }
             }
           ]
-        },
-        "rowCount": {
-          "preferred": {
-            "min": 2
-          },
-          "supported": {
-            "min": 0
-          }
         }
       }
     }
@@ -160,7 +152,17 @@
       ]
     }
   },
+  "privileges": [],
   "objects": {
+    "general": {
+      "properties": {
+        "filter": {
+          "type": {
+            "filter": true
+          }
+        }
+      }
+    },
     "facetState": {
       "properties": {
         "rangeFacet": {

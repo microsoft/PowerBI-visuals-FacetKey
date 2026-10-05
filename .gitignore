@@ -12,6 +12,9 @@ node_modules
 
 # Build Artifacts
 dist
+/style/facets.css
+/assets/icon.png
+/webpack.statistics.*.html
 
 # log files
 *.log

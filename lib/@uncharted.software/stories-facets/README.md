@@ -30,52 +30,115 @@ Facets provides a simple API for displaying histograms that are interactive. Fac
     
 ![alt text](./img/facets_ex1.png "Facets from above code")
 
-A full list of interactive examples can be [found here](./examples) 
-
-    
-
 ## Installation
 
-The Facets Widget is available via [NPM](https://www.npmjs.com/package/@uncharted.software/stories-facets).
+The visual consumes this checked-in package through an npm `file:` dependency.
+From the repository root, install its standalone development tools and build it:
 
-To use it as a JSPM dependency, first install JSPM:
+```sh
+npm run vendor:install
+npm run vendor:build
+```
 
-	npm install -g jspm
-
-Now you can install it in your project:
-
-	jspm install stories-facets=npm:@uncharted.software/stories-facets
-
-To consume it in your project, use:
-
-    import Facets from 'stories-facets';
-
+For standalone browser use, load jQuery 4 before `dist/facets.js` or
+`dist/facets.min.js`, and include `dist/facets.css`. The bundle exposes
+`window.Facets`. A bundler can instead consume the CommonJS `src/main.js` entry.
 
 ## Development
 
-Requires Node/NPM and a global installation of Gulp for running builds.
+This vendored copy is built and tested with a small, dependency-light Node
+toolchain (Node `^22.13.0 || >=24`, npm `>=10`). No global build tools or legacy
+package manager are required.
 
-To install all dependencies and start a Gulp watch:
+For a reproducible standalone install from this directory:
 
-	npm install
-	gulp
+```sh
+npm ci --ignore-scripts
+```
 
+### Build toolchain: old -> new
 
-### Using the development version
+| Capability               | Old (removed)                                      | New                                                        |
+|---------------------------|-----------------------------------------------------|-------------------------------------------------------------|
+| Template precompile        | `gulp-handlebars` + `gulp-define-module`             | `build/compile-templates.js` (plain `Handlebars.precompile`) |
+| JS bundle                  | `browserify` + `browserify-shim` + `gulp-concat`/`gulp-order` | `esbuild` (`build/build.js`), IIFE, `window.Facets`   |
+| JS minification            | `gulp-uglify`                                        | `esbuild --minify` (`dist/facets.min.js` + sourcemap)        |
+| Stylesheet compile/minify  | `gulp-sass` + `gulp-clean-css`                       | `sass` package + `esbuild`'s CSS minifier                    |
+| Tests / lifecycle & DOM    | `karma` + `karma-browserify` + PhantomJS/Chrome launcher | `node --test` + `jsdom` (`test/*.test.js`, `test/dom-env.js`) |
+| Coverage                   | `karma-coverage` + `browserify-istanbul`             | Node's built-in V8 test coverage (`npm run test:coverage`) |
+| Rich-label/link HTML safety | none (raw `{{{triple-stash}}}` output)              | `DOMPurify` bound to the active `window`, exposed as the `{{safeHtml}}` Handlebars helper (see below) |
 
-Facets auto-links via JSPM on build/watch. This means you can use your local linked copy in other projects for quick iteration. To do so, run the following in your project that requires Facets:
+Scripts (run from this directory):
 
-    jspm install --link npm:@uncharted.software/stories-facets
+	npm run compiletemplates   # templates/*.hbs -> src/templates/*.js (Handlebars runtime only)
+	npm run build              # compiletemplates + esbuild bundle/minify + sass compile/minify -> dist/
+	npm test                   # pretest runs the build, then `node --test test/**/*.test.js`
+	npm run test:coverage       # build, tests, and V8 coverage report
+	npm audit                  # full dependency tree, no --omit/thresholds/suppressions
 
-This will connect that project to your local development version of facets. Be aware that this is version sensitive so if your local version of facets doesn't match the version being consumed by your project this may not have the desired effect.
+`dist/`, `node_modules/` and `.tmp/` are build output and are not committed
+(see the repo root `.gitignore`, which already ignores these patterns at any
+depth). `package-lock.json` **is** committed so `npm ci` is reproducible.
 
-To unlink the project and go back to the version from npm, run:
+### jQuery dependency
 
-    jspm install --unlink npm:@uncharted.software/stories-facets
+Source modules do `require('jquery')` explicitly (`jquery` is declared as a
+`peerDependency`, `^4.0.0`, matching the version the host PowerBI visual
+already uses). Two different resolutions apply depending on how this package
+is bundled:
+
+- **Inside the official pbiviz build**: `require('jquery')` resolves normally
+  through npm dependencies. Source modules import jQuery explicitly; no custom
+  webpack aliases or injected globals are needed. This package does not declare
+  a `browser` field that redirects the host build to the standalone shim.
+- **Standalone `dist/facets.js` / `dist/facets.min.js` build only**: esbuild
+  is configured with an explicit `alias: { jquery: '.../build/jquery-global-shim.js' }`
+  (set directly in `build/build.js`'s esbuild options, not via `package.json`).
+  The shim reads whatever jQuery instance is already on the page
+  (`window.jQuery || window.$`) instead of bundling a second copy - mirroring
+  the old `browserify-shim: { jquery: 'global:$' }` behaviour. Consumers of
+  the standalone bundle must load jQuery via `<script>` (or otherwise expose
+  `window.jQuery`/`window.$`) before this bundle.
+
+### HTML sanitization (`{{safeHtml}}`)
+
+Several templates intentionally allow consumer-supplied markup to be rendered
+unescaped - facet/group/badge labels and the facet-placeholder `html` field
+support things like `<b>bold</b>` or a hyperlink in a label. These used to be
+rendered with Handlebars' raw `{{{triple-stash}}}`, with no sanitization.
+
+They are now routed through a `{{safeHtml value}}` helper (registered in
+`src/helpers.js`) that pipes the string through
+[DOMPurify](https://github.com/cure53/DOMPurify), bound to this environment's
+`window`, and wraps the sanitized result in a `Handlebars.SafeString`. This
+removes `<script>`/inline event handler/`javascript:`-`vbscript:`-`data:`-URI
+and mutation-XSS/namespace-confusion (SVG/MathML) attack vectors while still
+allowing plain formatting tags and safe (`http(s)`/relative/`mailto`) links -
+so the existing "rich label"/links feature keeps working. See
+`test/selection-and-sanitizer.test.js` for malicious- and safe-input cases.
+
+### Tests
+
+`test/dom-env.js` boots a jsdom `window`/`document` and binds jQuery and
+DOMPurify to it (both bind to whatever `window` is globally available the
+first time they are `require()`-d, so this must happen before loading any
+source module, and the relevant `require.cache` entries are evicted on
+teardown so each test file gets a fresh, isolated DOM). `test/fixtures.js`
+holds small shared group/facet/histogram fixtures.
+
+- `test/lifecycle.test.js` - initial render, group "more" link, group
+  collapse/expand ("less"), `replaceGroup`/`replace`, and `destroy`.
+- `test/selection-and-sanitizer.test.js` - `select`/`deselect`, forwarded
+  click events, histogram filter-range reads/changes
+  (`facet-histogram:rangechangeduser`), and the `{{safeHtml}}` sanitizer
+  (malicious payloads neutralized, safe formatting/links preserved).
+- `test/dist-and-jquery4.test.js` - loads the built `dist/facets.js` IIFE
+  bundle with only a global jQuery present (as a real consumer would), checks
+  it exposes `window.Facets` and fails fast with a clear error without one;
+  also asserts no jQuery-4-removed API (`$.isFunction`, `$.isNumeric`,
+  `$.isArray`, `$.parseJSON`, `$.trim`, `.size()`) is used anywhere in `src/**`.
 
 
 ## Run tests
 
-In development mode, run `gulp tdd --debug` to run the tests in Chrome, and keep the browser open, re-running on changes.
-
-To run the tests once and generate a coverage report, run `gulp test`.
+	npm --prefix lib/@uncharted.software/stories-facets test

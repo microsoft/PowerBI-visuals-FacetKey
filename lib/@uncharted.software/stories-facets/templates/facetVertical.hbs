@@ -21,7 +21,7 @@
         <div class="facet-label-container">
             <span class="facet-label-count">
 				{{#if countLabel}}
-                    {{{countLabel}}}
+                    {{safeHtml countLabel}}
 				{{else}}
 					{{count}}
 				{{/if}}
@@ -39,11 +39,11 @@
 			</span>
 			<span class="facet-label">
 				{{#if displayValue}}
-					{{{displayValue}}}
+					{{safeHtml displayValue}}
 				{{else if label}}
-					{{{label}}}
+					{{safeHtml label}}
 				{{else}}
-					{{{value}}}
+					{{safeHtml value}}
 				{{/if}}
 			</span>
       </div>

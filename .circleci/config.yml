@@ -1,42 +1,31 @@
-# Javascript Node CircleCI 2.0 configuration file
-#
-# Check https://circleci.com/docs/2.0/language-javascript/ for more details
-#
-version: 2
+version: 2.1
 jobs:
   build:
     docker:
-      # specify the version you desire here
-      - image: circleci/node:8.11
-      
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/mongo:3.4.4
-
+      - image: cimg/node:24.21.0-browsers
     working_directory: ~/repo
-
+    environment:
+      CHROME_BIN: /usr/bin/google-chrome
     steps:
       - checkout
-
-      # Download and cache dependencies
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "package.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
-
-      - run: npm install
-
+            - v3-npm-{{ checksum "package-lock.json" }}-{{ checksum "lib/@uncharted.software/stories-facets/package-lock.json" }}
+      # The browsers image includes system prerequisites, not necessarily Chrome.
+      - run:
+          name: Install stable Chrome
+          command: |
+            curl --fail --show-error --location --retry 3 \
+              https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
+              --output /tmp/facetkey-google-chrome.deb
+            sudo apt-get update
+            sudo apt-get install -y /tmp/facetkey-google-chrome.deb
+      - run: npm ci --ignore-scripts
+      - run: npm run vendor:install
       - save_cache:
+          key: v3-npm-{{ checksum "package-lock.json" }}-{{ checksum "lib/@uncharted.software/stories-facets/package-lock.json" }}
           paths:
-            - node_modules
-          key: v1-dependencies-{{ checksum "package.json" }}
-        
-      # run tests!
-      - run: npm run package && npm test
-
-      # store artifacts!
-      - store_artifacts: 
+            - ~/.npm
+      - run: npm run validate
+      - store_artifacts:
           path: dist
-

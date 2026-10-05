@@ -1,0 +1,239 @@
+/* Facet Key local preview workbench - layout only. The visual's own look & feel
+   comes entirely from the packaged /visual.css; this file never styles anything
+   inside #visual-host. */
+
+:root {
+  --pv-bg: #f4f5f7;
+  --pv-panel-bg: #ffffff;
+  --pv-border: #d7dbe0;
+  --pv-text: #1b1f24;
+  --pv-muted: #5b6471;
+  --pv-accent: #2f6fed;
+  --pv-accent-text: #ffffff;
+  --pv-log-bg: #fafbfc;
+  --pv-error: #b3261e;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--pv-bg);
+  color: var(--pv-text);
+  font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+}
+
+.pv-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 20px;
+  background: var(--pv-panel-bg);
+  border-bottom: 1px solid var(--pv-border);
+}
+
+.pv-header h1 {
+  font-size: 16px;
+  margin: 0;
+  font-weight: 600;
+}
+
+.pv-status {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #eef1f5;
+  color: var(--pv-muted);
+  white-space: nowrap;
+}
+
+.pv-status.pv-status-ok {
+  background: #e4f5e9;
+  color: #1c7a3b;
+}
+
+.pv-status.pv-status-error {
+  background: #fbe9e7;
+  color: var(--pv-error);
+}
+
+.pv-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr 300px;
+  gap: 16px;
+  padding: 16px 20px;
+  align-items: start;
+}
+
+.pv-controls, .pv-sidepanel {
+  background: var(--pv-panel-bg);
+  border: 1px solid var(--pv-border);
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.pv-controls h2, .pv-sidepanel h2 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--pv-muted);
+  margin: 18px 0 6px;
+}
+
+.pv-controls h2:first-child {
+  margin-top: 0;
+}
+
+.pv-controls label {
+  display: block;
+  font-size: 12px;
+  color: var(--pv-muted);
+  margin: 8px 0 2px;
+}
+
+.pv-controls select,
+.pv-controls input[type="number"] {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--pv-border);
+  border-radius: 4px;
+  font-size: 13px;
+  background: #fff;
+  color: var(--pv-text);
+}
+
+.pv-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pv-checkbox-row input {
+  margin: 0;
+}
+
+.pv-controls button {
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--pv-accent);
+  border-radius: 4px;
+  background: var(--pv-accent);
+  color: var(--pv-accent-text);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.pv-controls button:hover {
+  filter: brightness(1.05);
+}
+
+.pv-controls button:active {
+  filter: brightness(0.95);
+}
+
+#reset-all {
+  background: #fff;
+  color: var(--pv-error);
+  border-color: var(--pv-error);
+}
+
+.pv-small-note {
+  font-size: 11px;
+  color: var(--pv-muted);
+  margin-top: 6px;
+}
+
+.pv-canvas-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 8px;
+}
+
+.pv-canvas {
+  width: 750px;
+  height: 650px;
+  min-width: 240px;
+  min-height: 240px;
+  max-width: 95vw;
+  max-height: 85vh;
+  background: #ffffff;
+  border: 1px solid var(--pv-border);
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  overflow: auto;
+  resize: both;
+  position: relative;
+}
+
+#visual-host {
+  width: 100%;
+  height: 100%;
+}
+
+.pv-matched-row {
+  font-size: 13px;
+  padding: 8px 10px;
+  background: var(--pv-log-bg);
+  border: 1px solid var(--pv-border);
+  border-radius: 4px;
+}
+
+#matched-count {
+  font-weight: 600;
+}
+
+.pv-log {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 480px;
+  overflow-y: auto;
+  border: 1px solid var(--pv-border);
+  border-radius: 4px;
+  background: var(--pv-log-bg);
+}
+
+.pv-log li {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--pv-border);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.pv-log li:last-child {
+  border-bottom: none;
+}
+
+.pv-log li .pv-log-tag {
+  display: inline-block;
+  min-width: 56px;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 10px;
+  color: var(--pv-muted);
+}
+
+.pv-log li.pv-log-error .pv-log-tag {
+  color: var(--pv-error);
+}
+
+.pv-footer {
+  padding: 10px 20px 20px;
+}
+
+.pv-limitations {
+  font-size: 11px;
+  color: var(--pv-muted);
+  max-width: 900px;
+  margin: 0;
+}
+
+@media (max-width: 1100px) {
+  .pv-layout {
+    grid-template-columns: 1fr;
+  }
+}

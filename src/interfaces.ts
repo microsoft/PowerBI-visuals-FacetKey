@@ -21,140 +21,152 @@
  * SOFTWARE.
  */
 
-interface FacetKeySettings {
-    facetCount: {
-        initial: number,
-        increment: number,
-    };
-    facetState: {
-        rangeFacet: string,
-        normalFacet: string,
-    };
-    display: {
-        selectionCount: boolean,
-    };
-}
+// Explicit modern powerbi-visuals-api import. This file is a module (has imports/exports),
+// so the `declare global` block below augments the ambient global scope for the whole
+// program without requiring every consumer to import these shared shape types individually.
+import powerbi from 'powerbi-visuals-api';
 
-interface RangeValue {
-    value: Date | string | number | boolean;
-    valueLabel: string;
-    key: string;
-}
-
-interface RowObject {
-    index: number;
-    identity: powerbi.DataViewScopeIdentity;
-    facet?: Date | string | number | boolean;
-    facetInstance?: Date | string | number | boolean;
-    count?: number;
-    facetInstanceColor?: Date | string | number | boolean;
-    iconClass?: Date | string | number | boolean;
-    rangeValues?: RangeValue[];
-    bucket?: Date | string | number | boolean;
-    sparklineData?: Date | string | number | boolean;
-}
-
-interface DataPoint {
-    rows: RowObject[];
-    highlight: number;
-    facetKey: string;
-    facetLabel: string;
-    instanceValue: string;
-    instanceLabel: string;
-    instanceCount: number;
-    instanceCountFormatter: any;
-    instanceColor: string;
-    instanceIconClass: string;
-    bucket?: any;
-    sparklineData?: any;
-    rangeValues?: RangeValue[];
-    selectionColor?: { color: string, opacity: number };
-}
-
-interface DataPointsMap {
-    [facetKey: string]: DataPoint[];
-}
-
-interface DataPointsMapData {
-    dataPointsMap: DataPointsMap;
-    hasHighlight: boolean;
-}
-
-interface AggregatedData {
-    rangeDataMap: any;
-    dataPointsMap: DataPointsMap;
-    selectedDataPoints: DataPoint[];
-    hasHighlight: boolean;
-    sparklineXDomain: Date[] | string[] | number[] | boolean[];
-}
-
-interface RangeMetadata {
-    rangeValue: Date | string | number | boolean;
-    isFirst: boolean;
-    isLast: boolean;
-}
-
-interface FacetRangeObject {
-    // tslint:disable-next-line
-    from: {
-        index: number,
-        metadata: RangeMetadata[],
-    };
-    to: {
-        index: number,
-        metadata: RangeMetadata[],
-    };
-}
-
-interface RangeFilter {
-    [rangeKey: string]: FacetRangeObject;
-}
-
-interface DataPointsFilter {
-    contains?: string;
-    range?: RangeFilter;
-    selectedDataPoints?: DataPoint[];
-}
-
-interface ConvertToFacetsVisualDataOptions {
-    colors: powerbi.IColorInfo[];
-    settings: FacetKeySettings;
-    hasHighlight?: boolean;
-    selectedRange?: RangeFilter;
-}
-
-interface FacetGroup {
-    label: string;
-    key: string;
-    facets: Facet[];
-    total?: number;
-    more?: any;
-
-    order: number;
-    collapsed: boolean;
-    allFacets?: Facet[];
-    isRange?: boolean;
-}
-
-interface Facet {
-    icon: {
-        // tslint:disable-next-line
-        class: string,
-        color: string,
-    };
-    count: number;
-    countLabel: string;
+/**
+ * Color value returned by the public host's colorPalette.getColor() API.
+ */
+export interface ColorInfo {
     value: string;
-    label: string;
-    timeseries?: any[];
-    segments?: { count: number; color: string }[];
 }
 
-interface FacetsVisualData {
-    dataPointsMapData?: DataPointsMapData;
-    aggregatedData: AggregatedData;
-    hasHighlight: boolean;
-    facetsData: FacetGroup[];
-    facetsSelectionData: any[];
-    selectedDataPoints: DataPoint[];
+declare global {
+    interface FacetKeySettings {
+        facetCount: {
+            initial: number,
+            increment: number,
+        };
+        facetState: {
+            rangeFacet: string,
+            normalFacet: string,
+        };
+        display: {
+            selectionCount: boolean,
+        };
+    }
+
+    interface RangeValue {
+        value: Date | string | number | boolean;
+        valueLabel: string;
+        key: string;
+    }
+
+    interface RowObject {
+        index: number;
+        identity: powerbi.visuals.CustomVisualOpaqueIdentity;
+        facet?: Date | string | number | boolean;
+        facetInstance?: Date | string | number | boolean;
+        count?: number;
+        facetInstanceColor?: Date | string | number | boolean;
+        iconClass?: Date | string | number | boolean;
+        rangeValues?: RangeValue[];
+        bucket?: Date | string | number | boolean;
+        sparklineData?: Date | string | number | boolean;
+    }
+
+    interface DataPoint {
+        rows: RowObject[];
+        highlight: number;
+        facetKey: string;
+        facetLabel: string;
+        instanceValue: string;
+        instanceLabel: string;
+        instanceCount: number;
+        instanceCountFormatter: any;
+        instanceColor: string;
+        instanceIconClass: string;
+        bucket?: any;
+        sparklineData?: any;
+        rangeValues?: RangeValue[];
+        selectionColor?: { color: string, opacity: number };
+    }
+
+    interface DataPointsMap {
+        [facetKey: string]: DataPoint[];
+    }
+
+    interface DataPointsMapData {
+        dataPointsMap: DataPointsMap;
+        hasHighlight: boolean;
+    }
+
+    interface AggregatedData {
+        rangeDataMap: any;
+        dataPointsMap: DataPointsMap;
+        selectedDataPoints: DataPoint[];
+        hasHighlight: boolean;
+        sparklineXDomain: Date[] | string[] | number[] | boolean[];
+    }
+
+    interface RangeMetadata {
+        rangeValue: Date | string | number | boolean;
+        isFirst: boolean;
+        isLast: boolean;
+    }
+
+    interface FacetRangeObject {
+        from: {
+            index?: number,
+            metadata: RangeMetadata[],
+        };
+        to: {
+            index?: number,
+            metadata: RangeMetadata[],
+        };
+    }
+
+    interface RangeFilter {
+        [rangeKey: string]: FacetRangeObject;
+    }
+
+    interface DataPointsFilter {
+        contains?: string;
+        range?: RangeFilter;
+        selectedDataPoints?: DataPoint[];
+    }
+
+    interface ConvertToFacetsVisualDataOptions {
+        colors: import('./interfaces').ColorInfo[];
+        settings: FacetKeySettings;
+        hasHighlight?: boolean;
+        selectedRange?: RangeFilter;
+    }
+
+    interface FacetGroup {
+        label: string;
+        key: string;
+        facets: Facet[];
+        total?: number;
+        more?: any;
+
+        order: number;
+        collapsed: boolean;
+        allFacets?: Facet[];
+        isRange?: boolean;
+    }
+
+    interface Facet {
+        icon: {
+            class: string,
+            color: string,
+        };
+        count: number;
+        countLabel: string;
+        value: string;
+        label: string;
+        timeseries?: any[];
+        segments?: { count: number; color: string }[];
+    }
+
+    interface FacetsVisualData {
+        dataPointsMapData?: DataPointsMapData;
+        aggregatedData: AggregatedData;
+        hasHighlight: boolean;
+        facetsData: FacetGroup[];
+        facetsSelectionData: any[];
+        selectedDataPoints: DataPoint[];
+    }
 }
