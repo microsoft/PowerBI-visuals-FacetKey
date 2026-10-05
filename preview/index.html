@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Facet Key local preview</title>
+<link rel="stylesheet" href="/preview.css">
+</head>
+<body>
+<header class="pv-header">
+  <h1>Facet Key local preview &mdash; mock Power BI host</h1>
+  <div id="status" class="pv-status" role="status" aria-live="polite">loading&hellip;</div>
+</header>
+
+<main class="pv-layout">
+
+  <section class="pv-controls" aria-label="Preview controls">
+    <h2>Scenario</h2>
+    <label for="scenario">Dataset</label>
+    <select id="scenario">
+      <option value="basic">Basic facets</option>
+      <option value="ranges">Numeric + date ranges</option>
+      <option value="segments">Segments</option>
+      <option value="sparklines">Sparklines</option>
+    </select>
+
+    <h2>Facet settings</h2>
+    <label for="initial-count">Initial facet count</label>
+    <input id="initial-count" type="number" min="0" step="1" value="4">
+    <label for="increment">Show-more increment</label>
+    <input id="increment" type="number" min="0" step="1" value="50">
+    <label class="pv-checkbox-row">
+      <input id="selection-count" type="checkbox">
+      Show "selected / total" counts
+    </label>
+
+    <h2>Canvas size</h2>
+    <label for="canvas-width">Width (px)</label>
+    <input id="canvas-width" type="number" min="200" step="10" value="750">
+    <label for="canvas-height">Height (px)</label>
+    <input id="canvas-height" type="number" min="200" step="10" value="650">
+    <button id="apply-size" type="button">Apply size</button>
+
+    <h2>Interactions</h2>
+    <button id="highlight" type="button">Toggle external highlight</button>
+    <button id="clear" type="button">Clear selection / filters</button>
+
+    <h2>Bookmark</h2>
+    <button id="save-bookmark" type="button">Save bookmark</button>
+    <button id="restore-bookmark" type="button">Restore bookmark</button>
+    <div id="bookmark-status" class="pv-small-note">No bookmark saved.</div>
+
+    <h2>Reset</h2>
+    <button id="reset-all" type="button">Reset preview</button>
+  </section>
+
+  <section class="pv-canvas-wrap" aria-label="Visual canvas">
+    <div id="canvas" class="pv-canvas">
+      <div id="visual-host"></div>
+    </div>
+  </section>
+
+  <aside class="pv-sidepanel" aria-label="Event log and mock cross-filter">
+    <h2>Mock cross-filter</h2>
+    <div class="pv-matched-row">
+      Matched rows: <span id="matched-count">-</span>
+    </div>
+    <h2>Event log</h2>
+    <ul id="event-log" class="pv-log"></ul>
+  </aside>
+
+</main>
+
+<footer class="pv-footer">
+  <p class="pv-limitations">
+    Limitations: this page hosts the real built visual against a hand-written, local,
+    public-API-only mock of the Power BI host (selection manager, filters, persisted
+    properties, bookmarks). It does not reproduce the actual Power BI service, report
+    canvas, formatting pane, real bookmarks, or real cross-filtering from other visuals.
+    Use it only to check layout, styling, and interaction wiring of the modernized code.
+  </p>
+</footer>
+
+<script src="/preview.js" defer></script>
+</body>
+</html>

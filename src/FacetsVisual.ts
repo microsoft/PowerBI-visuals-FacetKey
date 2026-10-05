@@ -21,35 +21,47 @@
  * SOFTWARE.
  */
 
-/// <reference path='../node_modules/powerbi-visuals/lib/powerbi-visuals.d.ts'/>
-
-import IVisual = powerbi.extensibility.v110.IVisual;
-import VisualConstructorOptions = powerbi.extensibility.v110.VisualConstructorOptions;
-import VisualUpdateOptions = powerbi.extensibility.v110.VisualUpdateOptions;
+import '../style/facets.css';
+import powerbi from 'powerbi-visuals-api';
+import IVisual = powerbi.extensibility.visual.IVisual;
+import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
+import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 import DataView = powerbi.DataView;
 import VisualDataChangeOperationKind = powerbi.VisualDataChangeOperationKind;
-import IColorInfo = powerbi.IColorInfo;
 import VisualObjectInstance = powerbi.VisualObjectInstance;
-import IVisualHost = powerbi.extensibility.v110.IVisualHost;
-import IVisualHostServices = powerbi.IVisualHostServices;
-import EnumerateVisualObjectInstancesOptions = powerbi.EnumerateVisualObjectInstancesOptions;
-import SQExprBuilder = powerbi.data.SQExprBuilder;
-import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
-import DataViewScopeIdentity = powerbi.DataViewScopeIdentity;
+import IVisualHost = powerbi.extensibility.visual.IVisualHost;
+import ISelectionId = powerbi.visuals.ISelectionId;
 import ISelectionManager = powerbi.extensibility.ISelectionManager;
+import FilterAction = powerbi.FilterAction;
+import { AdvancedFilter, IFilterColumnTarget } from 'powerbi-models';
+import { FormattingSettingsService } from 'powerbi-visuals-utils-formattingmodel';
+import { VisualFormattingSettings } from './settings';
+import { ColorInfo } from './interfaces';
 import { convertToDataPointsMap, aggregateDataPointsMap, convertToFacetsVisualData } from './data';
-import { safeKey, findColumn, hexToRgba, otherLabelTemplate, createSegments, HIGHLIGHT_COLOR, hasColumns, createTimeSeries } from './utils';
+import { safeKey, findColumn, otherLabelTemplate, createSegments, hasColumns, createTimeSeries, COLOR_PALETTE } from './utils';
 import { bookmarkHandler, loadSelectionFromBookmarks } from './bookmarks';
 import debounce from 'lodash-es/debounce';
 import extend from 'lodash-es/extend';
 import remove from 'lodash-es/remove';
 import find from 'lodash-es/find';
-import * as $ from 'jquery';
+import $ from 'jquery';
 
 const Facets = require('../lib/@uncharted.software/stories-facets/src/main');
 
 const MAX_DATA_LOADS = 5;
 const REQUIRED_FIELDS = ['count', 'facetInstance'];
+const FILTER_OBJECT_NAME = 'general';
+const FILTER_PROPERTY_NAME = 'filter';
+
+/**
+ * Clamps a persisted/settings numeric input to a finite, non-negative integer, falling back to
+ * `fallback` for malformed input (e.g. `parseInt('nonsense', 10)` => NaN) so a corrupt/unexpected
+ * persisted facetCount object property can't blank the whole visual (allFacets.slice(x, NaN) etc).
+ */
+function toFiniteNonNegativeInt(value: any, fallback: number): number {
+    const parsed = parseInt(String(value), 10);
+    return (Number.isFinite(parsed) && parsed >= 0) ? parsed : fallback;
+}
 
 /**
  * Default objects settings
@@ -68,7 +80,7 @@ const DEFAULT_SETTINGS: FacetKeySettings = {
     }
 };
 
-export default class FacetsVisual implements IVisual {
+export class FacetsVisual implements IVisual {
 
     private facetsContainer: JQuery;
     private suppressNextUpdate: boolean;
@@ -76,23 +88,26 @@ export default class FacetsVisual implements IVisual {
     private searchBox: JQuery;
     private facets: any;
     private settings: FacetKeySettings;
-    private colors: IColorInfo[];
+    private colors: ColorInfo[];
     private dataView: DataView;
     private data: FacetsVisualData;
     private filter: DataPointsFilter = {};
     private retainFilters: boolean = false;
     private previousData: any;
-    private previousFreshData: any;
+    private previousFreshData: any = {};
+    private lastJsonFilters: any[] = [];
     private host: IVisualHost;
-    private hostServices: IVisualHostServices;
-    private loadMoreData: Function;
+    private loadMoreData: (...args: any[]) => void;
     private selectionInHighlightedState: boolean;
     private selectedInstances: DataPoint[] = [];
     private loadMoreCount: number;
-    private reDrawRangeFilter: any = debounce(() => {
+    private destroyed: boolean = false;
+    private filterFacetsDebounced: ReturnType<typeof debounce>;
+    private reDrawRangeFilter: ReturnType<typeof debounce> = debounce(() => {
+        if (!this.data || !this.data.facetsData) { return; }
         const rangeFacets = this.data.facetsData.filter((group: any) => group.isRange);
         rangeFacets.forEach((facetData: any) => {
-            const group = this.facets._getGroup(facetData.key);
+            const group = this.facets.getGroup(facetData.key);
             const range = group.getFilterRange(facetData.key);
             if (range) {
                 facetData.facets[0].selection['range'] = {
@@ -103,7 +118,7 @@ export default class FacetsVisual implements IVisual {
             }
         });
     }, 500);
-    private updateSparklines: any = debounce(() => {
+    private updateSparklines: ReturnType<typeof debounce> = debounce(() => {
         if (this.data.aggregatedData.sparklineXDomain.length > 0) {
             // updating selection triggers redrawing of the sparklines
             this.data.hasHighlight
@@ -112,8 +127,7 @@ export default class FacetsVisual implements IVisual {
         }
     }, 500);
     private selectionManager: ISelectionManager;
-    public sqExprTypeMap: any = null;
-    public bookmarkSelection: any = null;
+    private formattingSettingsService: FormattingSettingsService;
 
     /**
      * Initializes an instance of the IVisual.
@@ -126,8 +140,10 @@ export default class FacetsVisual implements IVisual {
 
         this.host = options.host;
         this.selectionManager = options.host.createSelectionManager();
-        this.hostServices = this.selectionManager['hostServices'];
-        this.colors = this.host['colorPalette']['colors'];
+        this.formattingSettingsService = new FormattingSettingsService();
+        // Public colorPalette.getColor(key) replaces the old private `colorPalette.colors` array;
+        // we synthesize a similarly-sized fallback array so data.ts's palette-cycling logic is unchanged.
+        this.colors = COLOR_PALETTE.map((_, index) => this.host.colorPalette.getColor(String(index)));
 
         this.facets = new Facets(this.facetsContainer, []);
         this.facetsContainer.prepend(`
@@ -143,26 +159,27 @@ export default class FacetsVisual implements IVisual {
 
         this.bindFacetsEventHandlers();
 
-        const findApi = (methodName) => {
-            return this.host[methodName] ? (arg) => {
-                this.host[methodName](arg);
-            } : this.hostServices && this.hostServices[methodName] ? (arg) => {
-                this.hostServices[methodName](arg);
-            } : null;
-        };
-        this.loadMoreData = findApi('loadMoreData') || function () {};
-        this.selectionManager['registerOnSelectCallback'](bookmarkHandler.bind(this));
+        this.loadMoreData = typeof this.host.fetchMoreData === 'function'
+            ? () => this.host.fetchMoreData(true)
+            : () => {};
+
+        // The selection manager offers no way to unregister this callback, so guard it so it
+        // safely no-ops after destroy() or before any data has been rendered.
+        this.selectionManager.registerOnSelectCallback((ids: ISelectionId[]) => {
+            if (this.destroyed || !this.facets) { return; }
+            bookmarkHandler.call(this, ids);
+        });
     }
 
     /**
      * Converts the dataview into our own model.
      *
      * @param  {DataView}         dataView A dataView object.
-     * @param  {IColorInfo[]}     colors   Powerbi color info array.
+     * @param  {ColorInfo[]}      colors   Powerbi color info array.
      * @param  {FacetKeySettings} settings A facetkey settings object.
      * @return {FacetsVisualData}
      */
-    public converter(dataView: DataView, colors: IColorInfo[], settings: FacetKeySettings): FacetsVisualData {
+    public converter(dataView: DataView, colors: ColorInfo[], settings: FacetKeySettings): FacetsVisualData {
         const dataPointsMapData = convertToDataPointsMap(dataView);
         const aggregatedData = aggregateDataPointsMap(dataPointsMapData);
         const facetsData = convertToFacetsVisualData(aggregatedData, {
@@ -178,10 +195,13 @@ export default class FacetsVisual implements IVisual {
      * @param  {VisualUpdateOptions} options visual update options.
      */
     public update(options: VisualUpdateOptions) {
+        if (this.destroyed) { return; }
         if (this.suppressNextUpdate) {
             return (this.suppressNextUpdate = false);
         }
-        if (options['resizeMode'] && this.data && this.data.facetsData) {
+        const isResizeOnly = Boolean(options.type & (powerbi.VisualUpdateType.Resize | powerbi.VisualUpdateType.ResizeEnd))
+            && !(options.type & powerbi.VisualUpdateType.Data);
+        if (isResizeOnly && this.data && this.data.facetsData) {
             this.reDrawRangeFilter();
             return this.updateSparklines();
         }
@@ -194,9 +214,11 @@ export default class FacetsVisual implements IVisual {
 
         this.previousData = this.data || {};
         this.dataView = options.dataViews[0];
+        this.lastJsonFilters = options.jsonFilters || this.lastJsonFilters || [];
         this.settings = this.validateSettings($.extend(true, {}, DEFAULT_SETTINGS, this.dataView.metadata.objects));
 
-        const isFreshData = (options['operationKind'] === VisualDataChangeOperationKind.Create);
+        // operationKind is optional - treat a missing value (e.g. very first update some hosts send) as fresh data.
+        const isFreshData = options.operationKind === undefined || options.operationKind === VisualDataChangeOperationKind.Create;
         const hasMoreData = Boolean(this.dataView.metadata.segment);
         const rangeValueColumn = findColumn(this.dataView, 'rangeValue');
         const bucketColumn = findColumn(this.dataView, 'bucket');
@@ -205,8 +227,8 @@ export default class FacetsVisual implements IVisual {
 
         this.facetsContainer.toggleClass('render-segments', Boolean(bucketColumn));
 
-        this.previousFreshData = isFreshData ? (this.data || {}) : this.previousFreshData;
-        this.retainFilters = this.previousFreshData.hasHighlight && this.retainFilters;
+        this.previousFreshData = isFreshData ? (this.data || {}) : (this.previousFreshData || {});
+        this.retainFilters = Boolean(this.previousFreshData.hasHighlight) && this.retainFilters;
         isFreshData && !this.retainFilters && this.clearFilters();
 
         this.data = this.converter(this.dataView, this.colors, this.settings);
@@ -214,7 +236,7 @@ export default class FacetsVisual implements IVisual {
 
         // to ignore first update call series caused by selecting facets in highlighted state
         this.selectionInHighlightedState = isFreshData
-            ? (this.previousFreshData.hasHighlight && this.selectedInstances.length > 0)
+            ? (Boolean(this.previousFreshData.hasHighlight) && this.selectedInstances.length > 0)
             : this.selectionInHighlightedState;
 
         this.loadMoreCount = isFreshData ? 0 : ++this.loadMoreCount;
@@ -234,26 +256,19 @@ export default class FacetsVisual implements IVisual {
     }
 
     /**
-     * Enumerates the instances for the objects that appear in the power bi formatting pane.
+     * Builds the formatting pane model from the current settings.
+     * `facetState` is intentionally excluded here (hidden/pane-less, persisted directly).
      *
-     * @param  {EnumerateVisualObjectInstancesOptions} options An EnumerateVisualObjectInstancesOptions object.
-     * @return {VisualObjectInstance[]}
+     * @return {powerbi.visuals.FormattingModel}
      */
-    public enumerateObjectInstances(options: EnumerateVisualObjectInstancesOptions): VisualObjectInstance[] {
-        let instances: VisualObjectInstance[];
-        switch (options.objectName) {
-            case 'facetState':
-                break;
-            default:
-                instances = [{
-                    selector: undefined,
-                    objectName: options.objectName,
-                    properties: {}
-                }];
-                $.extend(true, instances[0].properties, this.settings[options.objectName]);
-                break;
-        }
-        return instances;
+    public getFormattingModel(): powerbi.visuals.FormattingModel {
+        const settingsModel = new VisualFormattingSettings();
+        const facetCount = (this.settings && this.settings.facetCount) || DEFAULT_SETTINGS.facetCount;
+        const display = (this.settings && this.settings.display) || DEFAULT_SETTINGS.display;
+        settingsModel.facetCount.initial.value = facetCount.initial;
+        settingsModel.facetCount.increment.value = facetCount.increment;
+        settingsModel.display.selectionCount.value = display.selectionCount;
+        return this.formattingSettingsService.buildFormattingModel(settingsModel);
     }
 
     private getSelectedInstances() {
@@ -273,8 +288,8 @@ export default class FacetsVisual implements IVisual {
     private validateSettings (settings: FacetKeySettings) {
         const facetCount = settings.facetCount;
         if (facetCount) {
-            facetCount.initial = facetCount.initial < 0 ? 0 : parseInt(String(facetCount.initial), 10);
-            facetCount.increment = facetCount.increment < 0 ? 0 : parseInt(String(facetCount.increment), 10);
+            facetCount.initial = toFiniteNonNegativeInt(facetCount.initial, DEFAULT_SETTINGS.facetCount.initial);
+            facetCount.increment = toFiniteNonNegativeInt(facetCount.increment, DEFAULT_SETTINGS.facetCount.increment);
         }
         return settings;
     }
@@ -301,7 +316,7 @@ export default class FacetsVisual implements IVisual {
         instances.push(instance);
         const objects: powerbi.VisualObjectInstancesToPersist = { merge: instances };
         this.suppressNextUpdate = true;
-        this.hostServices.persistProperties(objects);
+        this.host.persistProperties(objects);
     }
 
     /**
@@ -311,7 +326,7 @@ export default class FacetsVisual implements IVisual {
         // update new group and Other count with more|Less buttons
         this.data.facetsData.forEach((groupData: any) => {
             const key = groupData.key;
-            const group = this.facets._getGroup(key);
+            const group = this.facets.getGroup(key);
             if (group) {
                 const numVisibleFacets = group.facets.length;
                 const allFacets = this.getFacetGroup(key).allFacets;
@@ -441,7 +456,8 @@ export default class FacetsVisual implements IVisual {
         // If the mouse leaves the container while dragging, cancel it by triggering a mouseup event.
         this.facetsContainer.on('mouseleave', (evt) => this.facetsContainer.trigger('mouseup'));
 
-        this.searchBox.on('input', debounce((e: any) => this.filterFacets(), 500));
+        this.filterFacetsDebounced = debounce((e: any) => this.filterFacets(), 500);
+        this.searchBox.on('input', this.filterFacetsDebounced);
 
         this.facets.on('facet:click', (e: any, key: string, value: string) => this.toggleFacetSelection(key, value));
 
@@ -455,7 +471,7 @@ export default class FacetsVisual implements IVisual {
                 this.filter.range && this.filter.range[key] && (this.filter.range[key] = undefined);
                 this.filterFacets(true);
                 this.applySelection(selectedInstances);
-                this.facets._getGroup(key).collapsed = true;
+                this.facets.getGroup(key).collapsed = true;
             } else {
                 const deselected = remove(selectedInstances, (selected) => selected.facetKey === key);
                 this.applySelection(selectedInstances);
@@ -467,7 +483,7 @@ export default class FacetsVisual implements IVisual {
 
         this.facets.on('facet-group:expand', (e: any, key: string) => {
             this.runWithNoAnimation(this.resetGroup, this, key);
-            this.facets._getGroup(key).collapsed = false;
+            this.facets.getGroup(key).collapsed = false;
             this.getFacetGroup(key).collapsed = false;
             this.saveFacetState();
         });
@@ -475,7 +491,7 @@ export default class FacetsVisual implements IVisual {
         this.facets.on('facet-group:dragging:end', () => {
             // Save the order of the facets
             this.data.facetsData.forEach((facetGroupData) => {
-                const group = this.facets._getGroup(facetGroupData.key);
+                const group = this.facets.getGroup(facetGroupData.key);
                 facetGroupData.order = group.index;
             });
             this.saveFacetState();
@@ -518,7 +534,7 @@ export default class FacetsVisual implements IVisual {
      */
     private showMoreFacetInstances(key: string): void {
         const LIMIT = this.settings.facetCount.increment;
-        const group = this.facets._getGroup(key);
+        const group = this.facets.getGroup(key);
         const allFacets = this.getFacetGroup(key).allFacets;
         const visibleFacets = group.facets;
         const moreFacets = allFacets.slice(visibleFacets.length, visibleFacets.length + LIMIT);
@@ -576,80 +592,92 @@ export default class FacetsVisual implements IVisual {
     }
 
     /**
-     * Creates a semantic query expression from the given range filter.
+     * Builds public powerbi-models AdvancedFilter objects (inclusive >= / <=) from the current
+     * range filter state, one per range column, so multiple ranges combine as AND when applied
+     * together via host.applyJsonFilter. Columns without a public `queryName` are safely skipped
+     * (no private `column.expr` access).
      *
-     * @param  {any}    rangeFilter A range filter
-     * @return {any}    A range sqExpr expression.
+     * @param  {RangeFilter} rangeFilter A range filter.
+     * @return {AdvancedFilter[]}        Public JSON filters ready for host.applyJsonFilter.
      */
+    private buildAdvancedFiltersFromRangeFilter(rangeFilter: RangeFilter): AdvancedFilter[] {
+        if (!rangeFilter) { return []; }
+        const rangeValueColumns = findColumn(this.dataView, 'rangeValue', true) || [];
+        const filters: AdvancedFilter[] = [];
 
-    private createSQExprFromRangeFilter(rangeFilter: any) {
-        const rangeValueColumns = findColumn(this.dataView, 'rangeValue', true);
-        let sqExpr: any;
         Object.keys(rangeFilter).forEach((key: string) => {
-            const column = find(rangeValueColumns, (column: any) => safeKey(column.displayName) === key);
-            const filter = rangeFilter[key];
-            if (filter) {
-                const rangeFrom = filter.from.metadata[0].rangeValue;
-                const to = filter.to.metadata[filter.to.metadata.length - 1].rangeValue;
-                const rangeExpr = SQExprBuilder.between(column.expr,  SQExprBuilder.typedConstant(rangeFrom, column.type), SQExprBuilder.typedConstant(to, column.type));
-                sqExpr = sqExpr ? SQExprBuilder.and(rangeExpr, sqExpr) : rangeExpr;
-            }
+            const rangeForKey = rangeFilter[key];
+            if (!rangeForKey) { return; }
+            const column = find(rangeValueColumns, (col: any) => col && safeKey(col.displayName) === key);
+            if (!column || !column.queryName || column.queryName.indexOf('.') < 0) { return; }
+
+            const lastDot = column.queryName.lastIndexOf('.');
+            const target: IFilterColumnTarget = {
+                table: column.queryName.substring(0, lastDot),
+                column: column.queryName.substring(lastDot + 1),
+            };
+            const rangeFrom = rangeForKey.from.metadata[0].rangeValue;
+            const to = rangeForKey.to.metadata[rangeForKey.to.metadata.length - 1].rangeValue;
+            filters.push(new AdvancedFilter(
+                target,
+                'And',
+                { operator: 'GreaterThanOrEqual', value: rangeFrom },
+                { operator: 'LessThanOrEqual', value: to },
+            ));
         });
-        return sqExpr;
+
+        return filters;
     }
 
     /**
-     * Send the given selection of facet instances to the host.
+     * Applies (or clears) the public JSON range filter declared via capabilities' `general.filter`.
+     */
+    private applyRangeFilter(): void {
+        if (!this.dataView) { return; }
+        const filters = this.buildAdvancedFiltersFromRangeFilter(this.filter.range);
+        if (filters.length) {
+            this.host.applyJsonFilter(filters, FILTER_OBJECT_NAME, FILTER_PROPERTY_NAME, FilterAction.merge);
+        } else {
+            this.host.applyJsonFilter(null, FILTER_OBJECT_NAME, FILTER_PROPERTY_NAME, FilterAction.remove);
+        }
+    }
+
+    /**
+     * Builds the deduplicated set of public selection ids representing every underlying row for
+     * the given selected facet instances (a facet can represent multiple rows).
+     *
+     * @param  {DataPoint[]} dataPoints The data points of the selected facet instances.
+     * @return {ISelectionId[]}         Deduplicated selection ids.
+     */
+    private buildSelectionIdsForDataPoints(dataPoints: DataPoint[]): ISelectionId[] {
+        if (!this.dataView || !this.dataView.table) { return []; }
+        const table = this.dataView.table;
+        const idMap: { [key: string]: ISelectionId } = {};
+        (dataPoints || []).forEach((dp: DataPoint) => {
+            (dp.rows || []).forEach((row: RowObject) => {
+                if (row.index === undefined || row.index === null) { return; }
+                const id = this.host.createSelectionIdBuilder().withTable(table, row.index).createSelectionId();
+                idMap[id.getKey()] = id;
+            });
+        });
+        return Object.keys(idMap).map((key) => idMap[key]);
+    }
+
+    /**
+     * Send the given selection of facet instances to the host: selects (OR, by deduplicated row
+     * identity) every row represented by the chosen facets, and merges/removes the range filter
+     * (AND across multiple ranges) via the public selectionManager + applyJsonFilter APIs.
      *
      * @param  {DataPoint[]} selectedInstances The data points of the selected facet instances.
      */
     private applySelection(selectedInstances: DataPoint[]) {
-        const facetColumn = findColumn(this.dataView, 'facet');
-        const instanceColumn = findColumn(this.dataView, 'facetInstance');
-
-        let sqExpr = selectedInstances.reduce((prevExpr: any, selected: any) => {
-            if (!selected.rows[0]) { return prevExpr; }
-            const { facet, facetInstance } = selected.rows[0];
-            let expr: any = instanceColumn
-                ? SQExprBuilder.equal(instanceColumn.expr, SQExprBuilder.typedConstant(facetInstance, instanceColumn.type))
-                : undefined;
-            expr = facetColumn
-                ? SQExprBuilder.and(expr, SQExprBuilder.equal(facetColumn.expr, SQExprBuilder.typedConstant(facet, facetColumn.type)))
-                : expr;
-            return prevExpr ? SQExprBuilder.or(prevExpr, expr) : expr;
-        }, undefined);
-
-        if (this.hasRangeFilter()) {
-            const rangeExpr = this.createSQExprFromRangeFilter(this.filter.range);
-            sqExpr = sqExpr ? SQExprBuilder.and(sqExpr, rangeExpr) : rangeExpr;
-        }
-
-        this.bookmarkSelection = powerbi.data.createDataViewScopeIdentity(sqExpr);
-        if (sqExpr) {
-            this.sendSelectionToHost([this.bookmarkSelection]);
+        const ids = this.buildSelectionIdsForDataPoints(selectedInstances);
+        if (ids.length) {
+            this.selectionManager.select(ids, false);
         } else {
             this.selectionManager.clear();
         }
-    }
-
-    /**
-     * Send a selection for the given data view scope identities to the host.
-     *
-     * @param {DataViewScopeIdentity[]} identities An array of powerbi DataViewScopeIdentities.
-     */
-    private sendSelectionToHost(identities: DataViewScopeIdentity[]) {
-        const selectArgs: powerbi.SelectEventArgs = {
-            visualObjects: [
-                {
-                    objectName: '',
-                    selectorsByColumn: {
-                        dataMap: identities ? {'': identities[0]} : undefined
-                    }
-
-                }
-            ],
-        };
-        this.hostServices.onSelect(selectArgs);
+        this.applyRangeFilter();
     }
 
     /**
@@ -714,4 +742,33 @@ export default class FacetsVisual implements IVisual {
             group.verticalFacets.forEach((facet: any) => facet.deselect());
         });
     }
+
+    /**
+     * PowerBI's visual destroy lifecycle method. Cancels pending debounced work and detaches
+     * event handlers so neither fire after teardown.
+     */
+    public destroy(): void {
+        if (this.destroyed) { return; }
+        this.destroyed = true;
+        this.reDrawRangeFilter && this.reDrawRangeFilter.cancel();
+        this.updateSparklines && this.updateSparklines.cancel();
+        this.filterFacetsDebounced && this.filterFacetsDebounced.cancel();
+        // Facets is an IBindable, not a jQuery object: off() requires an events string/null and
+        // throws on undefined. destroy() is its real public lifecycle method (idempotent-guarded above).
+        if (this.facets && typeof this.facets.destroy === 'function') {
+            this.facets.destroy();
+        }
+        if (this.facetsContainer) {
+            this.facetsContainer.off();
+            this.facetsContainer.empty();
+        }
+        this.facets = null;
+        this.data = null;
+        this.dataView = null;
+        this.previousData = null;
+        this.previousFreshData = null;
+        this.selectedInstances = [];
+    }
 }
+
+export default FacetsVisual;

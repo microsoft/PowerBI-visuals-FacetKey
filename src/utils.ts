@@ -21,6 +21,7 @@
  * SOFTWARE.
  */
 
+import powerbi from 'powerbi-visuals-api';
 import DataView = powerbi.DataView;
 import filter from 'lodash-es/filter';
 import sortBy from 'lodash-es/sortBy';
@@ -180,7 +181,7 @@ export function createSegments(bucket: any, mainColor: string, isHighlight: bool
  * @param {boolean = false} isHighlight      A boolean value indicating whether to use highlight count.
  * @returns {number[]}                       A timeseries array.
  */
-export function createTimeSeries(sparklineXDomain: any[], sparklineData: Object, isHighlight: boolean = false) {
+export function createTimeSeries(sparklineXDomain: any[], sparklineData: object, isHighlight: boolean = false) {
     const timeseries = Array.apply(null, new Array(sparklineXDomain.length)).map(Number.prototype.valueOf, 0);
     Object.keys(sparklineData).forEach((xValue) => {
         const value = sparklineData[xValue];
@@ -207,4 +208,22 @@ export function otherLabelTemplate(remaining: number) {
  */
 export function safeKey(value: string) {
     return value.replace(/[\(\)]/g, '\\$&');
+}
+
+/**
+ * Safely parses a JSON string that was persisted via a PowerBI object property.
+ * Returns the provided fallback if the string is missing, malformed, or not an object.
+ *
+ * @param  {string} value    A JSON-encoded string (possibly undefined/malformed).
+ * @param  {T}      fallback A fallback value to use when parsing fails.
+ * @return {T}
+ */
+export function safeJsonParse<T>(value: string, fallback: T): T {
+    if (!value) { return fallback; }
+    try {
+        const parsed = JSON.parse(value);
+        return (parsed && typeof parsed === 'object') ? parsed : fallback;
+    } catch (e) {
+        return fallback;
+    }
 }

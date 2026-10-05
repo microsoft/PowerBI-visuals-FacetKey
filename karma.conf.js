@@ -1,60 +1,32 @@
 'use strict';
 
+const fs = require('node:fs');
 const webpackConfig = require('./webpack.config');
-const isTddMode = process.argv.indexOf("--tdd") > -1;
-const webpack = require('webpack');
+const isTddMode = process.argv.includes('--tdd');
+
+if (!process.env.CHROME_BIN && process.platform === 'darwin') {
+    const chrome = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+    if (fs.existsSync(chrome)) process.env.CHROME_BIN = chrome;
+}
 
 module.exports = function(config) {
     config.set({
         basePath: '',
-        frameworks: ['mocha', 'sinon-chai'],
-        mime: {
-            'text/x-typescript': ['ts']
-        },
-        files: [
-            'node_modules/jquery/dist/jquery.min.js',
-            'src/**/*.spec.ts'
-        ],
-        exclude: [
-        ],
+        frameworks: ['mocha', 'webpack'],
+        files: ['tests/browser-setup.ts', 'src/**/*.spec.ts'],
         preprocessors: {
-            'src/**/*.spec.ts': ['webpack', 'sourcemap']
+            'tests/browser-setup.ts': ['webpack'],
+            'src/**/*.spec.ts': ['webpack'],
         },
-        webpack: {
-            entry: webpackConfig.entry,
-            module: {
-                loaders: [
-                    {
-                        test: /\.ts?$/,
-                        loader: 'ts-loader',
-                    },
-                ]
-            },
-            resolve: webpackConfig.resolve,
-            externals: [
-                {
-                    sinon: "sinon",
-                    chai: "chai"
-                },
-            ],
-            plugins: [
-              new webpack.SourceMapDevToolPlugin({
-                filename: null, // if no value is provided the sourcemap is inlined
-                test: /\.(ts|js)($|\?)/i // process .js and .ts files only
-              })
-            ]
-        },
-        webpackMiddleware: {
-            // suppress webpack errors
-            stats: 'none'
-        },
-        reporters: ['mocha'],
+        webpack: webpackConfig,
+        reporters: ['progress'],
         port: 9876,
         colors: true,
         logLevel: config.LOG_INFO,
-        autoWatch: true,
-        browsers: isTddMode ? ['Chrome'] : [ 'PhantomJS' ],
+        autoWatch: isTddMode,
+        browsers: [isTddMode ? 'Chrome' : 'ChromeHeadless'],
         singleRun: !isTddMode,
-        concurrency: Infinity
-    })
-}
+        concurrency: 1,
+        browserNoActivityTimeout: 30000,
+    });
+};
