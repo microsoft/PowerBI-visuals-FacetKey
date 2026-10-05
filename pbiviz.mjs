@@ -11,9 +11,11 @@ const root = path.dirname(fileURLToPath(import.meta.url));
 const assetsRoot = path.join(root, '.tmp', 'drop');
 
 // In 7.2.1, --drop replaces setupMiddlewares and would discard the guard.
+// Reject its short alias too, including clusters with the other boolean short
+// option (-l, --all-locales). -p and -f consume the remainder as an option value.
 // Standard pbiviz start already writes its generated assets to disk.
-if (process.argv.includes('--drop')) {
-    throw new Error('Use pbiviz start without --drop so development request protections stay enabled.');
+if (process.argv.some((arg) => arg === '--drop' || /^-l*d/.test(arg))) {
+    throw new Error('Use pbiviz start without --drop (-d) so development request protections stay enabled.');
 }
 
 export function guardDevRequest(req, res, next) {
@@ -32,9 +34,12 @@ export function guardDevRequest(req, res, next) {
         res.setHeader('Access-Control-Allow-Origin', origin);
         res.setHeader('Vary', 'Origin');
     }
-    if (req.url.startsWith('/assets/')) {
+    // Express mounts /assets case-insensitively; apply the same boundary to
+    // every spelling it serves, including the mount root itself.
+    const pathname = req.url.split('?')[0];
+    if (/^\/assets(?:\/|$)/i.test(pathname)) {
         let requestPath;
-        try { requestPath = decodeURIComponent(req.url.split('?')[0].slice('/assets/'.length)); }
+        try { requestPath = decodeURIComponent(pathname.slice('/assets'.length).replace(/^\//, '')); }
         catch { res.statusCode = 400; res.end('Bad request.'); return; }
         const target = security.resolveWithinRoot(assetsRoot, requestPath);
         if (!target || !security.resolveRealPathWithinRoot(assetsRoot, target)) {

@@ -99,10 +99,12 @@ export function loadSelectionFromSelectionIds(facetsVisual: any, ids: SelectionI
     );
 
     if (!facetsVisual.data || !facetsVisual.data.facetsData) { return; }
-    if (facetsVisual.data.hasHighlight) {
+    // Clear stale local selection styling first: updateFacetsSelection([]) also deselects
+    // normal facets (or resets the widget), so incoming highlights must be applied afterwards.
+    facetsVisual.runWithNoAnimation(facetsVisual.updateFacetsSelection, facetsVisual, facetsVisual.selectedInstances);
+    if (facetsVisual.data.hasHighlight && facetsVisual.selectedInstances.length === 0) {
         facetsVisual.facets.select(facetsVisual.data.facetsSelectionData);
     }
-    facetsVisual.runWithNoAnimation(facetsVisual.updateFacetsSelection, facetsVisual, facetsVisual.selectedInstances);
 }
 
 /**
@@ -202,6 +204,9 @@ function applyRangeFilterToUI(facetsVisual: any, rangeValueColumns?: any[]): voi
         const fromIndex = bars.findIndex((bar: any) => bar.metadata.find((datum: any) => valuesEqual(datum.metadata.rangeValue, fromValue)));
         const toIndex = bars.findIndex((bar: any) => bar.metadata.find((datum: any) => valuesEqual(datum.metadata.rangeValue, toValue)));
         if (fromIndex >= 0 && toIndex >= 0) {
+            // Search rebuilds range facets from these persisted indices, not the UI selection.
+            range.from.index = fromIndex;
+            range.to.index = toIndex;
             facetData.facets[0].selection['range'] = { from: fromIndex, to: toIndex };
             group.replace(facetData);
         }

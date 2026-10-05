@@ -7,7 +7,7 @@ const path = require('node:path');
 const os = require('node:os');
 const net = require('node:net');
 const https = require('node:https');
-const { spawn } = require('node:child_process');
+const { spawn, spawnSync } = require('node:child_process');
 const { once } = require('node:events');
 const { pathToFileURL } = require('node:url');
 
@@ -59,6 +59,23 @@ test('official pbiviz configuration retains loopback and origin protections', as
     assert.equal(typeof config.devServer.setupMiddlewares, 'function');
 });
 
+test('drop options cannot replace the development guard', async () => {
+    const home = await fs.mkdtemp(path.join(os.tmpdir(), 'facetkey-drop-rejection-'));
+    try {
+        for (const option of ['--drop', '-d', '-ld', '-dl']) {
+            const result = spawnSync(process.execPath, [
+                path.join(ROOT, 'node_modules/powerbi-visuals-tools/bin/pbiviz.js'), 'start', option,
+            ], { cwd: ROOT, env: { ...process.env, HOME: home }, encoding: 'utf8', timeout: 15000 });
+            assert.equal(result.error, undefined, option);
+            assert.notEqual(result.status, 0, option);
+            assert.match(result.stdout + result.stderr, /without --drop \(-d\)/, option);
+        }
+        assert.deepEqual(await fs.readdir(home), [], 'rejected options must not create certificates');
+    } finally {
+        await fs.rm(home, { recursive: true, force: true });
+    }
+});
+
 test('native pbiviz start serves, watches CSS and rejects unsafe requests', {
     timeout: 100000,
     skip: process.platform === 'win32' ? 'Avoid creating certificates in the Windows user certificate store during automated tests.' : false,
@@ -96,9 +113,14 @@ test('native pbiviz start serves, watches CSS and rejects unsafe requests', {
         const secret = path.join(home, 'boundary.txt');
         await fs.writeFile(secret, 'DO NOT SERVE');
         await fs.symlink(secret, linkPath);
-        const escaped = await request(port, `/assets/${linkName}`);
-        assert.equal(escaped.status, 403);
-        assert.ok(!escaped.body.includes('DO NOT SERVE'));
+        for (const mount of ['/assets', '/ASSETS', '/AsSeTs']) {
+            const asset = await request(port, `${mount}/visual.js`);
+            assert.equal(asset.status, 200, `legitimate asset: ${mount}`);
+            const escaped = await request(port, `${mount}/${linkName}`);
+            assert.equal(escaped.status, 403, `symlink: ${mount}`);
+            assert.ok(!escaped.body.includes('DO NOT SERVE'));
+            assert.equal((await request(port, `${mount}/..%2f..%2fpackage.json`)).status, 403, `traversal: ${mount}`);
+        }
 
         await fs.appendFile(cssPath, '\n.pbiviz-watch-probe { color: rgb(1, 2, 3); }\n');
         await waitForResponse(port, '/assets/visual.css', (r) => r.status === 200 && r.body.includes('pbiviz-watch-probe'), child, () => log);

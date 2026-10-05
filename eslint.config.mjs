@@ -4,6 +4,9 @@ import powerbiVisualsPlugin from 'eslint-plugin-powerbi-visuals';
 import globals from 'globals';
 import securityParityPlugin from './lint/eslint-plugin-security-parity.mjs';
 
+// Original no-http-string policy exceptions, shared by literal/template checks.
+const insecureUrlExceptions = ['http://www.example.com/?.*', 'http://www.examples.com/?.*'];
+
 // Current security policy: maintained Power BI and core ESLint rules plus
 // local AST rules. The local plugin is active security enforcement, not a
 // compatibility layer. See lint/*.test.mjs for behavioral regression coverage.
@@ -12,11 +15,8 @@ export default [
         files: ['src/**/*.ts', 'src/**/*.tsx'],
         languageOptions: {
             parser,
-            // Required for core 'no-implied-eval' to recognize bare
-            // setTimeout()/setInterval() calls as references to the real
-            // global functions; without declared globals
-            // ESLint cannot prove the callee isn't a locally shadowed name
-            // and silently never reports.
+            // The local timer rule obtains type information lazily, including
+            // for unsaved lintText buffers not included in tsconfig.json.
             globals: {
                 ...globals.browser,
                 ...globals.es2017,
@@ -35,11 +35,11 @@ export default [
             'no-constant-condition': 'error',
             'valid-typeof': 'error',
             'no-eval': 'error',
-            // Reject string-based setTimeout/setInterval bodies.
-            // (execScript() parity is handled unconditionally by
-            // security-parity/no-exec-script below, since no-implied-eval only
-            // flags execScript() when it can prove it is an undeclared global.)
+            // Keep core's static-value checks as defense in depth; supplement
+            // them with dynamic handler types for all three timer APIs.
+            // execScript is prohibited unconditionally by the local rule below.
             'no-implied-eval': 'error',
+            'security-parity/no-string-based-timers': 'error',
             // Reject octal literals.
             'no-octal': 'error',
             // Protect control flow in finally blocks.
@@ -60,15 +60,14 @@ export default [
             'powerbi-visuals/no-document-domain': 'error',
             'powerbi-visuals/no-document-write': 'error',
             // Preserve the original policy's explicit example-URL exceptions.
-            'powerbi-visuals/no-http-string': [
-                'error',
-                ['http://www.example.com/?.*', 'http://www.examples.com/?.*'],
-            ],
+            'powerbi-visuals/no-http-string': ['error', insecureUrlExceptions],
+            // Power BI's rule only visits Literal nodes; restore the original
+            // template-literal/template-head checks with the same exceptions.
+            'security-parity/no-http-template': ['error', insecureUrlExceptions],
             // Reject unsafe innerHTML/outerHTML writes.
             'powerbi-visuals/no-inner-outer-html': 'error',
             // Additional insecure-HTML-write parity (insertAdjacentHTML/jQuery .html()).
             'powerbi-visuals/no-implied-inner-html': 'error',
-            'powerbi-visuals/no-string-based-set-immediate': 'error',
             'powerbi-visuals/non-literal-require': 'error',
             'powerbi-visuals/insecure-random': 'error',
 

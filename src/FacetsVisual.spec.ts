@@ -251,6 +251,141 @@ describe('FacetsVisual (mocked host integration)', () => {
         });
     });
 
+    describe('restored ranges followed by search', () => {
+        [
+            { name: 'numeric', type: { numeric: true }, values: [10, 20, 30, 40] },
+            { name: 'date', type: { dateTime: true }, values: [1, 2, 3, 4].map(day => new Date(Date.UTC(2016, 0, day))) },
+        ].forEach(({ name, type, values }) => {
+            it(`keeps restored ${name} range indices and handles valid after searching`, () => {
+                const rangeColumn = buildColumn('range', { rangeValue: true }, { type, queryName: 'Table1.Range' });
+                const dv = buildDataView([
+                    ['organization', 'Wand below', 1, values[0]],
+                    ['organization', 'Wand inside', 2, values[1]],
+                    ['organization', 'Broom inside', 3, values[2]],
+                    ['organization', 'Wand above', 4, values[3]],
+                ], [rangeColumn]);
+                const serialize = (value: number | Date) => value instanceof Date ? value.toISOString() : value;
+                visual.update(buildOptions(dv, { jsonFilters: [{
+                    target: { table: 'Table1', column: 'Range' },
+                    logicalOperator: 'And',
+                    conditions: [
+                        { operator: 'GreaterThanOrEqual', value: serialize(values[1]) },
+                        { operator: 'LessThanOrEqual', value: serialize(values[2]) },
+                    ],
+                }] }));
+
+                const getRange = () => (<any>visual).facets.getGroup('range').getFilterRange('range');
+                expect(getRange().from.index).to.equal(1);
+                expect(getRange().to.index).to.equal(2);
+
+                // Exercise the real search handler and widget replacement, not just the converter.
+                element.find('.search-box').val('Wand').trigger('input');
+                expect(() => (<any>visual).filterFacetsDebounced.flush()).to.not.throw();
+
+                const restored = (<any>visual).filter.range['range'];
+                expect(restored.from.index).to.equal(1);
+                expect(restored.to.index).to.equal(2);
+                expect(getRange().from.index).to.equal(1);
+                expect(getRange().to.index).to.equal(2);
+                expect(getRange().from.metadata[0].rangeValue).to.deep.equal(values[1]);
+                expect(getRange().to.metadata[0].rangeValue).to.deep.equal(values[2]);
+                const normalFacets = (<any>visual).facets.getGroup('organization').verticalFacets;
+                expect(normalFacets.map((facet: any) => facet._spec.label)).to.deep.equal(['Wand inside']);
+                expect(normalFacets[0].count).to.equal(2);
+            });
+        });
+    });
+
+    describe('incoming highlights and local selection replay', () => {
+        function highlightedDataView() {
+            const dv = buildDataView([
+                ['organization', 'Wand', 10],
+                ['organization', 'Broom', 20],
+            ], [], { display: { selectionCount: true } });
+            dv.categorical.values[0].highlights = [4, 5];
+            return dv;
+        }
+
+        function normalFacets() {
+            return (<any>visual).facets.getGroup('organization').verticalFacets;
+        }
+
+        function expectIncomingHighlights() {
+            const wand = normalFacets().find((facet: any) => facet.value === 'Wand0');
+            const broom = normalFacets().find((facet: any) => facet.value === 'Broom1');
+            expect(wand._spec.selected.count).to.equal(4);
+            expect(wand._labelCount.text()).to.equal('4 / 10');
+            expect(wand._barForeground.hasClass('facet-bar-selected')).to.be.true;
+            expect(wand._barForeground[0].style.width).to.equal('20%');
+            expect(broom._spec.selected.count).to.equal(5);
+            expect(broom._labelCount.text()).to.equal('5 / 20');
+            expect(broom._barForeground.hasClass('facet-bar-selected')).to.be.true;
+            expect(broom._barForeground[0].style.width).to.equal('25%');
+            expect((<any>visual).selectedInstances).to.deep.equal([]);
+            expect(element.find('.facets-container').hasClass('facets-selected')).to.be.false;
+            expect(normalFacets().every((facet: any) => !facet.highlighted)).to.be.true;
+        }
+
+        function expectNoSelection() {
+            expect((<any>visual).selectedInstances).to.deep.equal([]);
+            expect(element.find('.facets-container').hasClass('facets-selected')).to.be.false;
+            normalFacets().forEach((facet: any) => {
+                expect(facet.highlighted).to.be.false;
+                expect(facet._spec.selected).to.be.undefined;
+                expect(facet._barForeground.hasClass('facet-bar-selected')).to.be.false;
+                expect(facet._labelCount.text()).to.equal(String(facet.count));
+            });
+        }
+
+        it('renders incoming highlight counts and bars with empty local ids, and clears them when highlights disappear', () => {
+            const dv = highlightedDataView();
+            visual.update(buildOptions(dv));
+            expect(selectionManagerSpies.getSelectionIds.lastCall.returnValue).to.deep.equal([]);
+            expectIncomingHighlights();
+
+            registeredSelectCallback([]);
+            expectIncomingHighlights();
+
+            delete dv.categorical.values[0].highlights;
+            visual.update(buildOptions(dv));
+            expectNoSelection();
+        });
+
+        [false, true].forEach(dataUpdateWhileSelected => {
+            it(`clears local selection styling and restores incoming highlights${dataUpdateWhileSelected ? ' after a highlighted-state data update' : ''}`, () => {
+                const dv = highlightedDataView();
+                visual.update(buildOptions(dv));
+                registeredSelectCallback([makeSelectionId(0)]);
+                const wand = normalFacets().find((facet: any) => facet.value === 'Wand0');
+                expect(wand._spec.selected.count).to.equal(10);
+                expect(wand.highlighted).to.be.true;
+                expect(element.find('.facets-container').hasClass('facets-selected')).to.be.true;
+
+                if (dataUpdateWhileSelected) {
+                    visual.update(buildOptions(dv));
+                    expect((<any>visual).selectionInHighlightedState).to.be.true;
+                }
+                registeredSelectCallback([]);
+                expectIncomingHighlights();
+                expect((<any>visual).selectionInHighlightedState).to.be.false;
+            });
+        });
+
+        it('clears local selections, icons and bars when no incoming highlights exist', () => {
+            visual.update(buildOptions(buildDataView([
+                ['organization', 'Wand', 10],
+                ['organization', 'Broom', 20],
+            ])));
+            registeredSelectCallback([makeSelectionId(0)]);
+            expect((<any>visual).selectedInstances).to.have.length(1);
+            expect(normalFacets().some((facet: any) => facet.highlighted)).to.be.true;
+            expect(element.find('.facet-bar-selected').length).to.equal(1);
+
+            registeredSelectCallback([]);
+            expectNoSelection();
+        });
+    });
+
     describe('persisted settings / formatting model', () => {
         it('clamps malformed persisted facetCount values instead of blanking the visual', () => {
             const dv = buildDataView([

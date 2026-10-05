@@ -6,11 +6,13 @@
 // proven to still be honored.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Linter } from 'eslint';
+import { ESLint, Linter } from 'eslint';
+import { fileURLToPath } from 'node:url';
 import parser from '@typescript-eslint/parser';
 import powerbiVisualsPlugin from 'eslint-plugin-powerbi-visuals';
 import globals from 'globals';
 import securityParityPlugin from './eslint-plugin-security-parity.mjs';
+import projectConfig from '../eslint.config.mjs';
 
 const linter = new Linter({ configType: 'flat' });
 
@@ -133,12 +135,10 @@ test('no-implied-inner-html rejects jQuery-style .html(string)', () => {
 
 // --- powerbi-visuals/no-http-string (preserving original policy exceptions) ---
 
-const httpRule = {
-    'powerbi-visuals/no-http-string': [
-        'error',
-        ['http://www.example.com/?.*', 'http://www.examples.com/?.*'],
-    ],
-};
+const httpRule = Object.fromEntries(
+    ['powerbi-visuals/no-http-string', 'security-parity/no-http-template']
+        .map((name) => [name, projectConfig[0].rules[name]])
+);
 
 test('no-http-string rejects a plain http:// URL', () => {
     assertRejects('const u = "http://insecure.site/path";', httpRule);
@@ -160,18 +160,17 @@ test('no-http-string accepts https:// URLs', () => {
     assertAccepts('const u = "https://secure.site/path";', httpRule);
 });
 
-// --- powerbi-visuals/no-string-based-set-immediate ---
+// --- security-parity/no-string-based-timers ---
+
+const timerRuleId = 'security-parity/no-string-based-timers';
+const timerRule = { [timerRuleId]: projectConfig[0].rules[timerRuleId] };
 
 test('no-string-based-set-immediate rejects a string body', () => {
-    assertRejects('setImmediate("doSomething()");', {
-        'powerbi-visuals/no-string-based-set-immediate': 'error',
-    });
+    assertRejects('setImmediate("doSomething()");', timerRule);
 });
 
 test('no-string-based-set-immediate accepts a function body', () => {
-    assertAccepts('setImmediate(() => doSomething());', {
-        'powerbi-visuals/no-string-based-set-immediate': 'error',
-    });
+    assertAccepts('setImmediate(() => doSomething());', timerRule);
 });
 
 // --- powerbi-visuals/non-literal-require ---
@@ -190,18 +189,18 @@ test('no-eval rejects eval', () => {
     assertRejects('eval("1+1");', { 'no-eval': 'error' });
 });
 
-// --- core no-implied-eval (no-exec-script / no-string-based-set-interval / no-string-based-set-timeout parity) ---
+// --- no-string-based-set-interval / no-string-based-set-timeout parity ---
 
-test('no-implied-eval rejects setTimeout with a string body', () => {
-    assertRejects('setTimeout("doSomething()", 100);', { 'no-implied-eval': 'error' });
+test('timer policy rejects setTimeout with a string body', () => {
+    assertRejects('setTimeout("doSomething()", 100);', timerRule);
 });
 
-test('no-implied-eval rejects setInterval with a string body', () => {
-    assertRejects('setInterval("doSomething()", 100);', { 'no-implied-eval': 'error' });
+test('timer policy rejects setInterval with a string body', () => {
+    assertRejects('setInterval("doSomething()", 100);', timerRule);
 });
 
-test('no-implied-eval accepts setTimeout with a function body', () => {
-    assertAccepts('setTimeout(() => doSomething(), 100);', { 'no-implied-eval': 'error' });
+test('timer policy accepts setTimeout with a function body', () => {
+    assertAccepts('setTimeout(() => doSomething(), 100);', timerRule);
 });
 
 // --- security-parity/no-exec-script ---
@@ -361,13 +360,13 @@ test('possible-timing-attack accepts a property-access comparison (matches origi
 
 // --- security-parity/react-anchor-blank-noopener ---
 
-test('react-anchor-blank-noopener rejects target=_blank without rel=noopener', () => {
+test('react-anchor-blank-noopener rejects target=_blank without rel=noopener noreferrer', () => {
     assertRejects('const el = <a target="_blank" href="x">link</a>;', {
         'security-parity/react-anchor-blank-noopener': 'error',
     }, { jsx: true, filename: 'test.tsx' });
 });
 
-test('react-anchor-blank-noopener accepts target=_blank with rel=noopener', () => {
+test('react-anchor-blank-noopener accepts target=_blank with rel=noopener noreferrer', () => {
     assertAccepts('const el = <a target="_blank" rel="noopener noreferrer" href="x">link</a>;', {
         'security-parity/react-anchor-blank-noopener': 'error',
     }, { jsx: true, filename: 'test.tsx' });
@@ -405,4 +404,248 @@ test('react-no-dangerous-html accepts plain children', () => {
     assertAccepts('const el = <div>{userInput}</div>;', {
         'security-parity/react-no-dangerous-html': 'error',
     }, { jsx: true, filename: 'test.tsx' });
+});
+
+// Reviewed parity regressions. Assert the actual rule IDs/counts, so an
+// unrelated error cannot masquerade as successful security enforcement.
+function assertRuleMessages(messages, ruleId, count) {
+    assert.equal(messages.length, count, JSON.stringify(messages));
+    assert.ok(messages.every((message) => !message.fatal && message.ruleId === ruleId), JSON.stringify(messages));
+}
+
+test('timer policy rejects dynamically produced string-typed handlers for every timer API', () => {
+    const messages = lint(`
+        const code: string = location.hash.slice(1);
+        setTimeout(code, 1);
+        setInterval(code, 1);
+        setImmediate(code);
+        window.setTimeout(code, 1);
+        window['setInterval'](code, 1);
+        globalThis.setImmediate(code);
+        window[\`setTimeout\`](code, 1);
+        const timer = { setTimeout(handler: unknown, delay: number) {} };
+        timer.setTimeout(code, 1);
+    `, timerRule);
+    assertRuleMessages(messages, timerRuleId, 8);
+});
+
+test('timer policy rejects static and interpolated templates, concatenations and string casts', () => {
+    const cases = [
+        'setTimeout(`doSomething()`, 1);',
+        'setInterval(`doSomething(${value})`, 1);',
+        'setImmediate(`doSomething()`);',
+        'setImmediate(`doSomething(${value})`);',
+        'setImmediate("do" + value);',
+        'setTimeout(location.hash as string, 1);',
+        'setInterval(<string>location.hash, 1);',
+    ];
+    assertRuleMessages(lint(cases.join('\n'), timerRule), timerRuleId, cases.length);
+});
+
+test('timer policy requires a callable type, including factories and properties', () => {
+    const calls = [
+        'setTimeout(1, 1);',
+        'setInterval(null, 1);',
+        'setImmediate(unknownValue);',
+        'setTimeout(anyValue, 1);',
+        'setInterval(receiver.code, 1);',
+        'setImmediate(makeString());',
+        'setTimeout(maybeCallback, 1);',
+        'setInterval(fake.bind(), 1);',
+    ];
+    const declarations = `
+        declare const unknownValue: unknown;
+        declare const anyValue: any;
+        declare const receiver: { code: string };
+        declare function makeString(): string;
+        declare const maybeCallback: string | (() => void);
+        const fake = { bind: () => 'not a callback' };
+    `;
+    assertRuleMessages(lint(declarations + calls.join('\n'), timerRule), timerRuleId, calls.length);
+});
+
+test('timer policy accepts callable types, imports, bound callbacks, factories and generics', () => {
+    assertAccepts(`
+        import { clearTimeout as importedCallback } from 'node:timers';
+        const callback: () => void = () => {};
+        function declaredCallback() {}
+        declare function makeCallback(): () => void;
+        declare const receiver: { callback(): void };
+        setTimeout(callback, 1);
+        setInterval(declaredCallback, 1);
+        setImmediate(importedCallback);
+        setTimeout(makeCallback(), 1);
+        setInterval(receiver.callback, 1);
+        setImmediate(declaredCallback.bind(null));
+        setTimeout(function () {}, 1);
+        function schedule<T extends () => void>(handler: T) { setTimeout(handler, 1); }
+        // Strings in non-handler arguments are data, not code.
+        setTimeout(callback, 1, 'data');
+        otherFunction(location.hash);
+        setTimeout();
+        // setTimeout('comment only', 1);
+        const documentation = 'setImmediate(location.hash)';
+    `, timerRule);
+});
+
+test('timer policy respects callback variable scope instead of accepting a shadowed string', () => {
+    const messages = lint(`
+        const callback = () => {};
+        setTimeout(callback, 1);
+        function nested(callback: string) { setInterval(callback, 1); }
+    `, timerRule);
+    assertRuleMessages(messages, timerRuleId, 1);
+});
+
+for (const source of [
+    'const u = `http://insecure.site/path`;',
+    'const u = `http://${host}/path`;',
+    'const u = `http://insecure.site/${path}`;',
+    'const u = `ftp://${host}/path`;',
+    'const u = ` HTTP://insecure.site/path`;',
+    'const u = `\\x68ttp://insecure.site/path`;',
+    'const u = tag`http://${host}/path`;',
+]) {
+    test(`HTTP template policy rejects ${source}`, () => {
+        assertRuleMessages(lint(source, httpRule), 'security-parity/no-http-template', 1);
+    });
+}
+
+for (const source of [
+    'const u = `https://secure.site/path`;',
+    'const u = `https://${host}/path`;',
+    'const u = `http://www.example.com/?foo=bar`;',
+    'const u = `http://www.examples.com/?foo=bar`;',
+    'const u = `http://www.example.com/${path}`;',
+    'const u = `http://www.examples.com/${path}`;',
+    // Preserve original prefix-only matching, not a scan of every quasi.
+    'const u = `${prefix}http://insecure.site/path`;',
+    '// const u = `http://insecure.site/path`;\nconst x = 1;',
+    'const documentation = "Do not use `http://insecure.site/path`";',
+]) {
+    test(`HTTP template policy accepts ${source}`, () => assertAccepts(source, httpRule));
+}
+
+const jsxOptions = { jsx: true, filename: 'test.tsx' };
+const anchorRuleId = 'security-parity/react-anchor-blank-noopener';
+const sandboxRuleId = 'security-parity/react-iframe-missing-sandbox';
+
+for (const rel of [
+    '', 'noopener', 'noreferrer', 'not-noopener noreferrer',
+    'noopener not-noreferrer', 'noopener,noreferrer', 'noopener-noreferrer',
+    'noopener\u00a0noreferrer', 'noopener\u2003noreferrer',
+]) {
+    test(`anchor policy rejects incomplete or partial rel tokens: ${JSON.stringify(rel)}`, () => {
+        assertRuleMessages(lint(
+            `const el = <a target="_blank" rel=${JSON.stringify(rel)} />;`,
+            { [anchorRuleId]: 'error' }, jsxOptions
+        ), anchorRuleId, 1);
+    });
+}
+
+for (const relExpression of [
+    '"noopener noreferrer"',
+    '" noreferrer\\tnoopener\\nexternal "',
+    '`noopener noreferrer`',
+]) {
+    test(`anchor policy accepts complete whitespace-separated rel tokens: ${relExpression}`, () => {
+        assertAccepts(`const el = <a target={"_blank"} rel={${relExpression}} />;`,
+            { [anchorRuleId]: 'error' }, jsxOptions);
+    });
+}
+
+test('anchor policy checks static template expressions rather than accepting partial tokens', () => {
+    assertRuleMessages(lint('const el = <a target={`_blank`} rel={`not-noopener noreferrer`} />;',
+        { [anchorRuleId]: 'error' }, jsxOptions), anchorRuleId, 1);
+});
+
+for (const sandbox of [
+    '"allow-scripts allow-same-origin"',
+    '"allow-same-origin allow-forms allow-scripts"',
+    '{"allow-scripts\\tallow-same-origin"}',
+    '{`allow-scripts allow-same-origin`}',
+    '"allow-everything"',
+    '"allow-scripts-suffix"',
+    '"allow-scripts,allow-same-origin"',
+    '"allow-scripts\u00a0allow-same-origin"',
+    // A newer token must not silently widen the historical allowlist.
+    '"allow-downloads"',
+]) {
+    test(`sandbox policy rejects unsafe combinations or invalid tokens: ${sandbox}`, () => {
+        assertRuleMessages(lint(`const el = <iframe sandbox=${sandbox} />;`,
+            { [sandboxRuleId]: 'error' }, jsxOptions), sandboxRuleId, 1);
+    });
+}
+
+for (const sandbox of [
+    '""',
+    '"allow-scripts"',
+    '"allow-same-origin"',
+    '"allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-top-navigation"',
+    '{" allow-forms\\tallow-scripts "}',
+    '{`allow-same-origin allow-forms`}',
+    // Dynamic values were not validated by the original sandbox rule.
+    '{permissions}',
+]) {
+    test(`sandbox policy accepts allowed tokens: ${sandbox}`, () => {
+        assertAccepts(`const el = <iframe sandbox=${sandbox} />;`, { [sandboxRuleId]: 'error' }, jsxOptions);
+    });
+}
+
+const projectRoot = fileURLToPath(new URL('../', import.meta.url));
+const eslint = new ESLint({ cwd: projectRoot });
+
+test('real flat config enforces timer and template rules in unsaved lintText buffers', async () => {
+    const [result] = await eslint.lintText(`
+        const code: string = location.hash.slice(1);
+        setTimeout(code, 1);
+        setInterval(code, 1);
+        setImmediate(code);
+        setImmediate(\`run(\${code})\`);
+        const url = \`http://\${location.host}/path\`;
+    `, { filePath: 'src/__security_policy_regression__.ts' });
+    assert.equal(result.fatalErrorCount, 0, JSON.stringify(result.messages));
+    assert.deepEqual(result.messages.map((message) => message.ruleId), [
+        timerRuleId, timerRuleId, timerRuleId, timerRuleId, 'security-parity/no-http-template',
+    ]);
+});
+
+test('real flat config enforces JSX token rules in unsaved lintText buffers', async () => {
+    const [result] = await eslint.lintText(`
+        const anchor = <a target="_blank" rel="not-noopener noreferrer" />;
+        const frame = <iframe sandbox="allow-scripts allow-same-origin" />;
+    `, { filePath: 'src/__security_policy_regression__.tsx' });
+    assert.deepEqual(result.messages.map((message) => message.ruleId), [anchorRuleId, sandboxRuleId]);
+});
+
+test('real flat config accepts safe callbacks, URLs and JSX in unsaved lintText buffers', async () => {
+    const [result] = await eslint.lintText(`
+        import { clearTimeout as callback } from 'node:timers';
+        setTimeout(callback, 1);
+        setInterval(() => {}, 1);
+        setImmediate(function () {});
+        const url = \`https://\${location.host}/path\`;
+        const example = \`http://www.example.com/\${location.hash}\`;
+        const examples = \`http://www.examples.com/\${location.hash}\`;
+        const anchor = <a target="_blank" rel="noopener noreferrer" />;
+        const frame = <iframe sandbox="allow-scripts allow-forms" />;
+    `, { filePath: 'src/__security_policy_regression__.tsx' });
+    assert.deepEqual(result.messages, []);
+});
+
+test('timer policy also works with an existing parser-supplied TypeScript project', async () => {
+    const typedEslint = new ESLint({
+        cwd: projectRoot,
+        overrideConfig: [{ languageOptions: { parserOptions: {
+            project: './tsconfig.json', tsconfigRootDir: projectRoot,
+        } } }],
+    });
+    // Use an included filename, but never modify its contents on disk.
+    const [result] = await typedEslint.lintText(`
+        const code: string = location.hash.slice(1);
+        setTimeout(code, 1);
+        const callback: () => void = () => {};
+        setInterval(callback, 1);
+    `, { filePath: 'src/FacetsVisual.ts' });
+    assertRuleMessages(result.messages, timerRuleId, 1);
 });

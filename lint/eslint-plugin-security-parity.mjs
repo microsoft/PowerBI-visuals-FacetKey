@@ -2,11 +2,21 @@
 // from the original security policy that have no maintained ESLint equivalent and
 // are not covered by eslint-plugin-powerbi-visuals or core ESLint rules.
 //
+import path from "node:path";
+import ts from "typescript";
+
 // All rules here are AST-based (they inspect node types/shapes produced by
 // the parser), not text/regex scans of source, so comments and strings that
 // merely *mention* a banned pattern do not trigger a report.
 //
 // Parity notes / known limitations (reported, not hidden):
+//  - no-string-based-timers: restores the typed timer-argument checks from
+//    NoStringParameterToFunctionCallWalker. A callable type is required, not
+//    merely the absence of a string literal. Like the original, matching is
+//    by function/property name, not just unshadowed browser globals.
+//  - no-http-template: supplements Power BI's Literal-only rule with the
+//    original no-substitution-template / template-head checks and exceptions.
+//    The maintained rule's extra FTP/case/leading-whitespace coverage is kept.
 //  - no-disable-auto-sanitization: verified against the real
 //    tslint-microsoft-contrib@5.0.1 noDisableAutoSanitizationRule.js source
 //    (npm-packed to .tmp/lint-reference/package/ for reference). The ORIGINAL
@@ -76,6 +86,124 @@ function getSimpleName(node) {
     }
     return undefined;
 }
+
+const TIMER_FUNCTION_NAMES = new Set(["setTimeout", "setInterval", "setImmediate"]);
+
+// Use supplied parser type information when available. Otherwise lazily build
+// a program with the parser's SourceFile overlaid on the compiler host. This
+// preserves imports and tsconfig options for real project files, while also
+// checking unsaved lintText buffers and synthetic filenames without writing
+// fixtures to disk or requiring their inclusion in tsconfig.json.
+function getTypeChecker(context) {
+    const services = context.sourceCode.parserServices;
+    if (services.program) {
+        return services.program.getTypeChecker();
+    }
+    const sourceFile = services.esTreeNodeToTSNodeMap?.get(context.sourceCode.ast);
+    if (!sourceFile) {
+        throw new Error("security-parity/no-string-based-timers requires @typescript-eslint/parser.");
+    }
+    const filename = path.resolve(sourceFile.fileName);
+    const configPath = ts.findConfigFile(path.dirname(filename), ts.sys.fileExists);
+    let options = { target: ts.ScriptTarget.ESNext, strict: true };
+    let rootNames = [filename];
+    if (configPath) {
+        const config = ts.readConfigFile(configPath, ts.sys.readFile);
+        if (config.error) {
+            throw new Error(ts.flattenDiagnosticMessageText(config.error.messageText, "\n"));
+        }
+        const parsed = ts.parseJsonConfigFileContent(config.config, ts.sys, path.dirname(configPath));
+        options = parsed.options;
+        // Include project roots as well as imports so ambient declarations in
+        // other project files remain visible to the checker.
+        rootNames = [...new Set([filename, ...parsed.fileNames])];
+    }
+    const host = ts.createCompilerHost(options, true);
+    const getSourceFile = host.getSourceFile.bind(host);
+    host.getSourceFile = (name, ...args) =>
+        path.resolve(name) === filename ? sourceFile : getSourceFile(name, ...args);
+    return ts.createProgram(rootNames, options, host).getTypeChecker();
+}
+
+const noStringBasedTimers = {
+    meta: {
+        type: "problem",
+        docs: { description: "Require function-valued setTimeout, setInterval and setImmediate handlers" },
+        schema: [],
+    },
+    create(context) {
+        let checker;
+        return {
+            CallExpression(node) {
+                const callee = node.callee;
+                let name = getFunctionName(callee);
+                if (callee.type === "MemberExpression" && callee.computed) {
+                    if (callee.property.type === "Literal") {
+                        name = callee.property.value;
+                    } else if (callee.property.type === "TemplateLiteral" && callee.property.expressions.length === 0) {
+                        name = callee.property.quasis[0].value.cooked;
+                    }
+                }
+                if (!TIMER_FUNCTION_NAMES.has(name) || node.arguments.length === 0) {
+                    return;
+                }
+                const handler = node.arguments[0];
+                if (handler.type === "ArrowFunctionExpression" || handler.type === "FunctionExpression") {
+                    return;
+                }
+                // Literal/template bodies cannot be callbacks, even without a
+                // type checker. All other expressions must have a callable type.
+                let callable = false;
+                if (handler.type !== "Literal" && handler.type !== "TemplateLiteral") {
+                    checker ??= getTypeChecker(context);
+                    const tsNode = context.sourceCode.parserServices.esTreeNodeToTSNodeMap.get(handler);
+                    const type = checker.getTypeAtLocation(tsNode);
+                    const isCallable = (candidate) => checker.getSignaturesOfType(
+                        checker.getBaseConstraintOfType(candidate) ?? candidate, ts.SignatureKind.Call
+                    ).length > 0;
+                    callable = isCallable(type);
+                    // With strictBindCallApply disabled, Function.bind returns
+                    // any. Preserve safe bound callbacks, but do not accept an
+                    // arbitrary object's method merely because it is named bind.
+                    if (!callable && (type.flags & ts.TypeFlags.Any) &&
+                        handler.type === "CallExpression" &&
+                        handler.callee.type === "MemberExpression" &&
+                        getFunctionName(handler.callee) === "bind") {
+                        const receiver = context.sourceCode.parserServices.esTreeNodeToTSNodeMap.get(handler.callee.object);
+                        callable = isCallable(checker.getTypeAtLocation(receiver));
+                    }
+                }
+                if (!callable) {
+                    context.report({
+                        node: handler,
+                        message: `${name} requires a function handler; non-function bodies are an implied-eval risk.`,
+                    });
+                }
+            },
+        };
+    },
+};
+
+const noHttpTemplate = {
+    meta: {
+        type: "problem",
+        docs: { description: "Disallow insecure URL template literals and template heads" },
+        schema: [{ type: "array", items: { type: "string" }, uniqueItems: true }],
+    },
+    create(context) {
+        const exceptions = (context.options[0] ?? []).map((pattern) => new RegExp(pattern));
+        return {
+            TemplateLiteral(node) {
+                // Only the first quasi is a URL prefix. Later interpolation
+                // chunks are not whole URL literals (same as the old walker).
+                const text = node.quasis[0].value.cooked ?? node.quasis[0].value.raw;
+                if (/^\s*(http|ftp):/i.test(text) && !exceptions.some((pattern) => pattern.test(text))) {
+                    context.report({ node, message: "Forbidden protocol in URL. Please use HTTPS to refer a page." });
+                }
+            },
+        };
+    },
+};
 
 const noFunctionConstructorWithStringArgs = {
     meta: {
@@ -220,12 +348,14 @@ function getJsxAttributeStringValue(attr) {
     if (attr.value.type === "Literal" && typeof attr.value.value === "string") {
         return attr.value.value;
     }
-    if (
-        attr.value.type === "JSXExpressionContainer" &&
-        attr.value.expression.type === "Literal" &&
-        typeof attr.value.expression.value === "string"
-    ) {
-        return attr.value.expression.value;
+    if (attr.value.type === "JSXExpressionContainer") {
+        const expression = attr.value.expression;
+        if (expression.type === "Literal" && typeof expression.value === "string") {
+            return expression.value;
+        }
+        if (expression.type === "TemplateLiteral" && expression.expressions.length === 0) {
+            return expression.quasis[0].value.cooked;
+        }
     }
     return undefined;
 }
@@ -234,7 +364,7 @@ const reactAnchorBlankNoopener = {
     meta: {
         type: "problem",
         docs: {
-            description: "Disallow <a target=\"_blank\"> without rel=\"noopener\" (reverse tabnabbing)",
+            description: 'Require rel="noopener noreferrer" on <a target="_blank"> (reverse tabnabbing)',
         },
         schema: [],
     },
@@ -250,10 +380,13 @@ const reactAnchorBlankNoopener = {
                 }
                 const relAttr = getJsxAttribute(node, "rel");
                 const relValue = getJsxAttributeStringValue(relAttr) || "";
-                if (!/\bnoopener\b/.test(relValue)) {
+                // HTML token lists use ASCII whitespace, not JavaScript's broader
+                // \s class (e.g. NBSP must not turn a single token into noopener).
+                const tokens = new Set(relValue.split(/[\t\n\f\r ]+/));
+                if (!tokens.has("noopener") || !tokens.has("noreferrer")) {
                     context.report({
                         node,
-                        message: '<a target="_blank"> must include rel="noopener" to prevent reverse tabnabbing.',
+                        message: '<a target="_blank"> must include rel="noopener noreferrer" to prevent reverse tabnabbing.',
                     });
                 }
             },
@@ -261,11 +394,19 @@ const reactAnchorBlankNoopener = {
     },
 };
 
+// Exact allowlist from tslint-microsoft-contrib@5.0.1. Newer browser tokens
+// require an explicit policy update rather than silently broadening permissions.
+const SANDBOX_TOKENS = new Set([
+    "", "allow-forms", "allow-modals", "allow-orientation-lock", "allow-pointer-lock",
+    "allow-popups", "allow-popups-to-escape-sandbox", "allow-same-origin",
+    "allow-scripts", "allow-top-navigation",
+]);
+
 const reactIframeMissingSandbox = {
     meta: {
         type: "problem",
         docs: {
-            description: 'Disallow <iframe> elements without a "sandbox" attribute',
+            description: 'Require an iframe sandbox with valid tokens and no scripts/same-origin combination',
         },
         schema: [],
     },
@@ -275,10 +416,31 @@ const reactIframeMissingSandbox = {
                 if (!node.name || node.name.type !== "JSXIdentifier" || node.name.name !== "iframe") {
                     return;
                 }
-                if (!getJsxAttribute(node, "sandbox")) {
+                const sandbox = getJsxAttribute(node, "sandbox");
+                if (!sandbox) {
                     context.report({
                         node,
                         message: "<iframe> elements must specify a \"sandbox\" attribute.",
+                    });
+                    return;
+                }
+                // As in the original, dynamic sandbox expressions are not
+                // evaluated. Also check statically known JSX string expressions
+                // and no-substitution templates, not just quoted attributes.
+                const value = getJsxAttributeStringValue(sandbox);
+                if (value === undefined) {
+                    return;
+                }
+                const tokens = new Set(value.split(/[\t\n\f\r ]+/));
+                for (const token of tokens) {
+                    if (!SANDBOX_TOKENS.has(token)) {
+                        context.report({ node: sandbox, message: `Invalid iframe sandbox token: ${token}` });
+                    }
+                }
+                if (tokens.has("allow-scripts") && tokens.has("allow-same-origin")) {
+                    context.report({
+                        node: sandbox,
+                        message: "An iframe sandbox must not combine allow-scripts and allow-same-origin.",
                     });
                 }
             },
@@ -314,6 +476,8 @@ const plugin = {
         version: "1.0.0",
     },
     rules: {
+        "no-string-based-timers": noStringBasedTimers,
+        "no-http-template": noHttpTemplate,
         "no-function-constructor-with-string-args": noFunctionConstructorWithStringArgs,
         "no-exec-script": noExecScript,
         "no-disable-auto-sanitization": noDisableAutoSanitization,

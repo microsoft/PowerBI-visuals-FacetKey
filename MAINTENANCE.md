@@ -49,9 +49,10 @@ wildcard CORS. The small `pbiviz.mjs` project configuration adjusts that shipped
 webpack server configuration to retain loopback binding, strict Host/Origin
 checks and real-path containment. It does not replace the compiler/server or
 modify installed dependency files. This configuration is coupled to the shipped
-7.2.1 webpack configuration and is tested against the actual CLI. `--drop` is
-rejected because it would overwrite the guard in this version; normal start
-already writes generated assets.
+7.2.1 webpack configuration and is tested against the actual CLI. `--drop`, its
+`-d` alias and short-option clusters are rejected because they would overwrite
+the guard in this version; normal start already writes generated assets.
+Asset containment checks match Express's case-insensitive `/assets` mount.
 
 Native CLI packaging can generate development certificate files. Packaging and
 dev-server checks used isolated HOME directories; no OS certificate trust was
@@ -80,10 +81,19 @@ not a claim of Power BI certification or complete host compatibility.
 
 ## Security scans and version choices
 
-**Both full dependency audits pass with zero vulnerabilities**, including vendor
-development dependencies. Run `npm run audit:all`. No advisory ignores, severity
-reductions or manifest exclusions were introduced. Results reflect the advisory
-database at validation time, not a guarantee against future findings.
+The original checkpoint recorded zero vulnerabilities in both dependency audits.
+**The 2026-10-05 review no longer reproduces that result:** the root audit reports
+8 high-severity affected packages, all stemming from `braces@3.0.3` and
+[GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm).
+The vendored component audit remains clean. GitHub lists no patched `braces`
+version at this review checkpoint. Publication is blocked until a supported secure
+resolution is available and verified; do not use the scanner's suggested forced
+major downgrades as evidence of remediation.
+
+Run `npm run audit:all` (currently fails at the root audit), and run
+`npm --prefix lib/@uncharted.software/stories-facets audit` separately to check the
+vendor even when the first audit fails. No advisory ignores, severity reductions
+or manifest exclusions were introduced.
 
 The SockJS `uuid@11.1.1` override remains necessary for pbiviz's dependency tree;
 a test verifies the `uuid.v4()` API it actually uses. TypeScript 6.0.3 stays within
@@ -91,9 +101,9 @@ the stable typescript-eslint peer range (`<6.1`), and @types/node follows Node 2
 LTS. Prerelease versions on `latest` tags are not selected. The original non-strict
 TypeScript policy remains explicit; security lint rules are not weakened.
 
-## Independent validation
+## Original checkpoint validation (2026-10-01)
 
-Validated on Node 24 LTS:
+The original checkpoint recorded validation on Node 24 LTS:
 
 - **81 ChromeHeadless browser tests** and project lint/typecheck.
 - **73 current build/security/schema/dependency tests**, none skipped on macOS.
@@ -110,6 +120,37 @@ passed installation, the same checks, and native packaging. Packaging alone used
 an isolated HOME; Chrome tests used the normal environment. Generated artifacts,
 certificates and caches are not intended for commit. Sass and upstream Node
 runtime deprecation warnings remain non-blocking.
+
+## Review fixes and validation — 2026-10-05
+
+Local review fixes now cover:
+
+- Restored numeric/date range indices survive a subsequent search and widget rebuild.
+- Empty local selection replay preserves incoming cross-highlights while removing
+  stale local selection state.
+- Timer-handler types, HTTP template literals, exact anchor `rel` tokens and
+  unsafe/invalid iframe sandbox tokens are checked by the security lint policy.
+- The certificate script uses the supported `pbiviz install-cert` command.
+- `--drop` aliases/clusters cannot discard development request guards, and
+  differently cased asset URLs cannot bypass symlink/traversal checks.
+- Rich label/count HTML remains sanitized during selection, deselection,
+  spec updates and rescaling, not just initial rendering.
+
+A fresh source copy with clean root/vendor installs passed these checks on
+Node 24.21.0, running packaging with an isolated HOME:
+
+- Lint and typecheck.
+- **89 browser tests**, **128 security/build/schema/dependency tests**, and
+  **23 vendor tests**.
+- Production packaging, **2 package checks**, **3 dev-server checks**, and the
+  packaged browser-preview smoke test.
+
+The full root audit still fails with **8 high-severity affected packages from one
+advisory**, while the vendor audit passes with zero findings. Accordingly,
+`npm run validate` is not a passing release gate. No dependency versions or
+lockfiles were changed for these source/tooling fixes, and no finding was ignored
+or excluded. Changes remain local; GitHub is still archived and the README
+maintenance date must be finalized only when publication can proceed.
 
 ## Local preview and remaining Power BI validation
 

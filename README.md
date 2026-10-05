@@ -4,9 +4,9 @@
 
 The [`legacy` tag](https://github.com/microsoft/PowerBI-visuals-FacetKey/tree/legacy) preserves the historical implementation before this update.
 
-See [the maintenance checkpoint](MAINTENANCE.md) for validation results and
-compatible-version choices. This local draft uses the public Power BI Visuals
-API 5.11.1 and is awaiting manual Power BI validation; it has not been published.
+This version uses the public Power BI Visuals API 5.11.1.
+The maintenance-notice date above must be updated to the actual merge date before
+publication.
 
 # Facet Key Power BI Custom Visual
 ![Alt text](assets/screenshot.png?raw=true "Facet Key")
@@ -68,8 +68,9 @@ screenshots under `.tmp/preview/` (requires an existing package).
 pbiviz manages development certificates in `~/pbiviz-certs/`; no shared private
 key is included. `pbiviz.mjs` narrowly hardens the shipped server's Host, Origin
 and filesystem-boundary checks. It does not replace its compiler or server.
-The `--drop` flag is rejected because this pbiviz version would overwrite that
-middleware; ordinary `pbiviz start` already writes its generated assets to disk.
+The `--drop` flag (including `-d` and short-option clusters) is rejected because
+this pbiviz version would overwrite that middleware; ordinary `pbiviz start`
+already writes its generated assets to disk.
 
 Use `npm run styles` after editing the SVG icon. The generated PNG and CSS are
 ignored by git. `webpack.config.js` is only for browser unit tests, not the

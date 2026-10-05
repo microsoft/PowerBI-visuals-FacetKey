@@ -11,7 +11,7 @@
     "url": "https://github.com/Microsoft/PowerBI-visuals-FacetKey/issues"
   },
   "scripts": {
-    "install-certificate": "pbiviz --install-cert",
+    "install-certificate": "pbiviz install-cert",
     "start": "npm run dev",
     "tdd": "npm run test:tdd",
     "dev": "npm run prepare:assets && npm-run-all --parallel dev:pbiviz watch:styles watch:templates",

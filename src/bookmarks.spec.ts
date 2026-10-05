@@ -98,6 +98,28 @@ describe('bookmarks', () => {
             expect(facetsVisual.selectedInstances).to.deep.equal([]);
         });
 
+        it('clears local selection before reapplying incoming highlights when no local ids remain', () => {
+            const { facetsVisual } = buildFacetsVisual({ selectedInstances: ['stale'] });
+            facetsVisual.data.hasHighlight = true;
+            facetsVisual.data.facetsSelectionData = [{ key: 'organization', facets: [{ value: 'Wand0', selected: 1 }] }];
+
+            loadSelectionFromSelectionIds(facetsVisual, []);
+
+            expect(facetsVisual.updateFacetsSelection.calledOnceWithExactly([])).to.be.true;
+            expect(facetsVisual.facets.select.calledOnceWithExactly(facetsVisual.data.facetsSelectionData)).to.be.true;
+            expect(facetsVisual.updateFacetsSelection.calledBefore(facetsVisual.facets.select)).to.be.true;
+        });
+
+        it('keeps local selections authoritative when incoming highlights also exist', () => {
+            const { facetsVisual, makeId } = buildFacetsVisual();
+            facetsVisual.data.hasHighlight = true;
+
+            loadSelectionFromSelectionIds(facetsVisual, [makeId(0)]);
+
+            expect(facetsVisual.updateFacetsSelection.calledOnceWithExactly(facetsVisual.selectedInstances)).to.be.true;
+            expect(facetsVisual.facets.select.called).to.be.false;
+        });
+
         it('does not throw and no-ops when the visual has been destroyed', () => {
             const { facetsVisual } = buildFacetsVisual({ destroyed: true, selectedInstances: ['stale'] });
             expect(() => loadSelectionFromSelectionIds(facetsVisual, [])).to.not.throw();
@@ -155,7 +177,8 @@ describe('bookmarks', () => {
                 ],
             }]);
 
-            expect(facetsVisual.filter.range['created']).to.exist;
+            expect(facetsVisual.filter.range['created'].from.index).to.equal(0);
+            expect(facetsVisual.filter.range['created'].to.index).to.equal(2);
             expect(facetData.facets[0].selection['range']).to.deep.equal({ from: 0, to: 2 });
             expect(replace.calledOnce).to.be.true;
         });
