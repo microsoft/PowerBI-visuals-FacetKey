@@ -21,23 +21,6 @@
  * SOFTWARE.
  */
 
-// fake powerbi functions
-window['powerbi'] = {
-    DataViewObjects: {
-        getValue: () => undefined,
-    },
-    extensibility: {
-        utils: {
-            formatting: {
-                valueFormatter: {
-                    create: (obj) => ({ format: (value) => obj.format + value })
-                },
-            },
-        }
-    },
-};
-const logObj = (obj) => console.log(JSON.stringify(obj, null, 2));
-
 import * as sinon from 'sinon';
 import { expect } from 'chai';
 import assign from 'lodash-es/assign';
@@ -51,6 +34,17 @@ import mockDataPointsMap from './test_data/mockDataPointsMap';
 import mockAggregatedData from './test_data/mockAggregatedData';
 
 describe('Data Conversion Functions', () => {
+
+// Stub data.ts's `formatterAdapter.create` (a thin, writable indirection it exposes specifically
+// for testability) with a simple, deterministic adapter (format string prefixed onto the value)
+// instead of relying on a global `window.powerbi` side-effect shim or trying to stub the real
+// `valueFormatter.create`, whose ESM export is non-configurable/non-writable at runtime.
+before(() => {
+    sinon.stub(dataConversion.formatterAdapter, 'create').callsFake((obj: any) => ({ format: (value: any) => obj.format + value }));
+});
+after(() => {
+    (dataConversion.formatterAdapter.create as any).restore();
+});
 
 describe('.convertToDataPointsMap', () => {
     let dataView;
@@ -543,7 +537,7 @@ describe('.convertToFacetsVisualData', () => {
     });
     /* Colors */
     it('should assign facets default colors of 3 different opacities and grey default color', () => {
-        sinon.stub(utils, 'getSegmentColor', (baseColor) => baseColor);
+        sinon.stub(utils, 'getSegmentColor').callsFake((baseColor) => baseColor);
         const locationDps = aggregatedData.dataPointsMap.location;
         locationDps.forEach((dp) => { delete dp.bucket; });
         locationDps.push(...(cloneDeep(locationDps)));
@@ -566,7 +560,7 @@ describe('.convertToFacetsVisualData', () => {
         utils.getSegmentColor['restore']();
     });
     it('should choose colors from provided colors when the default color palette has no more color', () => {
-        sinon.stub(utils, 'getSegmentColor', (baseColor) => baseColor);
+        sinon.stub(utils, 'getSegmentColor').callsFake((baseColor) => baseColor);
         const locationDps = aggregatedData.dataPointsMap.location;
         locationDps.forEach((dp) => { delete dp.bucket; });
         locationDps.map((dp: DataPoint) => (dp.instanceColor = undefined) && dp);
@@ -733,10 +727,10 @@ describe('.convertToFacetsVisualData', () => {
         expect(locGroup.facets[1].value).to.equal('prepend1');
     });
     it('should create segments data for each facet when there is bucket data', () => {
-        const stub = sinon.stub(utils, 'createSegments', (bucket, color, isHighlight) => {
+        const stub = sinon.stub(utils, 'createSegments').callsFake(<any>((bucket, color, isHighlight) => {
             const seg = isHighlight ? 'fakeHighlightSeg' : 'fakeSeg';
             return `${seg}:${JSON.stringify(bucket)}:${color}`;
-        });
+        }));
         result = dataConversion.convertToFacetsVisualData(aggregatedData, {
             colors: [],
             settings: DEFAULT_SETTINGS,
@@ -752,8 +746,8 @@ describe('.convertToFacetsVisualData', () => {
         stub.restore();
     });
     it('should assign default colors to segments and icon', () => {
-        sinon.stub(utils, 'createSegments', (bucket, color, isHighlight, opacity) => 'color:' + color);
-        sinon.stub(utils, 'getSegmentColor', (arg1, arg2, arg3, arg4, arg5) => '' + arg1 + arg2 + arg3 + arg4 + arg5);
+        sinon.stub(utils, 'createSegments').callsFake(<any>((bucket, color, isHighlight, opacity) => 'color:' + color));
+        sinon.stub(utils, 'getSegmentColor').callsFake((arg1, arg2, arg3, arg4, arg5) => '' + arg1 + arg2 + arg3 + arg4 + arg5);
 
         const locationDps = aggregatedData.dataPointsMap.location;
         locationDps.push(...(cloneDeep(locationDps)));

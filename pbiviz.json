@@ -4,21 +4,23 @@
     "displayName": "Facet Key",
     "guid": "FacetKey1642434105454",
     "visualClassName": "FacetsVisual",
-    "description": "This visual is currently in beta testing and is undergoing active development. Facet Key (right) displays the most common matches in facets of a document set, indicating how many documents match each facet value. It can also be used to interpret icon mappings in linked visuals. Click facet values to highlight matches in linked visuals, or invoke highlighting from a linked visual to see top matches in the highlighted set. Facet Key is designed for use with Cluster Map (left) and Strippet Browser.",
-    "supportUrl": "http://community.powerbi.com",
+    "version": "1.1.5.0",
+    "description": "Archived research visual; unsupported and not actively maintained. Facet Key (right) displays the most common matches in facets of a document set, indicating how many documents match each facet value. It can also be used to interpret icon mappings in linked visuals. Click facet values to highlight matches in linked visuals, or invoke highlighting from a linked visual to see top matches in the highlighted set. Facet Key is designed for use with Cluster Map (left) and Strippet Browser.",
+    "supportUrl": "https://community.fabric.microsoft.com/",
     "gitHubUrl": "https://github.com/Microsoft/PowerBI-visuals-FacetKey"
   },
   "author": {
     "name": "Microsoft",
     "email": "msrvizsupport@microsoft.com"
   },
-  "apiVersion": "1.11.0",
+  "apiVersion": "5.11.1",
   "assets": {
-    "icon": "assets/icon.svg",
+    "icon": "assets/icon.png",
     "thumbnail": "assets/thumbnail.png",
     "screenshot": "assets/screenshot.png"
   },
-  "style": "style/facets.scss",
-  "capabilities": "capabilities.json",
-  "output": "dist/essex.widget.facetkey.pbiviz"
+  "style": "style/facets.css",
+  "externalJS": [],
+  "stringResources": [],
+  "capabilities": "capabilities.json"
 }

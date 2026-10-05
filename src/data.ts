@@ -21,12 +21,11 @@
  * SOFTWARE.
  */
 
-/// <reference path='../node_modules/powerbi-visuals-utils-formattingutils/lib/index.d.ts'/>
-
+import powerbi from 'powerbi-visuals-api';
 import DataView = powerbi.DataView;
-import IValueFormatter = powerbi.visuals.IValueFormatter;
-import DataViewObjects = powerbi.DataViewObjects;
-import IColorInfo = powerbi.IColorInfo;
+import { valueFormatter } from 'powerbi-visuals-utils-formattingutils';
+import IValueFormatter = valueFormatter.IValueFormatter;
+import { ColorInfo } from './interfaces';
 import {
     findColumn,
     safeKey,
@@ -37,7 +36,8 @@ import {
     createSegments,
     createTimeSeries,
     HIGHLIGHT_COLOR,
-    COLOR_PALETTE
+    COLOR_PALETTE,
+    safeJsonParse,
 } from './utils';
 import isString from 'lodash-es/isString';
 import uniq from 'lodash-es/uniq';
@@ -51,13 +51,21 @@ import escape from 'lodash-es/escape';
 const MAX_NUM_FACET_GROUPS = 100;
 
 /**
+ * Thin, mutable indirection over `valueFormatter.create`. Real ESM exports from
+ * powerbi-visuals-utils-formattingutils are non-configurable, so tests can't stub
+ * `valueFormatter.create` directly - they can stub this plain object's `create` property instead.
+ */
+export const formatterAdapter = {
+    create: valueFormatter.create,
+};
+
+/**
  * Convert the given dataview into a data points map in which data points are grouped by facet key.
  *
  * @param  {DataView}          dataView A dataView object.
  * @return {DataPointsMapData}          Converted data.
  */
 export function convertToDataPointsMap(dataView: DataView): DataPointsMapData {
-    const formatting = powerbi.extensibility.utils.formatting;
     const category = dataView.categorical.categories && dataView.categorical.categories[0];
     const values = dataView.categorical.values || <powerbi.DataViewValueColumn[]>[];
     const highlights = values[0] && values[0].highlights;
@@ -72,9 +80,9 @@ export function convertToDataPointsMap(dataView: DataView): DataPointsMapData {
     const rangeValueColumns = findColumn(dataView, 'rangeValue', true);
     const colorColumn = findColumn(dataView, 'facetInstanceColor');
 
-    const countFormatter = (countColumn && countColumn.format) &&  formatting.valueFormatter.create({format: countColumn.format});
-    const facetFormatter = (facetColumn && facetColumn.format) && formatting.valueFormatter.create({format: facetColumn.format});
-    const instanceFormatter = (instanceColumn && instanceColumn.format) && formatting.valueFormatter.create({format: instanceColumn.format});
+    const countFormatter = (countColumn && countColumn.format) &&  formatterAdapter.create({format: countColumn.format});
+    const facetFormatter = (facetColumn && facetColumn.format) && formatterAdapter.create({format: facetColumn.format});
+    const instanceFormatter = (instanceColumn && instanceColumn.format) && formatterAdapter.create({format: instanceColumn.format});
 
     const dataPointsMap = {};
 
@@ -93,7 +101,7 @@ export function convertToDataPointsMap(dataView: DataView): DataPointsMapData {
                 if (role === 'rangeValue') {
                     const format = columns[idx].format;
                     const columnName = columns[idx].displayName;
-                    const rangeValueFormatter = formatting.valueFormatter.create({ format: format });
+                    const rangeValueFormatter = formatterAdapter.create({ format: format });
                     !rowObj.rangeValues && (rowObj.rangeValues = []);
                     const value: RangeValue = {
                         value: columnValue,
@@ -239,7 +247,8 @@ function compareRangeValue(a: any, b: any) {
  * @return {boolean}
  */
 function checkRangeFilter(rangeFilter: RangeFilter, rangeValues: RangeValue[]) {
-    if (!rangeFilter) { return true; }
+    if (!rangeFilter || !Object.keys(rangeFilter).some((key) => !!rangeFilter[key])) { return true; }
+    if (!rangeValues) { return false; }
     const compare = compareRangeValue;
     return rangeValues.reduce((prev: boolean, rangeValue: RangeValue) => {
         const filter = rangeFilter[rangeValue.key];
@@ -304,8 +313,8 @@ function createBucket(targetObj: any, dp: DataPoint, bucketName: string) {
  * @return {string}                           A formatted value.
  */
 function formatValue(defaultFormatter: IValueFormatter, value: any, defaultValue: any = '') {
-    const smallFormatter = powerbi.extensibility.utils.formatting.valueFormatter.create({format: 'D', value: 0});
-    const bigFormatter = powerbi.extensibility.utils.formatting.valueFormatter.create({format: 'D', value: 1e6});
+    const smallFormatter = formatterAdapter.create({format: 'D', value: 0});
+    const bigFormatter = formatterAdapter.create({format: 'D', value: 1e6});
     if (value) {
         if (defaultFormatter) {
             return defaultFormatter.format(value);
@@ -393,7 +402,7 @@ function aggregateDataPoints(dataPoints: DataPoint[], filter: DataPointsFilter =
 
 function createFacetsSelectionData(aggregatedData: AggregatedData, options: ConvertToFacetsVisualDataOptions) {
     const { colors, settings } = options;
-    const colorPalette = colors ? COLOR_PALETTE.slice().concat(colors.map((color: IColorInfo) => color.value)) : COLOR_PALETTE.slice();
+    const colorPalette = colors ? COLOR_PALETTE.slice().concat(colors.map((color: ColorInfo) => color.value)) : COLOR_PALETTE.slice();
     const toSelectionGroup = ((key: string) => {
         const dataPoints = aggregatedData.dataPointsMap[key];
         const facetGroupColor = colorPalette.shift();
@@ -434,8 +443,8 @@ function createFacetsSelectionData(aggregatedData: AggregatedData, options: Conv
 
 function createFacetsData(aggregatedData: AggregatedData, options: ConvertToFacetsVisualDataOptions) {
     const { colors, settings } = options;
-    const normalFacetState = JSON.parse(settings.facetState.normalFacet);
-    const colorPalette = colors ? COLOR_PALETTE.slice().concat(colors.map((color: IColorInfo) => color.value)) : COLOR_PALETTE.slice();
+    const normalFacetState = safeJsonParse(settings.facetState.normalFacet, {});
+    const colorPalette = colors ? COLOR_PALETTE.slice().concat(colors.map((color: ColorInfo) => color.value)) : COLOR_PALETTE.slice();
     const hasHighlight = aggregatedData.hasHighlight;
     const result = <FacetGroup[]>[];
 
@@ -526,7 +535,7 @@ function createFacetsData(aggregatedData: AggregatedData, options: ConvertToFace
 function createRangeFacetsData(aggregatedData: AggregatedData, options: ConvertToFacetsVisualDataOptions) {
     const result = [];
     const { selectedRange, settings } = options;
-    const rangeFacetState = JSON.parse(settings.facetState.rangeFacet);
+    const rangeFacetState = safeJsonParse(settings.facetState.rangeFacet, {});
     Object.keys(aggregatedData.rangeDataMap).forEach((key: string) => {
         const rangeValueMap = aggregatedData.rangeDataMap[key];
         const rangeKeys = Object.keys(rangeValueMap);

@@ -1,0 +1,145 @@
+'use strict';
+
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs/promises');
+const path = require('node:path');
+const os = require('node:os');
+const net = require('node:net');
+const https = require('node:https');
+const { spawn, spawnSync } = require('node:child_process');
+const { once } = require('node:events');
+const { pathToFileURL } = require('node:url');
+
+const ROOT = path.resolve(__dirname, '..');
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function availablePort() {
+    const server = net.createServer();
+    server.listen(0, '127.0.0.1');
+    await once(server, 'listening');
+    const port = server.address().port;
+    await new Promise((resolve) => server.close(resolve));
+    return port;
+}
+
+function request(port, requestPath, headers = {}) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const ca = await fs.readFile(path.join(ROOT, 'certs', 'localhost.crt'));
+            const req = https.get({ hostname: '127.0.0.1', port, path: requestPath, headers, ca, rejectUnauthorized: true }, (res) => {
+                let body = '';
+                res.setEncoding('utf8');
+                res.on('data', (chunk) => { body += chunk; });
+                res.on('end', () => resolve({ status: res.statusCode, headers: res.headers, body }));
+            });
+            req.setTimeout(2000, () => req.destroy(new Error('Request timed out')));
+            req.on('error', reject);
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+
+async function waitForResponse(port, requestPath, predicate, child, getLog) {
+    const deadline = Date.now() + 40000;
+    while (Date.now() < deadline) {
+        if (child.exitCode !== null) throw new Error(`pbiviz exited early: ${getLog()}`);
+        try {
+            const response = await request(port, requestPath);
+            if (predicate(response)) return response;
+        } catch { /* The compiler/server may still be starting. */ }
+        await delay(200);
+    }
+    throw new Error(`pbiviz did not become ready: ${getLog()}`);
+}
+
+test('official pbiviz configuration retains loopback and origin protections', async () => {
+    await import(pathToFileURL(path.join(ROOT, 'pbiviz.mjs')).href);
+    const { default: config } = await import(pathToFileURL(path.join(ROOT, 'node_modules/powerbi-visuals-tools/lib/webpack.config.js')).href);
+    assert.equal(config.devServer.host, '127.0.0.1');
+    assert.notEqual(config.devServer.allowedHosts, 'all');
+    assert.equal(config.devServer.headers['access-control-allow-origin'], undefined);
+    assert.equal(typeof config.devServer.setupMiddlewares, 'function');
+});
+
+test('drop options cannot replace the development guard', async () => {
+    const home = await fs.mkdtemp(path.join(os.tmpdir(), 'facetkey-drop-rejection-'));
+    try {
+        for (const option of ['--drop', '-d', '-ld', '-dl']) {
+            const result = spawnSync(process.execPath, [
+                path.join(ROOT, 'node_modules/powerbi-visuals-tools/bin/pbiviz.js'), 'start', option,
+            ], { cwd: ROOT, env: { ...process.env, HOME: home }, encoding: 'utf8', timeout: 15000 });
+            assert.equal(result.error, undefined, option);
+            assert.notEqual(result.status, 0, option);
+            assert.match(result.stdout + result.stderr, /without --drop \(-d\)/, option);
+        }
+        assert.deepEqual(await fs.readdir(home), [], 'rejected options must not create certificates');
+    } finally {
+        await fs.rm(home, { recursive: true, force: true });
+    }
+});
+
+test('native pbiviz start serves, watches CSS and rejects unsafe requests', {
+    timeout: 100000,
+    skip: process.platform === 'win32' ? 'Avoid creating certificates in the Windows user certificate store during automated tests.' : false,
+}, async () => {
+    const home = await fs.mkdtemp(path.join(os.tmpdir(), 'facetkey-pbiviz-home-'));
+    const port = await availablePort();
+    const cli = path.join(ROOT, 'node_modules/powerbi-visuals-tools/bin/pbiviz.js');
+    const cssPath = path.join(ROOT, 'style/facets.css');
+    const originalCss = await fs.readFile(cssPath);
+    const linkName = `pbiviz-boundary-${process.pid}.txt`;
+    const linkPath = path.join(ROOT, '.tmp/drop', linkName);
+    let log = '';
+    const child = spawn(process.execPath, [cli, 'start', '--port', String(port), '--all-locales'], {
+        cwd: ROOT,
+        env: { ...process.env, HOME: home, PATH: `${path.dirname(process.execPath)}${path.delimiter}${process.env.PATH || ''}` },
+        detached: true,
+        stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    const record = (chunk) => { log = (log + chunk.toString()).slice(-16000); };
+    child.stdout.on('data', record);
+    child.stderr.on('data', record);
+    let spawnError;
+    child.on('error', (error) => { spawnError = error; });
+    try {
+        const js = await waitForResponse(port, '/assets/visual.js', (r) => r.status === 200, child, () => log);
+        if (spawnError) throw spawnError;
+        assert.ok(js.body.includes('FacetKey1642434105454_DEBUG'));
+        assert.equal((await request(port, '/assets/visual.js', { Host: 'attacker.example' })).status, 421);
+        assert.equal((await request(port, '/assets/visual.js', { Origin: 'https://attacker.example' })).status, 403);
+        const trusted = await request(port, '/assets/visual.js', { Origin: 'https://app.powerbi.com' });
+        assert.equal(trusted.status, 200);
+        assert.equal(trusted.headers['access-control-allow-origin'], 'https://app.powerbi.com');
+        assert.equal((await request(port, '/assets/..%2f..%2fpackage.json')).status, 403);
+
+        const secret = path.join(home, 'boundary.txt');
+        await fs.writeFile(secret, 'DO NOT SERVE');
+        await fs.symlink(secret, linkPath);
+        for (const mount of ['/assets', '/ASSETS', '/AsSeTs']) {
+            const asset = await request(port, `${mount}/visual.js`);
+            assert.equal(asset.status, 200, `legitimate asset: ${mount}`);
+            const escaped = await request(port, `${mount}/${linkName}`);
+            assert.equal(escaped.status, 403, `symlink: ${mount}`);
+            assert.ok(!escaped.body.includes('DO NOT SERVE'));
+            assert.equal((await request(port, `${mount}/..%2f..%2fpackage.json`)).status, 403, `traversal: ${mount}`);
+        }
+
+        await fs.appendFile(cssPath, '\n.pbiviz-watch-probe { color: rgb(1, 2, 3); }\n');
+        await waitForResponse(port, '/assets/visual.css', (r) => r.status === 200 && r.body.includes('pbiviz-watch-probe'), child, () => log);
+    } finally {
+        await fs.writeFile(cssPath, originalCss);
+        await fs.rm(linkPath, { force: true });
+        if (child.exitCode === null) {
+            const exited = once(child, 'exit').catch(() => {});
+            try { process.kill(-child.pid, 'SIGTERM'); } catch { /* already exited */ }
+            await Promise.race([exited, delay(1000)]);
+            if (child.exitCode === null && child.signalCode === null) {
+                try { process.kill(-child.pid, 'SIGKILL'); } catch { /* already exited */ }
+                await exited;
+            }
+        }
+        await fs.rm(home, { recursive: true, force: true });
+    }
+});
